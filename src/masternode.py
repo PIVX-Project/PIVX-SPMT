@@ -161,7 +161,6 @@ class Masternode(QObject):
         # nnLastDsq to zero
         work += "0"*16
         
-        printOK("Work: %s" % work)
         self.sigdone.emit(work)  
     
     
