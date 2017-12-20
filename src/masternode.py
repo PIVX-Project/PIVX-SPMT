@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
 from bitcoin import privkey_to_pubkey, ecdsa_sign
-from btchip.btchipUtils import compress_public_key
 from PyQt5.Qt import QObject
 from base64 import b64decode
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 import time
-from pivx_hashlib import wif_to_privkey, format_hash, Hash160
+from pivx_hashlib import wif_to_privkey
 import bitcoin
 import binascii
-from constants import MPATH, protocol_version
+from constants import MPATH
 from misc import printOK, printDbg, printException, getCallerName, getFunctionName
 from utils import num_to_varint, ipmap, serialize_input_str
 from misc import ipport
@@ -40,22 +36,7 @@ class Masternode(QObject):
         self.collateral = collateral
         Masternode.mnCount += 1
         printOK("Initializing MNode with collateral: %s" % self.nodePath)
-    
-    
-    def readKeys(self, device):
-        try:
-            nodeData = device.chip.getWalletPublicKey(self.nodePath)
-            
-            self.collateral['address'] = nodeData.get('address')[12:-2]
-            self.collateral['pubKey'] = compress_public_key(nodeData.get('publicKey')).hex()
-            
-        except Exception as e:
-            err_msg = "error in readKeys"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-        except KeyboardInterrupt:
-            err_msg = "Keyboard Interrupt"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
@@ -66,7 +47,7 @@ class Masternode(QObject):
         serializedData += str(self.sig_time)
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.collateral['pubKey'])))[::-1].hex()
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
-        serializedData += str(protocol_version)
+        serializedData += str(self.protocol_version)
         
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
         printDbg("SerializedData: %s" % serializedData)
@@ -137,7 +118,7 @@ class Masternode(QObject):
         
                 
         work_sig_time = self.sig_time.to_bytes(8, byteorder='big')[::-1].hex()
-        work_protoversion = protocol_version.to_bytes(4, byteorder='big')[::-1].hex()
+        work_protoversion = self.protocol_version.to_bytes(4, byteorder='big')[::-1].hex()
         
         last_ping_block_hash = bytes.fromhex(block_hash)[::-1].hex()
         
@@ -165,6 +146,8 @@ class Masternode(QObject):
     def startMessage(self, device, rpcClient):
         # setuo rpc connection
         self.rpcClient = rpcClient
+        # update protocol version
+        self.protocol_version = self.rpcClient.getProtocolVersion()
         # done signal from hwdevice thread
         device.sig1done.connect(self.finalizeStartMessage)
         # prepare sig1 (the one done on the hw device)

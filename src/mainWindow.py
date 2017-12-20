@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from time import strftime, gmtime
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, WriteStream, WriteStreamReceiver, now
 from constants import starting_height

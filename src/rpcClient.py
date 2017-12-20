@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from misc import getCallerName, getFunctionName, printException, printDbg, eprintDbg, eprintException, readRPCfile
+from constants import DEFAULT_PROTOCOL_VERSION
 
 class RpcClient:
         
@@ -126,6 +127,18 @@ class RpcClient:
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    def getProtocolVersion(self):
+        try:
+            prot_version = self.conn.getinfo().get('protocolversion')
+            return int(prot_version)
+        
+        except Exception as e:
+            err_msg = 'error in getProtocolVersion'
+            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            return DEFAULT_PROTOCOL_VERSION
+    
     
     
     def masternodebroadcast(self, cmd, work):
