@@ -9,6 +9,17 @@ class ApiClient:
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {"key": "b62b40b5091e"}
         
+   
+    def checkResponse(self, parameters):
+        resp = requests.get(self.url, params=parameters)
+        if resp.status_code == 200:
+            data = resp.json()
+            return data
+        else:
+            print("Invalid response from API provider")
+            print("Status code: %s" % str(resp.status_code))
+            return None    
+    
     
     
     def getAddressUtxos(self, address):
@@ -57,17 +68,6 @@ class ApiClient:
     
         return "Not Connected! Status: %s" % str(statusCode)
     
-    
-    
-    def checkResponse(self, parameters):
-        resp = requests.get(self.url, params=parameters)
-        if resp.status_code == 200:
-            data = resp.json()
-            return data
-        else:
-            print("Invalid response from API provider")
-            print("Status code: %s" % str(resp.status_code))
-            return None
                 
     
     
