@@ -9,18 +9,26 @@ class TestHwDeviceMethods(unittest.TestCase):
     def test_transaction(self):
         # Init HW device & Api client
         device = HWdevice()
-        # Read input data from file
-        import simplejson as json
-        with open('test_transaction.data.json') as data_file:
-            input_data = json.load(data_file)
-        data_file.close()
-        # Parse input data
-        pivx_address = input_data['address']
-        utxos = input_data['unspent_outputs']
-        rawtransactions = input_data['raw_transactions']
+        try:
+            # Read input data from file
+            import simplejson as json
+            with open('test_transaction.data.json') as data_file:
+                input_data = json.load(data_file)
+            data_file.close()
+            # Parse input data
+            path = input_data['path']
+            pivx_address_to = input_data['address_from']
+            fee = input_data['fee']
+            utxos = input_data['unspent_outputs']
+            rawtransactions = input_data['raw_transactions']
+            
+            txraw, amount = self.signTx(device, path, utxos, pivx_address_to, fee, rawtransactions)
+            print(txraw)
+            print(amount)
         
-        # 
-        print("Accept the 10 TXs on the device")
+        except Exception:
+            device.dongle.close()
+            raise
         
         
         
@@ -31,7 +39,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     # -- hwdevice.signTxSign
     # -- hwdevice.signTxFinish
     # without gui
-    def signTx(self, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions):
+    def signTx(self, device, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
@@ -54,11 +62,11 @@ class TestHwDeviceMethods(unittest.TestCase):
             if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
                 raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
 
-            trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
+            trusted_input = device.chip.getTrustedInput(prev_transaction, utxo_tx_index)
             self.trusted_inputs.append(trusted_input)
            
             # Hash check
-            curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
+            curr_pubkey = compress_public_key(device.chip.getWalletPublicKey(bip32_path)['publicKey'])
             pubkey_hash = bin_hash160(curr_pubkey)
             pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
             if pubkey_hash != pubkey_hash_from_script:
@@ -95,11 +103,11 @@ class TestHwDeviceMethods(unittest.TestCase):
         starting = True
         # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
         for idx, new_input in enumerate(self.arg_inputs):
-            self.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
+            device.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
             
-            self.chip.finalizeInputFull(self.all_outputs_raw)
+            device.chip.finalizeInputFull(self.all_outputs_raw)
 
-            sig = self.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
+            sig = device.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
             
             new_input['signature'] = sig
             inputTx = bitcoinInput()
