@@ -25,6 +25,15 @@ class RpcClient:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
             
+    
+    
+    def decodeRawTx(self, rawTx):
+        try:
+            return self.conn.decoderawtransaction(rawTx)
+        
+        except Exception as e:
+            err_msg = 'error in decodeRawTx'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
             
     
     def getAddressUtxos(self, addresses):
@@ -161,3 +170,11 @@ class RpcClient:
             else:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
     
+    
+    def verifyMessage(self, pivxaddress, signature, message):
+        try:
+            return self.conn.verifymessage(pivxaddress, signature, message)
+        
+        except Exception as e:
+            err_msg = "error in verifyMessage"
+            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
