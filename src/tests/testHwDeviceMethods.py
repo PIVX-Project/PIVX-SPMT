@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import unittest
 from hwdevice import HWdevice
 from rpcClient import RpcClient
@@ -35,7 +37,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         with open('test_transaction.data.json') as data_file:
             input_data = json.load(data_file)
         data_file.close()
-        # Parse input data
+        # Rename input data
         path = input_data['path']
         pivx_address_to = input_data['address_from']
         fee = input_data['fee']

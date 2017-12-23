@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import base64
 from misc import getCallerName, getFunctionName, printException
-from bitcoin import b58check_to_hex
+from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, encode_sig, decode_sig, dbl_sha256
+from pivx_hashlib import wif_to_privkey
 
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
@@ -17,6 +18,7 @@ P2SH_PREFIXES = ['7']
 
 def b64encode(text):
     return base64.b64encode(bytearray.fromhex(text)).decode('utf-8')
+    
 
 
 def checkPivxAddr(address):
@@ -56,8 +58,30 @@ def compose_tx_locking_script(dest_address):
     else:
         raise Exception('Invalid dest address prefix: ' + dest_address[0])
     return scr
+
+
+def ecdsa_sign(msg, priv):
+    """
+    Based on project: https://github.com/chaeplin/dashmnb with some changes related to usage of bitcoin library.
+    """
+    v, r, s = ecdsa_raw_sign(electrum_sig_hash(msg), priv)
+    sig = encode_sig(v, r, s)
+    pubkey = privkey_to_pubkey(wif_to_privkey(priv))
+
+    ok = ecdsa_raw_verify(electrum_sig_hash(msg), decode_sig(sig), pubkey)
+    if not ok:
+        raise Exception('Bad signature!')
+    return sig
     
-    
+
+def electrum_sig_hash(message):
+    """
+    Based on project: https://github.com/chaeplin/dashmnb.
+    """
+    padded = b'\x18DarkNet Signed Message:\n' + num_to_varint(len(message)) + from_string_to_bytes(message)
+    return dbl_sha256(padded)
+
+
     
 def extract_pkh_from_locking_script(script):
     if len(script) == 25:
@@ -69,6 +93,10 @@ def extract_pkh_from_locking_script(script):
     raise Exception('Non-standard locking script type (should be P2PKH)')
     
 
+
+
+def from_string_to_bytes(a):
+    return a if isinstance(a, bytes) else bytes(a, 'utf-8')
 
 
 def ipmap(ip, port):

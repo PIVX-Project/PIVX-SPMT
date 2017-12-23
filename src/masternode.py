@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from bitcoin import privkey_to_pubkey, ecdsa_sign
+import bitcoin 
 from PyQt5.Qt import QObject
 from base64 import b64decode
-
+from utils import ecdsa_sign
 import time
 from pivx_hashlib import wif_to_privkey
-import bitcoin
 import binascii
 from constants import MPATH
 from misc import printOK, printDbg, printException, getCallerName, getFunctionName
@@ -28,7 +27,8 @@ class Masternode(QObject):
         self.ip = ip
         self.port = str(port)
         self.mnPrivKey = wif_to_privkey(mnPrivKey)
-        self.mnPubKey = privkey_to_pubkey(self.mnPrivKey)
+        self.mnWIF = mnPrivKey
+        self.mnPubKey = bitcoin.privkey_to_pubkey(self.mnPrivKey)
         self.hwAcc = hwAcc
         self.spath = collateral['spath']
 
@@ -70,7 +70,7 @@ class Masternode(QObject):
     def signature2(self, serializedData):
         try:
             # local
-            sig2 = ecdsa_sign(serializedData, self.mnPrivKey)
+            sig2 = ecdsa_sign(serializedData, self.mnWIF)
 
             return (b64decode(sig2).hex())
     
