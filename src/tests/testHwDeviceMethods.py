@@ -12,7 +12,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         self.device = HWdevice()
         self.rpcClient = RpcClient()
         hwStatus = self.device.getStatusCode()
-        rpcStatus, blockNum = self.rpcClient.getStatus()
+        rpcStatus, _ = self.rpcClient.getStatus()
         if hwStatus != 2:
             self.skipTest("Ledger not connected or pivx app closed")
         if not rpcStatus:
@@ -70,13 +70,13 @@ class TestHwDeviceMethods(unittest.TestCase):
         # (5 accounts. 5 addresses per account)
         with open('accounts.data.txt') as datafile:
             # datafile has 4 lines of header (lines_offset)
-            for i in range(4):
+            for _ in range(4):
                 datafile.readline()
             for account_n in range(5):
                 for address_n in range(5):
                     address = datafile.readline().split()[0]
                     
-                    result, index = self.device.scanForBip32(account_n, address, starting_spath=address_n, spath_count=1)
+                    result, _ = self.device.scanForBip32(account_n, address, starting_spath=address_n, spath_count=1)
                     # Address found in account_n  with index.
                     self.assertTrue(result)
             
@@ -88,7 +88,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         # (5 accounts. 5 addresses per account)
         with open('accounts.data.txt') as datafile:
             # datafile has 4 lines of header (lines_offset)
-            for i in range(4):
+            for _ in range(4):
                 datafile.readline()
             for account_n in range(5):
                 for address_n in range(5):

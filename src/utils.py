@@ -4,6 +4,8 @@ import base64
 from misc import getCallerName, getFunctionName, printException
 from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, encode_sig, decode_sig, dbl_sha256
 from pivx_hashlib import wif_to_privkey
+from pivx_b58 import b58decode
+from bitcoin import bin_dbl_sha256
 
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
@@ -22,11 +24,21 @@ def b64encode(text):
 
 
 def checkPivxAddr(address):
-    result = False
-    if not address is None:
-        result = True
+    # check leading char 'D'
+    if address[0] != 'D':
+        return False
+    
+    try:
+        # decode and verify checksum
+        addr_bin = bytes.fromhex(b58decode(address).hex())
+        addr_bin_check = bin_dbl_sha256(addr_bin[0:-4])[0:4]
+        if addr_bin[-4:] != addr_bin_check:
+            return False
         
-    return result
+        return True
+    except Exception:
+        return False
+
 
 
 
