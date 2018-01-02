@@ -210,7 +210,6 @@ class TabRewards():
             
     @pyqtSlot()
     def onSendRewards(self):
-        self.curr_address = self.ui.destinationLine.text()
         self.dest_addr = self.ui.destinationLine.text()
         printDbg("Sending rewards from masternode address %s to PIVX address %s" % (self.curr_addr, self.dest_addr))      
         utxos = []
@@ -299,7 +298,7 @@ class TabRewards():
                     self.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
                 
                 else:
-                    message = 'Broadcast signed transaction?\n\nDestination address: %s\nAmount to send: %s Piv' % (self.curr_address, amount_to_send)
+                    message = 'Broadcast signed transaction?\n\nDestination address: %s\nAmount to send: %s Piv' % (self.curr_addr, amount_to_send)
                     message += 'Fee: %s Piv\nSize: %d bytes' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     reply = self.caller.myPopUp(QMessageBox.Information, 'Send transaction', message)
                     if reply == QMessageBox.Yes:

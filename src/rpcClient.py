@@ -50,6 +50,35 @@ class RpcClient:
     
     
     
+    def getBlockCount(self):
+        try:
+            n = self.conn.getblockcount()
+            return n
+        
+        except Exception as e:
+            err_msg = 'remote or local PIVX-cli running?'
+            if str(e.args[0]) != "Request-sent":
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            else:
+                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    
+    def getBlockHash(self, blockNum):
+        try:
+            h = self.conn.getblockhash(blockNum)
+            return h
+        
+        except Exception as e:
+            err_msg = 'remote or local PIVX-cli running?'
+            if str(e.args[0]) != "Request-sent":
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            else:
+                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    
+    
     def getMNStatus(self, address):
         try:
             mnStatusList = self.conn.listmasternodes(address)
@@ -65,6 +94,17 @@ class RpcClient:
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    def getProtocolVersion(self):
+        try:
+            prot_version = self.conn.getinfo().get('protocolversion')
+            return int(prot_version)
+        
+        except Exception as e:
+            err_msg = 'error in getProtocolVersion'
+            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            return DEFAULT_PROTOCOL_VERSION    
             
     
     
@@ -101,6 +141,7 @@ class RpcClient:
         return status, n
     
     
+    
     def getStatusMess(self, status=None):
         if status == None:
             status = self.getStatus()
@@ -110,43 +151,6 @@ class RpcClient:
         else:
             return "RPC status: NOT CONNECTED. remote or local PIVX-cli running?"
     
-    
-    def getBlockCount(self):
-        try:
-            n = self.conn.getblockcount()
-            return n
-        
-        except Exception as e:
-            err_msg = 'remote or local PIVX-cli running?'
-            if str(e.args[0]) != "Request-sent":
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
-    
-    
-    
-    def getBlockHash(self, blockNum):
-        try:
-            h = self.conn.getblockhash(blockNum)
-            return h
-        
-        except Exception as e:
-            err_msg = 'remote or local PIVX-cli running?'
-            if str(e.args[0]) != "Request-sent":
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
-    
-    
-    def getProtocolVersion(self):
-        try:
-            prot_version = self.conn.getinfo().get('protocolversion')
-            return int(prot_version)
-        
-        except Exception as e:
-            err_msg = 'error in getProtocolVersion'
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
-            return DEFAULT_PROTOCOL_VERSION
     
     
     
