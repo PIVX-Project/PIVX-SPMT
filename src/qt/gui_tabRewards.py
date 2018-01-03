@@ -21,6 +21,8 @@ class TabRewards_gui(QWidget):
         self.setLayout(mainVertical)     
         
         
+        
+        
     def initRewardsForm(self):
         self.collateralHidden = True
         self.rewardsForm = QGroupBox()
@@ -32,8 +34,7 @@ class TabRewards_gui(QWidget):
         ##--- ROW 1
         hBox = QHBoxLayout()
         self.mnSelect = QComboBox()
-        self.mnSelect.setToolTip("Select Masternode")
-        
+        self.mnSelect.setToolTip("Select Masternode") 
         hBox.addWidget(self.mnSelect)
         label = QLabel("Available Rewards")
         label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -48,14 +49,12 @@ class TabRewards_gui(QWidget):
         hBox.setStretch(1,0)
         hBox.setStretch(2,0)
         layout.addRow(QLabel("Masternode"), hBox)             
-        
         ## --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()
         self.rewardsList.statusLabel = QLabel('<b style="color:purple">Checking explorer...</b>')
         self.rewardsList.statusLabel.setVisible(True)
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
-        
         self.rewardsList.box.setMinimumHeight(140)
         self.rewardsList.box.setMaximumHeight(140)
         self.rewardsList.box.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -83,10 +82,8 @@ class TabRewards_gui(QWidget):
         item.setTextAlignment(Qt.AlignCenter)
         self.rewardsList.box.setHorizontalHeaderItem(3, item)
         item = QTableWidgetItem()        
-
         self.rewardsList.addWidget(self.rewardsList.box)
         layout.addRow(self.rewardsList)
-        
         ##--- ROW 3
         hBox2 = QHBoxLayout()
         self.btn_selectAllRewards = QPushButton("Select All Rewards")
@@ -100,7 +97,6 @@ class TabRewards_gui(QWidget):
         hBox2.addWidget(self.selectedRewardsLine)    
         hBox2.addStretch(1)
         layout.addRow(hBox2)
-        
         ##--- ROW 4
         hBox3 = QHBoxLayout()
         self.destinationLine = QLineEdit()
@@ -118,7 +114,7 @@ class TabRewards_gui(QWidget):
         self.btn_sendRewards = QPushButton("Send")
         hBox3.addWidget(self.btn_sendRewards)
         layout.addRow(QLabel("Destination Address"), hBox3)
-              
+        #--- Set Layout    
         self.rewardsForm.setLayout(layout)
         #--- ROW 5
         self.btn_Cancel = QPushButton("Cancel")

@@ -2,21 +2,16 @@
 # -*- coding: utf-8 -*-
 import sys
 import os.path
-from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
-from misc import readMNfile, updateSplash
-from masternode import Masternode
-from hwdevice import HWdevice
-from utils import b64encode
-import bitcoin
-import time
 from PyQt5.QtWidgets import QApplication
-from src.spmtApp import App         
-           
+from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
+
+from spmtApp import App 
+from misc import readMNfile, updateSplash
+import time         
     
 if __name__ == '__main__':
-    
+    # Create App
     app = QApplication(sys.argv)
     ### -- style stuff
     imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
@@ -43,7 +38,6 @@ if __name__ == '__main__':
     splash.show()
 
     for i in range(0, 100):
-        #progressText = ex.progressText
         progressBar.setValue(i)
         updateSplash(label, i)
         progressBar.setFormat(str(i) + "%")
@@ -51,12 +45,15 @@ if __name__ == '__main__':
         while time.time() < t + 0.025:
             app.processEvents()
            
-           
+    ### --------------       
+    
+    # Read Masternode List
     masternode_list = readMNfile()
+    # Create QMainWindow Widget
     ex = App(masternode_list, imgDir)
-    
+    # Close Splashscreen
     splash.close()
-    
+    # Execute App
     sys.exit(app.exec_())
     
     

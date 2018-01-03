@@ -8,8 +8,6 @@ from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout
 from PyQt5.QtWidgets import QLineEdit
 
-
-
 class TabMNConf_gui(QWidget):
     def __init__(self, masternode_alias=None, *args, **kwargs):
         QWidget.__init__(self)
@@ -64,9 +62,7 @@ class TabMNConf_gui(QWidget):
         self.configForm.setTitle("Edit Masternode") 
          
         
-        
-        
-        
+            
         
     def initConfigForm(self, masternode_alias=None):
         self.configForm = QGroupBox()
@@ -131,7 +127,6 @@ class TabMNConf_gui(QWidget):
         hBox2.addWidget(self.btn_genKey)
         #hBox2.setContentsMargins(0, 0, 0, 5)
         layout.addRow(QLabel("MN Priv Key"), hBox2)
-        
         ##--- ROW 4/5
         hBox2 = QHBoxLayout()
         self.edt_hwAccount = QSpinBox()
@@ -157,13 +152,11 @@ class TabMNConf_gui(QWidget):
         hBox3.addWidget(QLabel("spath_id"))
         hBox3.addWidget(self.edt_spath)
         layout.addRow(QLabel("PIVX Address"), hBox3)
-        
         ##--- ROW 6
         self.edt_pubKey = QLineEdit()
         self.edt_pubKey.setToolTip("public key corresponding to address")
         self.edt_pubKey.setEnabled(False)
         layout.addRow(QLabel("Public Key"), self.edt_pubKey)
-        
         ##--- ROW 7
         hBox5 = QHBoxLayout()
         self.btn_findTxid = QPushButton("Lookup")
@@ -185,9 +178,9 @@ class TabMNConf_gui(QWidget):
         self.edt_txidn.setEnabled(False)
         hBox5.addWidget(self.edt_txidn)
         layout.addRow(QLabel("Transaction"), hBox5)
-        
+        ##--- Set Layout
         self.configForm.setLayout(layout)
-        
+        ##--- Footer
         self.footer = QHBoxLayout()
         self.footer.addStretch(1)
         self.btn_cancelMNConf = QPushButton('Cancel')

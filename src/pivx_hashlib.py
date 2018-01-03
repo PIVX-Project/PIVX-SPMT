@@ -3,13 +3,10 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-
 import hashlib
 import bitcoin
 from constants import WIF_PREFIX, MAGIC_BYTE
 from pivx_b58 import b58encode, b58decode
-
-
 
 def double_sha256(data):
     return hashlib.sha256(hashlib.sha256(data).digest()).digest()
@@ -41,7 +38,6 @@ def pubkey_to_address(pubkey):
 
 
 
-
 def num_to_varint(a):
     """
     Based on project: https://github.com/chaeplin/dashmnb
@@ -59,19 +55,15 @@ def num_to_varint(a):
 
 
 def wif_to_privkey(string):
-    
     wif_compressed = 52 == len(string)
     pvkeyencoded = b58decode(string).hex()
     wifversion = pvkeyencoded[:2]
     checksum = pvkeyencoded[-8:]
-
-    
-    #vs = binascii.unhexlify(pvkeyencoded[:-8])
     vs = bytes.fromhex(pvkeyencoded[:-8])
     check = double_sha256(vs)[0:4]
 
     if wifversion == WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex():
-        
+
         if wif_compressed:
             privkey = pvkeyencoded[2:-10]
 
@@ -82,3 +74,4 @@ def wif_to_privkey(string):
 
     else:
         return None
+    

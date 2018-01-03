@@ -6,17 +6,16 @@ from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_t
 from pivx_hashlib import wif_to_privkey
 from pivx_b58 import b58decode
 from bitcoin import bin_dbl_sha256
-
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
 OP_HASH160 = b'\xA9'
 OP_QEUALVERIFY = b'\x88'
 OP_CHECKSIG = b'\xAC'
 OP_EQUAL = b'\x87'
-
-# Check Theese
+# Prefixes - Check P2SH
 P2PKH_PREFIXES = ['D']
 P2SH_PREFIXES = ['7']
+
 
 def b64encode(text):
     return base64.b64encode(bytearray.fromhex(text)).decode('utf-8')
@@ -41,14 +40,12 @@ def checkPivxAddr(address):
 
 
 
-
 def compose_tx_locking_script(dest_address):
     """
     Create a Locking script (ScriptPubKey) that will be assigned to a transaction output.
     :param dest_address: destination address in Base58Check format
     :return: sequence of opcodes and its arguments, defining logic of the locking script
     """
-
     pubkey_hash = bytearray.fromhex(b58check_to_hex(dest_address)) # convert address to a public key hash
     if len(pubkey_hash) != 20:
         raise Exception('Invalid length of the public key hash: ' + str(len(pubkey_hash)))
@@ -72,9 +69,10 @@ def compose_tx_locking_script(dest_address):
     return scr
 
 
+
 def ecdsa_sign(msg, priv):
     """
-    Based on project: https://github.com/chaeplin/dashmnb with some changes related to usage of bitcoin library.
+    Based on project: https://github.com/chaeplin/dashmnb.
     """
     v, r, s = ecdsa_raw_sign(electrum_sig_hash(msg), priv)
     sig = encode_sig(v, r, s)
@@ -83,8 +81,9 @@ def ecdsa_sign(msg, priv):
     ok = ecdsa_raw_verify(electrum_sig_hash(msg), decode_sig(sig), pubkey)
     if not ok:
         raise Exception('Bad signature!')
-    return sig
-    
+    return sig    
+
+
 
 def electrum_sig_hash(message):
     """
@@ -106,9 +105,9 @@ def extract_pkh_from_locking_script(script):
     
 
 
-
 def from_string_to_bytes(a):
     return a if isinstance(a, bytes) else bytes(a, 'utf-8')
+
 
 
 def ipmap(ip, port):
@@ -142,8 +141,7 @@ def num_to_varint(a):
         return int(255).to_bytes(1, byteorder='big') + x.to_bytes(8, byteorder='little')
     
     
-    
-    
+       
 def read_varint(buffer, offset):
     if (buffer[offset] < 0xfd):
         value_size = 1
@@ -162,7 +160,6 @@ def read_varint(buffer, offset):
     return value, value_size
             
             
-
 
 def serialize_input_str(tx, prevout_n, sequence, script_sig):
     """

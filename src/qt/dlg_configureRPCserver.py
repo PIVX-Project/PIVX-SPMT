@@ -35,13 +35,13 @@ class ConfigureRPCserver_dlg(QDialog):
 class Ui_ConfigureRPCserverDlg(object):
     def setupUi(self, ConfigureRPCserverDlg):
         ConfigureRPCserverDlg.setModal(True)
-        
+        ## -- Layout
         self.layout = QGroupBox(ConfigureRPCserverDlg)
         self.layout.setTitle("Local Pivx-Cli wallet Configuration")
         self.layout.setContentsMargins(80, 30, 10, 10)
         form = QFormLayout(ConfigureRPCserverDlg)
         form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        ##-- ROW 1
+        ## -- ROW 1
         line1 = QHBoxLayout()
         self.edt_rpcIp_byte1 = QSpinBox()
         self.edt_rpcIp_byte1.setRange(0, 255)
@@ -72,19 +72,16 @@ class Ui_ConfigureRPCserverDlg(object):
         self.edt_rpcPort.setValue(ConfigureRPCserverDlg.rpc_port)
         self.edt_rpcPort.setFixedWidth(180)
         line1.addWidget(self.edt_rpcPort)
-        form.addRow(QLabel("IP Address"), line1)
-        
-        ##-- ROW 2
+        form.addRow(QLabel("IP Address"), line1)   
+        ## -- ROW 2
         self.edt_rpcUser = QLineEdit()
         self.edt_rpcUser.setText(ConfigureRPCserverDlg.rpc_user)
-        form.addRow(QLabel("RPC Username"), self.edt_rpcUser)
-        
-        ##-- ROW 3
+        form.addRow(QLabel("RPC Username"), self.edt_rpcUser)        
+        ## -- ROW 3
         self.edt_rpcPassword = QLineEdit()
         self.edt_rpcPassword.setText(ConfigureRPCserverDlg.rpc_password)
-        form.addRow(QLabel("RPC Password"), self.edt_rpcPassword)
-        
-        ##-- ROW 4
+        form.addRow(QLabel("RPC Password"), self.edt_rpcPassword)        
+        ## -- ROW 4
         hBox = QHBoxLayout()
         self.buttonCancel = QPushButton("Cancel")
         self.buttonCancel.clicked.connect(lambda: self.onButtonCancel(ConfigureRPCserverDlg))
@@ -93,7 +90,7 @@ class Ui_ConfigureRPCserverDlg(object):
         self.buttonSave.clicked.connect(lambda: self.onButtonSave(ConfigureRPCserverDlg))
         hBox.addWidget(self.buttonSave)
         form.addRow(hBox)
-
+        ## Set Layout
         self.layout.setLayout(form)
         ConfigureRPCserverDlg.setFixedSize(self.layout.sizeHint())
         

@@ -11,9 +11,7 @@ from PyQt5.QtGui import QPixmap, QFont
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        
         myFont = QFont("Times", italic=True)
-        
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         # --- 1) Check Box

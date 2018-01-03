@@ -30,13 +30,13 @@ class TestHwDeviceMethods(unittest.TestCase):
     
 
     
-    
     def test_transaction(self):
         # Read input data from file
         import simplejson as json
         with open('test_transaction.data.json') as data_file:
             input_data = json.load(data_file)
         data_file.close()
+        
         # Rename input data
         path = input_data['path']
         pivx_address_to = input_data['address_from']
@@ -46,12 +46,12 @@ class TestHwDeviceMethods(unittest.TestCase):
         print("=================================")
         print("   Press 'OK' on Ledger device   ")
         print("---------------------------------")
-        txraw, amount = self.signTx(self.device, path, utxos, pivx_address_to, fee, rawtransactions)
+        txraw, amount = self.signTx(self.device, path, utxos, pivx_address_to, fee, rawtransactions)      
         
         # Check total amount
         total = sum([int(utxo['value']) for utxo in utxos], 0)
         amount = round(float(amount)*1e8)
-        self.assertEqual(total-fee, amount)
+        self.assertEqual(total-fee, amount)     
         
         # Decode Raw Tx to inspect and check inputs
         inputs = [utxo["tx_hash"] for utxo in utxos]
@@ -64,7 +64,6 @@ class TestHwDeviceMethods(unittest.TestCase):
 
         
         
-    
     def test_scanForBip32(self):
         # Get accounts obtained from seed outside ledger 
         # (5 accounts. 5 addresses per account)
@@ -78,8 +77,7 @@ class TestHwDeviceMethods(unittest.TestCase):
                     
                     result, _ = self.device.scanForBip32(account_n, address, starting_spath=address_n, spath_count=1)
                     # Address found in account_n  with index.
-                    self.assertTrue(result)
-            
+                    self.assertTrue(result)       
             
             
             
@@ -99,9 +97,7 @@ class TestHwDeviceMethods(unittest.TestCase):
                     self.assertEqual(result, pubkey)
                 
                 
-          
-                
-                
+                      
     def test_signature(self):
         # Get message and path from datafile
         import simplejson as json
@@ -124,10 +120,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         print("sig = %s\naddress=%s" % (signature, pivx_address))
         self.assertTrue(result)
         
-   
-   
-   
-        
+## -----------------------------------------------------------------------------------        
     # from:
     # -- hwdevice.signMess
     # -- hwdevice.signMessSign

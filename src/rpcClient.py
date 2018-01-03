@@ -7,39 +7,34 @@ from constants import DEFAULT_PROTOCOL_VERSION
 class RpcClient:
         
     def __init__(self):
-
         self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_passwd = readRPCfile()
-
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
-        
         try:    
             self.conn = AuthServiceProxy(rpc_url, timeout=8)
             eprintDbg("Contacting PIVX-cli server at %s:%d" % (self.rpc_ip, self.rpc_port))     
-            
-        
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
-        
         except Exception as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
             
     
     
+    
     def decodeRawTx(self, rawTx):
         try:
-            return self.conn.decoderawtransaction(rawTx)
-        
+            return self.conn.decoderawtransaction(rawTx)    
         except Exception as e:
             err_msg = 'error in decodeRawTx'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             
     
+    
+    
     def getAddressUtxos(self, addresses):
         try:
-            return self.conn.getaddressutxos({'addresses': addresses})
-        
+            return self.conn.getaddressutxos({'addresses': addresses})    
         except Exception as e:
             err_msg = "error in getAddressUtxos"
             if str(e.args[0]) != "Request-sent":
@@ -50,11 +45,11 @@ class RpcClient:
     
     
     
+    
     def getBlockCount(self):
         try:
             n = self.conn.getblockcount()
             return n
-        
         except Exception as e:
             err_msg = 'remote or local PIVX-cli running?'
             if str(e.args[0]) != "Request-sent":
@@ -64,11 +59,11 @@ class RpcClient:
     
     
     
+    
     def getBlockHash(self, blockNum):
         try:
             h = self.conn.getblockhash(blockNum)
             return h
-        
         except Exception as e:
             err_msg = 'remote or local PIVX-cli running?'
             if str(e.args[0]) != "Request-sent":
@@ -96,6 +91,8 @@ class RpcClient:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
+    
+    
     def getProtocolVersion(self):
         try:
             prot_version = self.conn.getinfo().get('protocolversion')
@@ -105,6 +102,7 @@ class RpcClient:
             err_msg = 'error in getProtocolVersion'
             eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
             return DEFAULT_PROTOCOL_VERSION    
+     
             
     
     
@@ -118,6 +116,7 @@ class RpcClient:
             else:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
+    
     
     
     
@@ -136,16 +135,15 @@ class RpcClient:
                 n = 1
             else:
                 err_msg = "Error while contacting RPC server"
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
-            
+                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
         return status, n
+    
     
     
     
     def getStatusMess(self, status=None):
         if status == None:
-            status = self.getStatus()
-            
+            status = self.getStatus()    
         if status: 
             return "RPC status: CONNECTED!!!"
         else:
@@ -163,6 +161,7 @@ class RpcClient:
     
     
 
+
     def sendRawTransaction(self, tx_hex):
         try:
             tx_id = self.conn.sendrawtransaction(tx_hex)
@@ -175,6 +174,8 @@ class RpcClient:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
+    
+    
     def verifyMessage(self, pivxaddress, signature, message):
         try:
             return self.conn.verifymessage(pivxaddress, signature, message)
@@ -182,3 +183,4 @@ class RpcClient:
         except Exception as e:
             err_msg = "error in verifyMessage"
             eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            

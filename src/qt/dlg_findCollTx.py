@@ -22,19 +22,23 @@ class FindCollTx_dlg(QDialog):
         self.blockCount = 0
         self.setupUI()
         
+       
+       
         
     def setupUI(self):
         Ui_FindCollateralTxDlg.setupUi(self, self)
         self.setWindowTitle('Find Collateral Tx')
-        
+        ##--- PIVX Address
         self.edtAddress.setText(self.pivx_addr)
-        
+        ##--- feedback
         self.lblMessage.setVisible(False)
         self.lblMessage.setVisible(True)
         self.lblMessage.setText('Checking explorer...')
-        
+        ##--- Load UTXOs
         self.runInThread = ThreadFuns.runInThread
         self.runInThread(self.load_utxos_thread, (), self.display_utxos)
+
+
 
     
     def display_utxos(self):
@@ -68,6 +72,7 @@ class FindCollTx_dlg(QDialog):
         
         
     
+    
     def load_utxos_thread(self, ctrl):
         self.apiConnected = False
         try:
@@ -83,13 +88,16 @@ class FindCollTx_dlg(QDialog):
                     eprintDbg("loading utxos\nblockCount=%s\n%s" % (str(self.blockCount), str(self.utxos)))
                     self.utxos = [utxo for utxo in utxos if round(int(utxo.get('value', 0))/1e8, 8) == 10000.00000000 ]
 
-
                 except Exception as e:
                     self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
                     print(self.errorMsg)
+                    
         except Exception as e:
             print(e)
             pass
+        
+        
+        
 
     def getSelection(self):
         items = self.tableW.selectedItems()
@@ -98,6 +106,8 @@ class FindCollTx_dlg(QDialog):
             return self.utxos[row]['tx_hash'], self.utxos[row]['tx_ouput_n']
         else:
             return None, 0
+
+
 
 
 
@@ -149,15 +159,10 @@ class Ui_FindCollateralTxDlg(object):
         item.setText("TX Output N")
         item.setTextAlignment(Qt.AlignCenter)
         self.tableW.setHorizontalHeaderItem(3, item)
-        #self.tableW.horizontalHeader().setSortIndicatorShown(False)
-        #self.tableW.horizontalHeader().setStretchLastSection(True)
-        #self.tableW.verticalHeader().setCascadingSectionResizes(False)
         self.vBox.addWidget(self.tableW)
         self.buttonBox = QDialogButtonBox(FindCollateralTxDlg)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.vBox.addWidget(self.buttonBox)
-        
-        #QMetaObject.connectSlotsByName(FindCollateralTxDlg)
         btnCancel = self.buttonBox.button(QDialogButtonBox.Cancel)
         btnCancel.clicked.connect(self.reject)
         btnOk = self.buttonBox.button(QDialogButtonBox.Ok)

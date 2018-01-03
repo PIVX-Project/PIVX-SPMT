@@ -6,11 +6,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
 
-
 def clean_for_html(text):
     if text is None:
         return ""
     return text.replace("<", "{").replace(">","}")
+
 
 
 def clear_screen():
@@ -27,6 +27,7 @@ def eprintDbg(what):
     log_line = printDbg_msg(what)
     eprint(log_line)
     
+
     
 def eprintException(caller_name,
         function_name,
@@ -52,15 +53,13 @@ def getFunctionName():
         return None
 
 
+
 def getSPMTVersion():
     import simplejson as json
     version_file = os.path.join(
-        os.path.dirname(
-            os.path.abspath(__file__)),
-        'version.txt')
+        os.path.dirname(os.path.abspath(__file__)), 'version.txt')
     with open(version_file) as data_file:
-        data = json.load(data_file)
-        
+        data = json.load(data_file)       
     data_file.close()
     return data
 
@@ -87,13 +86,12 @@ def now():
 
 
 
-
-
 def printDbg_msg(what):
     what = clean_for_html(what)
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
     log_line = '<b style="color: yellow">{}</b> : {}<br>'.format(timestamp, what)
     return log_line
+
 
 
 def printDbg(what):
@@ -116,9 +114,10 @@ def printException_msg(
     if errargs:
         msg += 'err: %s<br>' % str(errargs)
         
-    msg += '===> %s</span><br>' % err_msg
-    
+    msg += '===> %s</span><br>' % err_msg 
     return msg
+
+
 
 def printException(caller_name,
         function_name,
@@ -133,23 +132,23 @@ def printOK(what):
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
     print(msg)
     
+  
     
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
     
  
+ 
 def readMNfile():
     import simplejson as json
     mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..',
-        'masternodes.json')
+        os.path.dirname(os.path.abspath(__file__)), '..', 'masternodes.json')
     with open(mn_file) as data_file:
-        mnList = json.load(data_file)
-        
+        mnList = json.load(data_file)    
     data_file.close()
     return mnList
+
 
 
 def readRPCfile():
@@ -170,14 +169,14 @@ def readRPCfile():
     return rpc_ip, rpc_port, rpc_user, rpc_password
 
 
+
 def sec_to_time(seconds):
     days = seconds//86400
     seconds -= days*86400
     hrs = seconds//3600
     seconds -= hrs*3600
     mins = seconds//60
-    seconds -= mins*60
-    
+    seconds -= mins*60   
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
 
 
@@ -194,8 +193,7 @@ def updateSplash(label, i):
         label.setText(progressText)
     elif i==89:
         progressText = "Enjoy the Purple Power!"
-        label.setText(progressText)
-    
+        label.setText(progressText)   
     elif i==99:
         time.sleep(0.4)
 
@@ -204,12 +202,9 @@ def updateSplash(label, i):
 def writeMNfile(mnList):
     import simplejson as json
     mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..',
-        'masternodes.json')
+        os.path.dirname(os.path.abspath(__file__)), '..', 'masternodes.json')
     with open(mn_file, 'w+') as data_file:
-        json.dump(mnList, data_file)
-            
+        json.dump(mnList, data_file)        
     data_file.close()
     
 
@@ -239,6 +234,7 @@ class WriteStream(object):
         pass
         
 
+
 # QObject (to be run in QThread) that blocks until data is available
 # and then emits a QtSignal to the main thread.
 class WriteStreamReceiver(QObject):
@@ -247,8 +243,7 @@ class WriteStreamReceiver(QObject):
     def __init__(self, queue, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.queue = queue
-        
-    #pyqtSlot()
+          
     def run(self):
         while True:
             text = self.queue.get()

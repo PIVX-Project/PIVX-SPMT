@@ -8,6 +8,8 @@ class ApiClient:
     def __init__(self):
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {"key": "b62b40b5091e"}
+      
+      
         
    
     def checkResponse(self, parameters):
@@ -22,6 +24,7 @@ class ApiClient:
     
     
     
+    
     def getAddressUtxos(self, address):
         try:
             self.parameters['q'] = 'unspent'
@@ -32,6 +35,7 @@ class ApiClient:
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             
             
+        
             
     def getBalance(self, address):
         try:
@@ -58,6 +62,7 @@ class ApiClient:
         
     
         
+        
     def getStatusMess(self, statusCode):
         message = {
             0: "No response from server",
@@ -81,6 +86,7 @@ class ApiClient:
             
     
     
+    
     def getBlockHash(self, blockNum):
         try:
             self.parameters['q'] = 'getblockhash'
@@ -89,3 +95,4 @@ class ApiClient:
         except Exception as e:
             err_msg = "error in getBlockHash"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            

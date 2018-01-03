@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+            Based on project:
+            https://github.com/Bertrand256/dash-masternode-tool
+"""
 from PyQt5.QtCore import QThread
 from misc import eprintDbg
 
@@ -15,7 +19,6 @@ class WorkerThread(QThread):
         QThread.__init__(self)
         self.worker_fun = worker_fun
         self.worker_fun_args = worker_fun_args
-
         # prepare control object passed to external thread function
         self.ctrl_obj = CtrlObject()
         self.ctrl_obj.finish = False

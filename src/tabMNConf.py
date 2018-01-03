@@ -13,7 +13,6 @@ from PyQt5.QtWidgets import QMessageBox
 from qt.gui_tabMNConf import TabMNConf_gui
 from qt.dlg_findCollTx import FindCollTx_dlg
 
-
 class TabMNConf():
     def __init__(self, caller, masternode_alias=None):
         self.caller = caller
@@ -30,6 +29,8 @@ class TabMNConf():
         self.ui.btn_cancelMNConf.clicked.connect(lambda: self.onCancelMNConfig())
         self.ui.btn_saveMNConf.clicked.connect(lambda: self.onSaveMNConf())
         
+     
+     
         
     def addressToSpath(self):
         printOK("addressToSpath pressed")
@@ -42,6 +43,7 @@ class TabMNConf():
             return None
     
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)     
+    
           
                 
                 
@@ -88,8 +90,7 @@ class TabMNConf():
     def findPubKey(self):
         printDbg("Computing public key...")
         currSpath = self.ui.edt_spath.value()
-        currHwAcc = self.ui.edt_hwAccount.value()
-        
+        currHwAcc = self.ui.edt_hwAccount.value()      
         # Check dongle
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
@@ -104,6 +105,7 @@ class TabMNConf():
         self.ui.edt_pubKey.setText(result)
         
         
+   
         
     def findRow_mn_list(self, name):
         row = 0
@@ -122,8 +124,7 @@ class TabMNConf():
         
      
      
-        
-        
+            
     #pyqtSlot()
     def onEditTx(self):
         if not self.ui.edt_txid.isEnabled():
@@ -230,14 +231,10 @@ class TabMNConf():
 
             # add new item
             self.caller.masternode_list.append(new_masternode)
-            
             # re-sort the list
             self.caller.masternode_list.sort(key=self.caller.parent.extract_name)
-
-
             # Write to file
             writeMNfile(self.caller.masternode_list)
- 
             # Insert item in list of Main tab and connect buttons
             name = new_masternode['name']
             namelist = [x['name'] for x in self.caller.masternode_list]
@@ -249,10 +246,10 @@ class TabMNConf():
             self.caller.tabMain.btn_edit[name].clicked.connect(lambda: self.caller.t_main.onEditMN())
             self.caller.tabMain.btn_start[name].clicked.connect(lambda: self.caller.t_main.onStartMN())
             self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())
-            self.caller.tabMain.btn_status[name].clicked.connect(lambda: self.caller.t_main.onCheckMN()) 
-            
+            self.caller.tabMain.btn_status[name].clicked.connect(lambda: self.caller.t_main.onCheckMN())   
             # go back
             self.onCancelMNConfig()
             
         except Exception as e:
             printDbg("Exception %s" % e)
+            

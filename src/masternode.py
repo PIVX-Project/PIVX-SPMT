@@ -17,7 +17,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal
 class Masternode(QObject):
     # Base class for all masternodes
     mnCount = 0
-    # signal: sig (thread) is done
+    # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
     
     def __init__(self, caller, name, ip, port, mnPrivKey, hwAcc, collateral = {}, *args, **kwargs):
@@ -31,7 +31,6 @@ class Masternode(QObject):
         self.mnPubKey = bitcoin.privkey_to_pubkey(self.mnPrivKey)
         self.hwAcc = hwAcc
         self.spath = collateral['spath']
-
         self.nodePath = MPATH + "%d'/0/%d" % (self.hwAcc, self.spath)
         self.collateral = collateral
         Masternode.mnCount += 1
@@ -41,29 +40,23 @@ class Masternode(QObject):
     
     
     def signature1(self, device):
-        self.sig_time = int(time.time())
-              
+        self.sig_time = int(time.time())            
         serializedData = ipport(self.ip, self.port)
         serializedData += str(self.sig_time)
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.collateral['pubKey'])))[::-1].hex()
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
-        serializedData += str(self.protocol_version)
-        
+        serializedData += str(self.protocol_version)    
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
-        printDbg("SerializedData: %s" % serializedData)
-        
+        printDbg("SerializedData: %s" % serializedData) 
         try:
             device.signMess(self.caller, self.nodePath, serializedData)
-            #wait for signal when device.sig1 is ready then --> finalizeStartMessage
-        
+            #wait for signal when device.sig1 is ready then --> finalizeStartMessage       
         except Exception as e:
             err_msg = "error in signature1"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
         except KeyboardInterrupt:
             err_msg = "Keyboard Interrupt"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-    
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)   
         return None
     
     
@@ -71,12 +64,12 @@ class Masternode(QObject):
         try:
             # local
             sig2 = ecdsa_sign(serializedData, self.mnWIF)
-
             return (b64decode(sig2).hex())
-    
         except Exception as e:
             err_msg = "error in signature2"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
     
     
     @pyqtSlot(str)        
@@ -114,16 +107,12 @@ class Masternode(QObject):
         except Exception as e:
             err_msg = "error in startMessage"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-        
-        
+            return
                 
         work_sig_time = self.sig_time.to_bytes(8, byteorder='big')[::-1].hex()
         work_protoversion = self.protocol_version.to_bytes(4, byteorder='big')[::-1].hex()
-        
         last_ping_block_hash = bytes.fromhex(block_hash)[::-1].hex()
-        
         serializedData = serialize_input_str(self.collateral['txid'], self.collateral['txidn'], sequence, scriptSig) + block_hash + str(self.sig_time)
-        
         
         printDbg("serializedData: %s" % serializedData)
         sig2 = self.signature2(serializedData)
@@ -136,11 +125,12 @@ class Masternode(QObject):
         work += vintx + vinno + vinsig + vinseq
         work += last_ping_block_hash + work_sig_time
         work += num_to_varint(len(sig2) / 2).hex() + sig2
-        
         # nnLastDsq to zero
         work += "0"*16
-        
+        # Emit signal
         self.sigdone.emit(work)  
+    
+    
     
     
     def startMessage(self, device, rpcClient):
@@ -153,6 +143,3 @@ class Masternode(QObject):
         # prepare sig1 (the one done on the hw device)
         self.signature1(device)
         
-        
-        
-                

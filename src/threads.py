@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+            Based on project:
+            https://github.com/Bertrand256/dash-masternode-tool
+"""
 from misc import eprintDbg
 import threading
 import traceback

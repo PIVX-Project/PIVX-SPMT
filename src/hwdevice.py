@@ -30,8 +30,9 @@ def process_ledger_exceptions(func):
 
 
 class HWdevice(QObject):
-    # signal: sig1 (thread) is done
+    # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
+    # signal: sigtx (thread) is done - emitted by signTxFinish
     sigTxdone = pyqtSignal(bytearray, str)
     
     def __init__(self, *args, **kwargs):
@@ -70,13 +71,11 @@ class HWdevice(QObject):
                 else:
                     statusCode = 2
             else:
-                statusCode = 0
-                
+                statusCode = 0          
         except Exception as e:
             err_msg = 'error in getStatusCode'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             statusCode = 0
-            
         return statusCode
     
     
@@ -91,6 +90,8 @@ class HWdevice(QObject):
             1: 'Open PIVX app on Ledger device',
             2: 'HW DEVICE CONNECTED!'}
         return messages[statusCode]
+    
+    
         
     
     @process_ledger_exceptions
@@ -100,13 +101,13 @@ class HWdevice(QObject):
             firstAddress = self.chip.getWalletPublicKey(MPATH + "0'/0/0").get('address')[12:-2]
             if firstAddress[0] == 'D':
                 printOK("found PIVX app on ledger device")
-                return True
-        
+                return True       
         except Exception as e:
             err_msg = 'error in checkApp'
             eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
-            
         return False 
+    
+    
     
     
     @process_ledger_exceptions
@@ -115,12 +116,10 @@ class HWdevice(QObject):
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
         self.arg_inputs = []
-        
         self.amount = 0
         for idx, utxo in enumerate(utxos_to_spend):
             
             self.amount += int(utxo['value'])
-
             raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
 
             if not raw_tx:
@@ -160,6 +159,7 @@ class HWdevice(QObject):
         arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
         self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
         self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+        
         try:
             for o in arg_outputs:
                 output = bitcoinOutput()
@@ -168,6 +168,7 @@ class HWdevice(QObject):
                 self.new_transaction.outputs.append(output)
         except Exception:
             raise
+        
         # join all outputs - will be used by Ledger for signing transaction
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
 
@@ -194,19 +195,18 @@ class HWdevice(QObject):
         printOK("Scanning for Address of path_id %s on account n° %s" % (str(spath), str(account)))
         curr_path = MPATH + "%d'/0/%d" % (account, spath) 
         try:
-            curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]              
-                
+            curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]                             
         except Exception as e:
             err_msg = 'error in scanForAddress'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
-        
         return curr_addr
     
     
+    
+    
     @process_ledger_exceptions
-    def scanForBip32(self, account, address, starting_spath=0, spath_count=10):
-        
+    def scanForBip32(self, account, address, starting_spath=0, spath_count=10):   
         printOK("Scanning for Bip32 path of address: %s" % address)
         for index in range(starting_spath, starting_spath+spath_count):
             curr_path = MPATH + "%d'/0/%d" % (account, index)
@@ -221,9 +221,10 @@ class HWdevice(QObject):
             except Exception as e:
                 err_msg = 'error in scanForBip32'
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
-   
                 
         return (False, -1)
+            
+            
             
     
     @process_ledger_exceptions
@@ -241,17 +242,17 @@ class HWdevice(QObject):
         return compress_public_key(nodeData.get('publicKey')).hex()
     
     
+    
+    
     @process_ledger_exceptions        
     def signMess(self, caller, path, message):
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
-
+        # Ask confirmation
         info = self.chip.signMessagePrepare(path, message)
         printDbg("info = %s" % str(info))
-        
         printOK('Signing Message')
-
         self.mBox = QMessageBox(caller.ui)
         messageText = splitString("Check display of your hardware device\n\n\n" + "masternode message:\n%s\n\npath:\t%s" % (message, path), 50)
         self.mBox.setText(messageText)
@@ -260,8 +261,10 @@ class HWdevice(QObject):
         self.mBox.setStandardButtons(QMessageBox.NoButton)
         self.mBox.setMaximumWidth(500)
         self.mBox.show()
-
+        # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
+
+
 
     
     @process_ledger_exceptions
@@ -271,6 +274,9 @@ class HWdevice(QObject):
             
         except:
             self.signature = None
+    
+    
+    
     
     @process_ledger_exceptions        
     def signMessageFinish(self):
@@ -308,6 +314,7 @@ class HWdevice(QObject):
         
         
         
+        
     @process_ledger_exceptions
     def signTxSign(self, ctrl):
         try:
@@ -340,6 +347,8 @@ class HWdevice(QObject):
             self.tx_raw = None
     
     
+    
+    
     @process_ledger_exceptions        
     def signTxFinish(self):
         self.mBox2.accept()
@@ -350,4 +359,5 @@ class HWdevice(QObject):
                 printOK("Transaction refused by the user")
                 
         except Exception as e:    
-            printDbg(e)         
+            printDbg(e) 
+                    

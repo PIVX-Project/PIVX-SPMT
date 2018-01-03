@@ -15,18 +15,18 @@ class TabMain_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
         self.caller = caller
-        
+        ###-- Initialize
         self.loadIcons()
         self.initGlobalButtons()
         self.initMNList()        
-        
         ###-- Compose layout
         mainVertical = QVBoxLayout()
         mainVertical.setSpacing(10)
         mainVertical.addLayout(self.globalButtons)
         mainVertical.addWidget(self.body)
-    
+        ###-- Set Layout
         self.setLayout(mainVertical)
+        
         
         
         
@@ -43,12 +43,11 @@ class TabMain_gui(QWidget):
         
         
         
+        
     def initMNList(self):
         ###-- CENTRAL PART
         self.body = QGroupBox()
         self.body.setTitle("My Masternodes")
-
-        
         # masternode list
         self.myList = QListWidget()
         self.myList.setUpdatesEnabled(True)
@@ -68,13 +67,11 @@ class TabMain_gui(QWidget):
         
         for masternode in self.caller.masternode_list:
             name = masternode['name']
-            self.insert_mn_list(name, masternode['ip'], masternode['port'])
-            
+            self.insert_mn_list(name, masternode['ip'], masternode['port'])  
         
         vBox = QVBoxLayout()
         vBox.addWidget(self.myList)
         vBox.stretch(1)
-        
         self.body.setLayout(vBox)  
         
     
@@ -84,80 +81,77 @@ class TabMain_gui(QWidget):
         mnRow = QWidget()
         mnRow.setToolTip("Drag & Drop rows to reorder")
         mnRowLayout = QHBoxLayout()
-        
+        ##--- Led
         self.mnLed[name] = QLabel()
         self.mnLed[name].setPixmap(self.caller.ledGrayV_icon)
         mnRowLayout.addWidget(self.mnLed[name])
-
-        
+        ##--- Label        
         self.mnLabel[name] = QLabel()
         self.mnLabel[name].setText("%s &nbsp; [<i style='color: #2f005f'>%s:%s</i>]" % (name, ip, port))
         mnRowLayout.addWidget(self.mnLabel[name])
         mnRowLayout.addStretch(1)
-        
+        ##--- Status Label
         self.mnStatusLabel[name] = QLabel()
         mnRowLayout.addWidget(self.mnStatusLabel[name])
         self.mnStatusLabel[name].hide()
-        
+        ##--- Rank bar
         self.mnStatusProgress[name] = QProgressBar()
         self.mnStatusProgress[name].setTextVisible(False)
         self.mnStatusProgress[name].setMaximumHeight(15)
         self.mnStatusProgress[name].setMaximumWidth(40)
         mnRowLayout.addWidget(self.mnStatusProgress[name])
         self.mnStatusProgress[name].hide()
-        
+        ##--- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
         self.btn_details[name].setToolTip('Check STATUS details of masternode "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()         
-        
+        ##--- Remove button
         self.btn_remove[name] = QPushButton()
         self.btn_remove[name].setToolTip('remove masternode "%s"' % name)        
         self.btn_remove[name].setIcon(self.removeMN_icon)
         self.btn_remove[name].alias = name
         mnRowLayout.addWidget(self.btn_remove[name])
-        
+        ##--- Edit button
         self.btn_edit[name] = QPushButton()
         self.btn_edit[name].setToolTip('edit masternode "%s"' % name)   
         self.btn_edit[name].setIcon(self.editMN_icon)
         self.btn_edit[name].alias = name
         mnRowLayout.addWidget(self.btn_edit[name])
-        
+        ##--- Start button
         self.btn_start[name] = QPushButton()
         self.btn_start[name].setToolTip('start masternode "%s"' % name)          
         self.btn_start[name].setIcon(self.startMN_icon)
         self.btn_start[name].alias = name
         mnRowLayout.addWidget(self.btn_start[name])
-        
+        ##--- Rewards button
         self.btn_rewards[name] = QPushButton()
         self.btn_rewards[name].setToolTip('tranfer rewards from masternode "%s"' % name)           
         self.btn_rewards[name].setIcon(self.rewards_icon)
         self.btn_rewards[name].alias = name
         mnRowLayout.addWidget(self.btn_rewards[name])
-        
+        ##--- Status button
         self.btn_status[name] = QPushButton()
         self.btn_status[name].setToolTip('get status of masternode "%s"' % name)      
         self.btn_status[name].setIcon(self.getMNstatus_icon)
         self.btn_status[name].alias = name
         mnRowLayout.addWidget(self.btn_status[name])
-        
+        ##--- Three Dots
         threeDots = QLabel()
         threeDots.setPixmap(self.threeDots_icon.scaledToHeight(20, Qt.SmoothTransformation))
         mnRowLayout.addWidget(threeDots)
-        
+        ##--- Set Row Layout
         mnRow.setLayout(mnRowLayout)
-        
+        ##--- Append Row
         self.current_mn[name] = QListWidgetItem()
         #self.current_mn[name].setFlags(Qt.ItemIsSelectable)
         self.current_mn[name].setSizeHint(mnRow.sizeHint())
-
         if row is not None:
             self.myList.insertItem(row, self.current_mn[name])
         else:
             self.myList.addItem(self.current_mn[name])
         self.myList.setItemWidget(self.current_mn[name], mnRow)
-        
         
         
         
@@ -171,7 +165,4 @@ class TabMain_gui(QWidget):
         self.details_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_search.png'))
         self.ledgerImg = QPixmap(os.path.join(self.caller.imgDir, 'ledger.png'))
         self.threeDots_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_3dots.png'))
-    
-    
-        
     

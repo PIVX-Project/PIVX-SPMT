@@ -23,8 +23,7 @@ class TabMain():
         self.curr_masternode_address = None
         self.curr_statusData = None
         self.ui = TabMain_gui(caller)
-        self.caller.tabMain = self.ui
-        
+        self.caller.tabMain = self.ui       
         # Connect GUI buttons
         self.ui.button_addMasternode.clicked.connect(lambda: self.onNewMasternode())
         self.ui.button_startAll.clicked.connect(lambda: self.onStartAllMN())
@@ -54,13 +53,11 @@ class TabMain():
     
     
     
-    
     def displayMNStatus(self):
         statusData = self.curr_statusData
         masternode_alias = self.curr_masternode_alias
         self.ui.btn_details[masternode_alias].clicked.connect(lambda: self.onDisplayStatusDetails(masternode_alias, statusData))
         self.ui.btn_details[masternode_alias].show()
-
         
         if statusData is None:
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
@@ -102,13 +99,11 @@ class TabMain():
                 printOK("Checking %s (%s)..." % (self.curr_masternode_alias, self.curr_masternode_address))
                 self.checkMN(None)
                 self.displayMNStatus()
-                QApplication.processEvents()
-                
+                QApplication.processEvents()        
         
         except Exception as e:
             err_msg = "error in checkAllMN"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
-            
+            printException(getCallerName(), getFunctionName(), err_msg, e)        
             
             
             
@@ -129,9 +124,7 @@ class TabMain():
                     
             except Exception as e:
                 err_msg = "error in onCheckMN"
-                printException(getCallerName(), getFunctionName(), err_msg, e)       
-        
-        
+                printException(getCallerName(), getFunctionName(), err_msg, e)           
         
         
         
@@ -186,11 +179,9 @@ class TabMain():
 
             reply = self.caller.myPopUp(QMessageBox.Warning, 'Confirm REMOVE', 
                                  "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
-            
 
             if reply == QMessageBox.No:
                 return
-        
         
             for masternode in self.caller.masternode_list:
                 if masternode['name'] == masternode_alias:
@@ -215,12 +206,14 @@ class TabMain():
             self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)
     
     
+    
            
     @pyqtSlot()
     def onStartAllMN(self):
         printOK("Start-All pressed")
         
         
+    
         
     @pyqtSlot()
     def onStartMN(self, data=None):
@@ -248,10 +241,11 @@ class TabMain():
                         break
         except Exception as e:
             print(e)   
-
             
             
-    # Activated by signal from masternode       
+            
+            
+    # Activated by signal 'sigdone' from masternode       
     @pyqtSlot(str)     
     def sendBroadcast(self, text):
         if text == "None":
@@ -266,6 +260,7 @@ class TabMain():
         self.caller.myPopUp2(QMessageBox.Information, 'message relayed', json.dumps(ret2, indent=4, sort_keys=True), QMessageBox.Ok)
         
         
+    
         
     def startMN(self):       
         if self.caller.hwStatus != 2:
@@ -279,5 +274,3 @@ class TabMain():
             except Exception as e:
                 err_msg = "error in startMN"
                 printException(getCallerName(), getFunctionName(), err_msg, e)
-        
-        

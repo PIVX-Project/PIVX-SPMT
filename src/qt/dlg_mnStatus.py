@@ -17,11 +17,10 @@ class MnStatus_dlg(QDialog):
         self.statusData = statusData
         self.setWindowTitle('Masternode STATUS Details')
         self.setupUI()
-        
+    
         
     def setupUI(self):
         Ui_MnStatusDlg.setupUi(self, self)
-        
         
    
 
@@ -33,7 +32,6 @@ class Ui_MnStatusDlg(object):
         name = QLabel("<b><i>%s</i></b>" % self.mnAlias)
         name.setAlignment(Qt.AlignCenter)
         layout.addWidget(name)
-        
         body = QFormLayout(MnStatusDlg)
         body.setLabelAlignment(Qt.AlignRight)
         body.setVerticalSpacing(20)
@@ -47,11 +45,8 @@ class Ui_MnStatusDlg(object):
         body.addRow(QLabel("<b>Last Seen</b>"), QLabel(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(self.statusData['lastseen']))))
         body.addRow(QLabel("<b>Last Paid</b>"), QLabel(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(self.statusData['lastpaid']))))
         layout.addLayout(body)
-        
         self.okButton = QPushButton('OK')
         self.okButton.clicked.connect(self.accept)
         layout.addWidget(self.okButton)
         sh = layout.sizeHint()
-        #sh.setHeight(sh.height()+10)
-        #sh.setWidth(sh.width()+10)
         self.setFixedSize(sh)

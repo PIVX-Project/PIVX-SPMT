@@ -33,51 +33,42 @@ class MainWindow(QWidget):
         self.parent = parent
         self.imgDir = imgDir 
         self.runInThread = ThreadFuns.runInThread
-        # Masternode list from file
-        self.masternode_list = masternode_list
-      
-        # Create clients and statuses
+        ###-- Masternode list 
+        self.masternode_list = masternode_list      
+        ###-- Create clients and statuses
         self.hwdevice = None
         self.hwStatus = 0
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
         self.rpcConnected = False
-        self.rpcStatusMess = "Not Connected"
-        
-        # Load icons & images
-        self.loadIcons()
-        
-        # Create main layout
+        self.rpcStatusMess = "Not Connected"        
+        ###-- Load icons & images
+        self.loadIcons()        
+        ###-- Create main layout
         self.layout = QVBoxLayout()
         self.header = GuiHeader(self)
         self.initConsole()
-        self.layout.addWidget(self.header)
-        
-        # Create rpc Whatchdog
+        self.layout.addWidget(self.header)       
+        ###-- Create RPC Whatchdog
         self.rpc_watchdogThread = QThread()
         self.myRpcWd = RpcWatchdog(self)
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
         self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
-        self.rpc_watchdogThread.start()
-        
-        # Create Queues and redirect stdout and stderr (eventually)
+        self.rpc_watchdogThread.start()       
+        ###-- Create Queues and redirect stdout and stderr (eventually)
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
-        #sys.stderr = WriteStream(self.queue2)
-        
-        
-        # Create the thread to update console log for stdout
+        #sys.stderr = WriteStream(self.queue2)        
+        ###-- Create the thread to update console log for stdout
         self.consoleLogThread = QThread()
         self.myWSReceiver = WriteStreamReceiver(self.queue)
         self.myWSReceiver.mysignal.connect(self.append_to_console)
         self.myWSReceiver.moveToThread(self.consoleLogThread)
         self.consoleLogThread.started.connect(self.myWSReceiver.run)
         self.consoleLogThread.start()
-        printDbg("Console Log thread started")
-        
-        
-        # Create the thread to update console log for stderr
+        printDbg("Console Log thread started")       
+        ###-- Create the thread to update console log for stderr
         self.consoleDebug = False
         self.consoleLogThread2 = QThread()
         self.myWSReceiver2 = WriteStreamReceiver(self.queue2)
@@ -85,46 +76,35 @@ class MainWindow(QWidget):
         self.myWSReceiver2.moveToThread(self.consoleLogThread2)
         self.consoleLogThread2.started.connect(self.myWSReceiver2.run)
         self.consoleLogThread2.start()
-        printDbg("Console Log thread 2 started")
-        
-        
-        # Initialize tabs
+        printDbg("Console Log thread 2 started")       
+        ###-- Initialize tabs
         self.tabs = QTabWidget()
         self.t_main = TabMain(self)
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
         self.tabWeb = QWidget()
-
-
-        # Add tabs
+        ###-- Add tabs
         self.tabs.addTab(self.tabMain, "Masternode Control")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
         self.tabs.addTab(self.tabRewards, "Transfer Rewards")
-        self.tabs.addTab(self.tabWeb, "Github")
-        
-        
-        # Connect change action
-        self.tabs.currentChanged.connect(lambda: self.onTabChange())        
-        
-              
-        # Draw Tabs 
+        self.tabs.addTab(self.tabWeb, "Github")                
+        ###-- Connect change action
+        self.tabs.currentChanged.connect(lambda: self.onTabChange())                    
+        ###-- Draw Tabs 
         self.drawTabWeb()
         self.splitter = QSplitter(Qt.Vertical)
-        # Add tabs and console to Layout        
+        ###-- Add tabs and console to Layout        
         self.splitter.addWidget(self.tabs)
         self.splitter.addWidget(self.console)
         self.splitter.setStretchFactor(0,0)
         self.splitter.setStretchFactor(1,1)
         self.splitter.setSizes([2,1])
         self.layout.addWidget(self.splitter)
-    
-        
+        ###-- Set Layout
         self.setLayout(self.layout)
-        
-        # Let's go
+        ###-- Let's go
         self.mnode_to_change = None
         printOK("Hello! Welcome to " + parent.title)
-        
         
         
     
@@ -222,8 +202,8 @@ class MainWindow(QWidget):
     def onCheckHw(self):
         printDbg("Checking for HW device...")
         self.runInThread(self.updateHWstatus, (), self.showHWstatus)
-        #self.updateHWstatus(None)
-        #self.showHWstatus()
+
+
         
     
     @pyqtSlot()
@@ -238,6 +218,7 @@ class MainWindow(QWidget):
     def onCleanConsole(self):
         self.consoleArea.clear()
         
+      
       
       
     @pyqtSlot()
@@ -261,13 +242,13 @@ class MainWindow(QWidget):
             
             
             
-            
     @pyqtSlot()
     def onTabChange(self):
         # reload masternode list in tabs
         if self.tabs.currentWidget() == self.tabRewards:
             self.t_rewards.loadMnSelect()
             
+        
         
         
     @pyqtSlot()
@@ -284,6 +265,7 @@ class MainWindow(QWidget):
             self.consoleArea.show()  
             
             
+        
             
     @pyqtSlot()
     def onToggleDebug(self):
@@ -300,17 +282,18 @@ class MainWindow(QWidget):
     
     
     
+    
     def showHWstatus(self):
         self.updateHWleds()
         self.myPopUp2(QMessageBox.Information, 'SPMT - hw check', "STATUS: %s" % self.hwStatusMess, QMessageBox.Ok)
         
         
+    
         
     def showRPCstatus(self):
         self.updateRPCled()
         self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "STATUS: %s" % self.rpcStatusMess, QMessageBox.Ok)
 
-    
             
             
             
@@ -324,6 +307,7 @@ class MainWindow(QWidget):
         self.header.hwLed.setToolTip(self.hwStatusMess)
         
         
+ 
         
     def updateHWstatus(self, ctrl):          
         if self.hwdevice is None:
@@ -350,6 +334,7 @@ class MainWindow(QWidget):
         self.hwStatusMess = statusMess
         
         
+  
         
     def updateLastBlockLabel(self):
         text = '--'
@@ -359,10 +344,10 @@ class MainWindow(QWidget):
             text = str(self.rpcLastBlock)         
             
         self.header.lastBlockLabel.setText(text)
+       
         
 
-       
-            
+                  
     def updateRPCled(self):
         if self.rpcConnected:
             self.header.rpcLed.setPixmap(self.ledPurpleH_icon)
