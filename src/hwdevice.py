@@ -37,6 +37,7 @@ class HWdevice(QObject):
     
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        # Device Lock for threads
         printDbg("Creating HW device class")
         self.initDevice()
         
@@ -309,7 +310,7 @@ class HWdevice(QObject):
         else:
             printOK("Signature refused by the user")
             sig1 = "None"
-            
+        
         self.sig1done.emit(sig1)
         
         

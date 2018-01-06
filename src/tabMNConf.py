@@ -196,12 +196,15 @@ class TabMNConf():
         
         
     @pyqtSlot()            
-    def onSaveMNConf(self):
-        if self.ui.edt_pubKey.text() == '' or self.ui.edt_txid.text() == '':
-            self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', 'Attention! Complete the form before saving.')
-            return
-        
+    def onSaveMNConf(self):   
         try:
+            if self.ui.edt_pubKey.text() == "" or self.ui.edt_txid.text() == "" or self.ui.edt_mnPrivKey.text() == "":
+                mess_text = 'Attention! Complete the form before saving.<br>'
+                mess_text += "<b>pubKey = </b>%s<br>" % self.ui.edt_pubKey.text()
+                mess_text += "<b>txId = </b>%s<br>" % self.ui.edt_txid.text()
+                mess_text += "<b>mnPrivKey = </b>%s<br>" % self.ui.edt_mnPrivKey.text()
+                self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
+                return
             # remove previous element
             if not self.caller.mnode_to_change is None:
                 # remove from memory list

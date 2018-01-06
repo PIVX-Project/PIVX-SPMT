@@ -22,6 +22,7 @@ class TabMain():
         self.curr_masternode_alias = None
         self.curr_masternode_address = None
         self.curr_statusData = None
+        self.mnToStartList = []
         self.ui = TabMain_gui(caller)
         self.caller.tabMain = self.ui       
         # Connect GUI buttons
@@ -211,36 +212,62 @@ class TabMain():
     @pyqtSlot()
     def onStartAllMN(self):
         printOK("Start-All pressed")
-        
+        # Check RPC & dongle
+        # Check rpc connection  
+        if not self.caller.rpcConnected or self.caller.hwStatus != 2:
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+            printDbg("Hardware device or RPC server not connected")
+            return None
+        try:
+            reply = self.caller.myPopUp(QMessageBox.Question, 'Confirm START', 
+                                                 "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
+            if reply == QMessageBox.Yes:
+                for mn_conf in self.caller.masternode_list:
+                    self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'], 
+                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'])
+                    # connect signal
+                    self.masternodeToStart.sigdone.connect(self.sendBroadcast) 
+                    self.mnToStartList.append(self.masternodeToStart)
+                
+                self.startMN()
+                
+        except Exception as e:
+            err_msg = "error before starting node"
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+           
+           
         
     
         
     @pyqtSlot()
     def onStartMN(self, data=None):
+        # Check RPC & dongle
+        # Check rpc connection  
+        if not self.caller.rpcConnected or self.caller.hwStatus != 2:
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+            printDbg("Hardware device or RPC server not connected")
+            return None
         try:
             if not data:
                 target = self.ui.sender()
                 masternode_alias = target.alias
-           
+                printOK("Start-masternode %s pressed" % masternode_alias)
                 for mn_conf in self.caller.masternode_list:
                     if mn_conf['name'] == masternode_alias:
                         reply = self.caller.myPopUp(QMessageBox.Question, 'Confirm START', 
-                                                 "Are you sure you want to start masternoode:\n'%s'" % mn_conf['name'], QMessageBox.Yes)
+                                                 "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'], QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
-                            self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'], mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'])
+                            self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'], 
+                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'])
                             # connect signal
-                            self.masternodeToStart.sigdone.connect(self.sendBroadcast)
-                            # Check RPC & dongle
-                            # Check rpc connection  
-                            if not self.caller.rpcConnected or self.caller.hwStatus != 2:
-                                self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
-                                printDbg("Hardware device or RPC server not connected")
-                                return None
+                            self.masternodeToStart.sigdone.connect(self.sendBroadcast) 
+                            self.mnToStartList.append(self.masternodeToStart)
                             self.startMN()
     
                         break
         except Exception as e:
-            print(e)   
+            err_msg = "error before starting node"
+            printException(getCallerName(), getFunctionName(), err_msg, e)
             
             
             
@@ -249,18 +276,35 @@ class TabMain():
     @pyqtSlot(str)     
     def sendBroadcast(self, text):
         if text == "None":
+            self.sendBroadcastCheck()
             return
+        
         printOK("Start Message: %s" % text)
         ret = self.caller.rpcClient.masternodebroadcast("decode", text)
-        msg = "Broadcast START message?\n" + json.dumps(ret, indent=4, sort_keys=True)
+        if ret is None:
+            self.caller.myPopUp2(QMessageBox.Critical, 'message decoding failed', 'message decoding failed')
+            self.sendBroadcastCheck()
+            return
+        
+        msg = "Broadcast START message?\n" + json.dumps(ret, indent=4, sort_keys=True)  
         reply = self.caller.myPopUp(QMessageBox.Question, 'message decoded', msg, QMessageBox.Yes)
         if reply == QMessageBox.No:
+            self.sendBroadcastCheck()
             return
+        
         ret2 = self.caller.rpcClient.masternodebroadcast("relay", text)
         self.caller.myPopUp2(QMessageBox.Information, 'message relayed', json.dumps(ret2, indent=4, sort_keys=True), QMessageBox.Ok)
-        
-        
+        self.sendBroadcastCheck()
     
+       
+            
+    def sendBroadcastCheck(self):
+        # If list is not empty, start other masternodes
+        if self.mnToStartList:
+            self.startMN()
+            
+            
+            
         
     def startMN(self):       
         if self.caller.hwStatus != 2:
@@ -269,6 +313,8 @@ class TabMain():
             self.caller.myPopUp2(QMessageBox.Question, 'SPMT - rpc device check', self.caller.rpcStatusMess, QMessageBox.Ok)
         else:           
             try:
+                self.masternodeToStart = self.mnToStartList.pop()
+                printDbg("Starting...%s" % self.masternodeToStart.name)
                 self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
                 # wait for signal when masternode.work is ready then ---> showBroadcast
             except Exception as e:
