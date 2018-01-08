@@ -20,6 +20,7 @@ class TabMNConf():
         self.caller.tabMNConf = self.ui
         self.runInThread = ThreadFuns.runInThread
         self.spath_found = False
+        self.spath = -1
         # Connect GUI buttons
         self.ui.btn_genKey.clicked.connect(lambda: self.onGenerateMNkey())
         self.ui.btn_addressToSpath.clicked.connect(lambda: self.onFindSpathAndPrivKey())
@@ -50,11 +51,11 @@ class TabMNConf():
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
         # first scan. Subsequent called by findSpath_done
-        self.spath_found, spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
-        printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, spath))
+        self.spath_found, self.spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
+        printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, self.spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
-        self.ui.edt_spath.setValue(spath)
+        
         
                 
                 
@@ -63,12 +64,12 @@ class TabMNConf():
         try:
             currAddr = self.ui.edt_address.text().strip()
             currHwAcc = self.ui.edt_hwAccount.value()
-            spath = self.ui.edt_spath.value()
+            spath = self.spath
             starting_spath = self.curr_starting_spath
             spath_count = self.curr_spath_count
             
             if self.spath_found:
-                printOK("spath is %d" % self.ui.edt_spath.value())
+                printOK("spath is %d" % spath)
                 self.findPubKey()
                 mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
                 self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)

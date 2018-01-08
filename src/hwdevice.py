@@ -207,15 +207,20 @@ class HWdevice(QObject):
     
     
     @process_ledger_exceptions
-    def scanForBip32(self, account, address, starting_spath=0, spath_count=10):   
+    def scanForBip32(self, account, address, starting_spath=0, spath_count=10):
+        found = False
+        spath = -1
+         
         printOK("Scanning for Bip32 path of address: %s" % address)
-        for index in range(starting_spath, starting_spath+spath_count):
-            curr_path = MPATH + "%d'/0/%d" % (account, index)
+        for i in range(starting_spath, starting_spath+spath_count):
+            curr_path = MPATH + "%d'/0/%d" % (account, i)
             printDbg("checking path... %s" % curr_path)
             try:
                 curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]              
                 if curr_addr == address:
-                    return (True, index)
+                    found = True
+                    spath = i
+                    break
                 
                 sleep(0.1)
             
@@ -223,7 +228,7 @@ class HWdevice(QObject):
                 err_msg = 'error in scanForBip32'
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
                 
-        return (False, -1)
+        return (found, spath)
             
             
             
