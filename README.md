@@ -4,7 +4,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
 ## Installation
 This application does not require installation.
 However, if you are running it from the source code, you will need Python 3 and several libraries (listed in `requirements.txt`). 
-If you are using a binary version instead, just unzip the folder anywhere you like and use the shortcut to lunch the application.
+If you are using a binary version instead, just unzip the folder anywhere you like and use the shortcut to start the application.
 
 ## Updating
 When updating to a new version of the SPMT application, copy the following files from the old folder to the new in order to preserve your rpc and masternodes configuration:
