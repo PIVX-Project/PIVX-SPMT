@@ -13,8 +13,13 @@ import time
 if __name__ == '__main__':
     # Create App
     app = QApplication(sys.argv)
-    ### -- style stuff
-    imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
+    if getattr( sys, 'frozen', False ) :
+        # running in a bundle
+        imgDir = os.path.join(sys._MEIPASS, 'img')
+    else :
+        # running live
+        imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
+    ### -- style stuff        
     spmtLogo_file = os.path.join(imgDir, 'splashscreen.png')
     labelstyle = "QLabel { font-size: 14px; color: purple; font-style: italic; text-align: center;}"
     barStyle = "QProgressBar::chunk {background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,stop: 0 #372f43,stop: 0.6 #5c4c7a, stop: 0.8 #663399);border-bottom-right-radius: 7px;border-bottom-left-radius: 7px;border-top: 2px solid #8A2BE2;}"
