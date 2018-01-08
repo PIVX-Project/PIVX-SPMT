@@ -25,15 +25,15 @@ rpcallowip=127.0.0.1
 ```
 
 Configure the RPC server by clicking on the menu
-![00](doc/img/00-click_setup.png)
+<br>![00](doc/img/00-click_setup.png)
 
 and inserting the same data
-![01](doc/img/01-setup_rpc.png)
+<br>![01](doc/img/01-setup_rpc.png)
 
 #### Connecting
 Connect the hardware device and open pivx app on it.
 Click the connection buttons on the SPMT to connect to both the cli-wallet and the hardware device.
-![02](doc/img/02-click_connectHW.png)
+<br>![02](doc/img/02-click_connectHW.png)
 
 #### Setting up a Masternode configuration
 Click on `NEW MASTERNODE` and fill all the informations of the remote node: 
@@ -42,17 +42,17 @@ Click on `NEW MASTERNODE` and fill all the informations of the remote node:
  - masternode private key (this is the same key as `masternodeprivkey` on `pivx.conf` of your remote node)
 
 If you don't have one, you can generate a new masternode private key (then copy it to the config file of the remote node) by clicking on `Generate`.
-![03](doc/img/03-mnsetup01.png)
+<br>![03](doc/img/03-mnsetup01.png)
 
 Insert the PIVX Address holding the collateral and relative account number (if you have just one account on your Ledger wallet, leave it to 0).
 Click `>>` to look for path and public key.
-![04](doc/img/04-mnsetup02.png)
+<br>![04](doc/img/04-mnsetup02.png)
 
 Click `Lookup` to find the collateral TxHash or click edit and fill it manually.
-![05](doc/img/05-mnsetup03.png)
+<br>![05](doc/img/05-mnsetup03.png)
 
 Click `Save` to save the configuration and go back to main view.
-![06](doc/img/06-mnsetup04.png)
+<br>![06](doc/img/06-mnsetup04.png)
 
 
 ## Usage
