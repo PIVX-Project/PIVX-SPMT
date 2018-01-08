@@ -3,7 +3,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
 
 ## Installation
 This application does not require installation.
-However, if you are running it from the source code, you will need Python 3 and several libraries (listed in `requirements.txt`). 
+However, if you are running it from the source code, you will need Python 3 and several libraries (listed in `requirements.txt`).\n 
 If you are using a binary version instead, just unzip the folder anywhere you like and use the shortcut to start the application.
 
 ## Updating
@@ -38,14 +38,14 @@ Click the connection buttons on the SPMT to connect to both the cli-wallet and t
 #### Setting up a Masternode configuration
 Click on `NEW MASTERNODE` and fill all the informations of the remote node: masternode name, ip Address and port.
 Insert the masternode private key (same as masternodeprivkey on pivx.conf of remote node) or generate a new one (then copy it to the config file of the remote node).
-![1](doc/img/03-mnSetup01.png)
+![1](doc/img/03-mnsetup01.png)
 
 Insert the PIVX Address holding the collateral and relative account number (if you have just one account on your Ledger wallet, leave it to 0).
 Click `>>` to look for path and public key.
-![1](doc/img/04-mnSetup02.png)
+![1](doc/img/04-mnsetup02.png)
 
 Click `Lookup` to find the collateral TxHash or click edit and fill it manually.
-![1](doc/img/05-mnSetup03.png)
+![1](doc/img/05-mnsetup03.png)
 
 
 ## Usage
