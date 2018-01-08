@@ -11,7 +11,6 @@ from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QStackedLayout, QFileDialog
 from PyQt5.QtWidgets import QMessageBox, QTextEdit
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from queue import Queue
 
@@ -82,16 +81,13 @@ class MainWindow(QWidget):
         self.t_main = TabMain(self)
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
-        self.tabWeb = QWidget()
         ###-- Add tabs
         self.tabs.addTab(self.tabMain, "Masternode Control")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
-        self.tabs.addTab(self.tabRewards, "Transfer Rewards")
-        self.tabs.addTab(self.tabWeb, "Github")                
+        self.tabs.addTab(self.tabRewards, "Transfer Rewards")              
         ###-- Connect change action
         self.tabs.currentChanged.connect(lambda: self.onTabChange())                    
         ###-- Draw Tabs 
-        self.drawTabWeb()
         self.splitter = QSplitter(Qt.Vertical)
         ###-- Add tabs and console to Layout        
         self.splitter.addWidget(self.tabs)
@@ -113,20 +109,7 @@ class MainWindow(QWidget):
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
-
-        
-    
-    def drawTabWeb(self):
-        try:
-            web = QWebEngineView()
-            web.load(QUrl("https://github.com/PIVX-Project/PIVX/releases"))
-            web.setZoomFactor(0.7)
-            web.show()
-            layout = QStackedLayout()
-            layout.addWidget(web)
-            self.tabWeb.setLayout(layout)
-        except Exception as e:
-            print(e)    
+ 
             
             
             
