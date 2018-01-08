@@ -143,7 +143,7 @@ def splitString(text, n):
 def readMNfile():
     import simplejson as json
     mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), '..', 'masternodes.json')
+        os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
     with open(mn_file) as data_file:
         mnList = json.load(data_file)    
     data_file.close()
@@ -154,9 +154,7 @@ def readMNfile():
 def readRPCfile():
     import simplejson as json
     config_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..',
-        'rpcServer.json')
+        os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
     with open(config_file) as data_file:
         rpc_config = json.load(data_file)
     data_file.close()
@@ -202,7 +200,7 @@ def updateSplash(label, i):
 def writeMNfile(mnList):
     import simplejson as json
     mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), '..', 'masternodes.json')
+        os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
     with open(mn_file, 'w+') as data_file:
         json.dump(mnList, data_file)        
     data_file.close()
@@ -212,9 +210,7 @@ def writeMNfile(mnList):
 def writeRPCfile(configuration):
     import simplejson as json
     rpc_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..',
-        'rpcServer.json')
+        os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
     with open(rpc_file, 'w+') as data_file:
         json.dump(configuration, data_file)
             
