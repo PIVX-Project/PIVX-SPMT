@@ -34,7 +34,7 @@ class TabMNConf():
         
     def addressToSpath(self):
         printOK("addressToSpath pressed")
-        self.ui.edt_spath.found = False
+        self.spath_found = False
         # Check dongle
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
@@ -51,7 +51,7 @@ class TabMNConf():
         currHwAcc = self.ui.edt_hwAccount.value()
         # first scan. Subsequent called by findSpath_done
         self.spath_found, spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
-        printOK("Bip32 scan complete. result=%s   spath=%s" % (self.ui.edt_spath.found, spath))
+        printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
         self.ui.edt_spath.setValue(spath)
@@ -73,7 +73,6 @@ class TabMNConf():
                 mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
                 self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
                 self.ui.edt_spath.setValue(spath)
-                self.ui.edt_spath.found = True
                 
             else:
                 mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
