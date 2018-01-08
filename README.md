@@ -14,7 +14,7 @@ When updating to a new version of the SPMT application, copy the following files
 ## Setup
 #### Setting up the RPC server
 In order to interact with the PIVX blockchain, the SPMT needs a local PIVX wallet running alongside (any empty pivx-cli wallet will do).
-Edit your local pivx.conf inserting rpcuser, rpcpassword, rpcport and rpcallowip. 
+Edit your local `pivx.conf` inserting rpcuser, rpcpassword, rpcport and rpcallowip. 
 Example:
 ```bash
 server=1
