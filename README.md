@@ -56,14 +56,23 @@ Click `Save` to save the configuration and go back to main view.
 <br>![06](doc/img/06-mnsetup04.png)
 
 
-## Usage
+## Features
+### Getting masternode status
+...
+coming soon
+...
+### Starting masternode
+...
+coming soon
+...
+### Spending masternode rewards
 ...
 coming soon
 ...
 
 
 ## Credits
-This work is based on the following projects for Dash:
+This work is based on the following Dash projects:
 - https://github.com/chaeplin/dashmnb
 - https://github.com/Bertrand256/dash-masternode-tool
 
