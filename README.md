@@ -10,7 +10,8 @@ If you are using a binary version instead, just unzip the folder anywhere you li
 When updating to a new version of the SPMT application, copy the following files from the old folder to the new in order to preserve your rpc and masternodes configuration:
 - rpcServer.json
 - masternodes.json
-
+*NOTE: Under OsX bundle app: `ctrl+click` then `Show Package Contents`*
+<br>
 ## Setup
 #### Setting up the RPC server
 In order to interact with the PIVX blockchain, the SPMT needs a local PIVX wallet running alongside (any empty pivx-cli wallet will do).
