@@ -57,7 +57,8 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False,
+          icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
 
 coll = COLLECT(exe,
                a.binaries,
@@ -65,9 +66,12 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='secure_pivx_masternode_tool')
+               name='app')
 
-app = BUNDLE(coll,
-             name='SecurePivxMasternodeTool%s' % ('.app' if os_type=='darwin' else ''),
-             icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')),
-             bundle_identifier=None)
+if os_type == 'darwin':
+	app = BUNDLE(coll,
+             name='SecurePivxMasternodeTool.app',
+             icon=os.path.join(base_dir, 'img', 'spmt.icns'),
+             bundle_identifier=None,
+             info_plist={'NSHighResolutionCapable': 'True'})
+             

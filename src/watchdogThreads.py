@@ -19,7 +19,6 @@ class RpcWatchdog(QObject):
      
     def run(self):    
         while not self.shutdown_flag.is_set():
-            printOK("RPC check")
             self.control_tab.updateRPCstatus(self.ctrl_obj)
             QApplication.processEvents()
             self.control_tab.updateRPCled()
