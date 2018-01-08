@@ -51,6 +51,9 @@ Click `>>` to look for path and public key.
 Click `Lookup` to find the collateral TxHash or click edit and fill it manually.
 ![1](doc/img/05-mnsetup03.png)
 
+Click `Save` to save the configuration and go back to main view.
+![1](doc/img/06-mnsetup04.png)
+
 
 ## Usage
 ...
