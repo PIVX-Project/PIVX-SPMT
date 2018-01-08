@@ -1,5 +1,5 @@
 {
- "number": "0.0.8",
- "tag": "c",
- "comments": []
+ "number": "0.0.9",
+ "tag": "a",
+ "comments": ["alpha release"]
  }

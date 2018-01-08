@@ -19,7 +19,7 @@ class TabMNConf():
         self.ui = TabMNConf_gui(masternode_alias)
         self.caller.tabMNConf = self.ui
         self.runInThread = ThreadFuns.runInThread
-        
+        self.spath_found = False
         # Connect GUI buttons
         self.ui.btn_genKey.clicked.connect(lambda: self.onGenerateMNkey())
         self.ui.btn_addressToSpath.clicked.connect(lambda: self.onFindSpathAndPrivKey())
@@ -41,17 +41,16 @@ class TabMNConf():
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
             return None
-    
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)     
     
           
                 
-                
+    @pyqtSlot(object, int, int)            
     def findSpath(self, ctrl, starting_spath, spath_count):
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
         # first scan. Subsequent called by findSpath_done
-        self.ui.edt_spath.found, spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
+        self.spath_found, spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
         printOK("Bip32 scan complete. result=%s   spath=%s" % (self.ui.edt_spath.found, spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
@@ -59,34 +58,36 @@ class TabMNConf():
         
                 
                 
-                
+    @pyqtSlot()            
     def findSpath_done(self):
-        currAddr = self.ui.edt_address.text().strip()
-        currHwAcc = self.ui.edt_hwAccount.value()
-        spath = self.ui.edt_spath.value()
-        starting_spath = self.curr_starting_spath
-        spath_count = self.curr_spath_count
-        
-        if self.ui.edt_spath.found:
-            printOK("spath is %d" % self.ui.edt_spath.value())
-            self.findPubKey()
-            mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
-            self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
-            self.ui.edt_spath.setValue(spath)
-            self.ui.edt_spath.found = True
+        try:
+            currAddr = self.ui.edt_address.text().strip()
+            currHwAcc = self.ui.edt_hwAccount.value()
+            spath = self.ui.edt_spath.value()
+            starting_spath = self.curr_starting_spath
+            spath_count = self.curr_spath_count
             
-        else:
-            mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
-            mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
-            mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
-            ans = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - spath search', mess)
-            if ans == QMessageBox.Yes:
-                starting_spath += spath_count
-                self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
-
+            if self.spath_found:
+                printOK("spath is %d" % self.ui.edt_spath.value())
+                self.findPubKey()
+                mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
+                self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
+                self.ui.edt_spath.setValue(spath)
+                self.ui.edt_spath.found = True
+                
+            else:
+                mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
+                mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
+                mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
+                ans = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - spath search', mess)
+                if ans == QMessageBox.Yes:
+                    starting_spath += spath_count
+                    self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
+        except Exception as e:
+            print(e)
     
     
-    
+    @pyqtSlot()
     def findPubKey(self):
         printDbg("Computing public key...")
         currSpath = self.ui.edt_spath.value()
@@ -125,7 +126,7 @@ class TabMNConf():
      
      
             
-    #pyqtSlot()
+    @pyqtSlot()
     def onEditTx(self):
         if not self.ui.edt_txid.isEnabled():
             self.ui.btn_editTxid.setText("OK")
