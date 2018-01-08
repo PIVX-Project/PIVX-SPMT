@@ -6,9 +6,9 @@ from time import strftime, gmtime
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, WriteStream, WriteStreamReceiver, now
 from constants import starting_height
 
-from PyQt5.QtCore import pyqtSlot, Qt, QUrl, QThread
+from PyQt5.QtCore import pyqtSlot, Qt, QThread
 from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QStackedLayout, QFileDialog
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QFileDialog
 from PyQt5.QtWidgets import QMessageBox, QTextEdit
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor
 
