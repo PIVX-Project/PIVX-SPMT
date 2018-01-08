@@ -7,7 +7,7 @@ However, if you are running it from the source code, you will need Python 3 and 
 If you are using a binary version instead, just unzip the folder anywhere you like and use the shortcut to lunch the application.
 
 ## Updating
-When updating to a new version of the SPMT application, copy the following files from the old 'app' folder to the new in order to preserve your rpc and masternodes configuration:
+When updating to a new version of the SPMT application, copy the following files from the old folder to the new in order to preserve your rpc and masternodes configuration:
 - rpcServer.json
 - masternodes.json
 
@@ -28,7 +28,7 @@ Configure the RPC server by clicking on the menu
 ![1](doc/img/00-click_setup.png)
 
 and inserting the same data
-![1](doc/img/02-setup_rpc.png)
+![1](doc/img/01-setup_rpc.png)
 
 #### Connecting
 Connect the hardware device and open pivx app on it.
@@ -62,4 +62,4 @@ This work is based on the following projects for Dash:
 
 ## Donations
 If you like this tool, feel free to coffee me:
-->***DMEC4jnPmFjuVFsbGU2tX6V4ncUDD27dxo***<-
+*DMEC4jnPmFjuVFsbGU2tX6V4ncUDD27dxo*
