@@ -36,8 +36,10 @@ Click the connection buttons on the SPMT to connect to both the cli-wallet and t
 ![1](doc/img/02-click_connectHW.png)
 
 #### Setting up a Masternode configuration
-Click on `NEW MASTERNODE` and fill all the informations of the remote node: masternode name, ip Address and port.
-Insert the masternode private key (same as masternodeprivkey on pivx.conf of remote node) or generate a new one (then copy it to the config file of the remote node).
+Click on `NEW MASTERNODE` and fill all the informations of the remote node: 
+*masternode name 
+*ip Address and port.
+Insert masternode private key (same as `masternodeprivkey` on `pivx.conf` of remote node) or generate a new one (then copy it to the config file of the remote node).
 ![1](doc/img/03-mnsetup01.png)
 
 Insert the PIVX Address holding the collateral and relative account number (if you have just one account on your Ledger wallet, leave it to 0).
