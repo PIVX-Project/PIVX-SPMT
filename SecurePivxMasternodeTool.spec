@@ -110,17 +110,17 @@ if os_type == 'linux':
 
 if os_type == 'darwin':
     os.chdir(base_dir)
-	# Rename dist Dir
+    # Rename dist Dir
     dist_path_mac = os.path.join(base_dir, 'SPMT-v' + version_str + '-MacOSX')
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
-    for root, dirs, files in os.walk(app_path, topdown=False):
-        for name in files:
-            os.remove(os.path.join(root, name))
-        for name in dirs:
-            os.rmdir(os.path.join(root, name))
+    print("Removin 'app' folder")
+    os.chdir(dist_path_mac)
+    os.system('rm -rf app')
+    os.chdir(base_dir)
     # Compress dist Dir
     print('Compressing Mac App Folder')
-    os.system('zip -r "%s" "%s"' % (dist_path_mac + '.tar.gz', dist_path_mac))
+    os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-MacOSX.tar.gz',
+                base_dir, 'SPMT-v' + version_str + '-MacOSX'))
 
     
