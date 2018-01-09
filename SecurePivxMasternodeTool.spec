@@ -105,7 +105,7 @@ if os_type == 'linux':
 	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s -C %s %s' % ('SecurePivxMasternodeTool-v' + version_str + '-gnu_linux.tar.gz', 
+	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-gnu_linux.tar.gz', 
                 base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux'))
 
 if os_type == 'darwin':
