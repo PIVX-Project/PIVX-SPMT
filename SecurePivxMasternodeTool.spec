@@ -117,5 +117,3 @@ if os_type == 'darwin':
 	# Compress dist Dir
 	print('Compressing Mac App Folder')
 	os.system('zip -r "%s" "%s"' % (dist_path_mac + '.tar.gz', dist_path_mac))
-	
-
