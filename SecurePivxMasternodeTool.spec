@@ -97,6 +97,8 @@ if os_type == 'win32':
 	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
 	
 if os_type == 'linux':
+	# Apply executable icon
+	os.system('gvfs-set-attribute -t string app/SecurePivxMasternodeTool metadata::custom-icon file://' + os.path.join(base_dir, "img", "spmtLogo_shield.png")
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
