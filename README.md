@@ -2,18 +2,19 @@
 SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on a Ledger Nano S hardware wallet.
 
 ## Installation
-This application does not require installation.
+This application does not require installation.<br>
 If you are using a binary version, just unzip the folder anywhere you like and use the executable to start the application:
 - *Linux*: double-click `SecurePivxMasternodeTool` file inside the `app` directory
 - *Windows*: double-click `SecurePivxMasternodeTool.exe` file inside the `app` directory
 - *Mac OsX*: double-click `SecurePivxMasternodeTool.app` application folder
 
-If you are running SPMT from the source code instead, you will need Python 3 and several libraries (listed in `requirements.txt`) installed.<br>
-From the `src` directory, launch it with:
+If you are running SPMT from the source-code instead, you will need Python3 and several libraries installed.<br>
+Needed libraries are listed in `requirements.txt`.<br>
+From the `src` directory, launch SPMT with:
 ```bash
 python3 spmt.py
 ```
-
+To make binary versions from source, [PyInstaller](http://www.pyinstaller.org/) can be used with the `SecurePivxMasternode.spec` file provided.
 
 ## Updating
 When updating to a new version of the SPMT application, copy the following files from the old folder to the new one in order to preserve your rpc and masternodes configuration (export/import functionality coming soon):
