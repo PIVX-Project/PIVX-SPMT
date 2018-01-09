@@ -98,16 +98,18 @@ if os_type == 'win32':
 	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
 	
 if os_type == 'linux':
-	# Apply executable icon
-	img_dir = os.path.join(base_dir, 'img')
-	exe_path = os.path.join(app_path, 'SecurePivxMasternodeTool')
-	os.system('gvfs-set-attribute -t string '+exe_path+' metadata::custom-icon file://'+ img_dir + '/spmtLogo_shield.png')
+	os.chdir(base_dir)
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
+	# Apply executable icon
+	img_dir = os.path.join(base_dir, 'img')
+	exe_path = os.path.join(dist_path_linux, 'app', 'SecurePivxMasternodeTool')
+	os.system('gvfs-set-attribute -t string '+exe_path+' metadata::custom-icon file://'+ img_dir + '/spmtLogo_shield.png')
+	
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s %s' % (dist_path_linux + '.tar.gz', dist_path_linux))
+	os.system('tar -zcvf %s %s' % ('SecurePivxMasternodeTool-v' + version_str + '-gnu_linux.tar.gz', dist_path_linux))
 	
 if os_type == 'darwin':
 	# Rename dist Dir
