@@ -59,7 +59,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=False,
-          icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
+          icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('ico' if os_type=='win32' else 'icns')) )
 
 coll = COLLECT(exe,
                a.binaries,
@@ -82,8 +82,9 @@ dist_path = os.path.join(base_dir, 'dist')
 app_path = os.path.join(dist_path, 'app')
 os.chdir(dist_path)
 # Copy Readme Files
+from shutil import copyfile
 print('Copying README.md')
-os.system('copy ' + os.path.join(base_dir, 'README.md') + ' README.md')
+copyfile(os.path.join(base_dir, 'README.md'), 'README.md')
 
 if os_type == 'win32':
 	# Copy Qt5 Platforms
@@ -98,7 +99,7 @@ if os_type == 'win32':
 	
 if os_type == 'linux':
 	# Apply executable icon
-	os.system('gvfs-set-attribute -t string app/SecurePivxMasternodeTool metadata::custom-icon file://' + os.path.join(base_dir, "img", "spmtLogo_shield.png"))
+	# os.system('gvfs-set-attribute -t string app/SecurePivxMasternodeTool metadata::custom-icon file://../img/spmtLogo_shield.png')
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
