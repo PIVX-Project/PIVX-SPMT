@@ -92,7 +92,7 @@ if os_type == 'win32':
 	os.system('xcopy app\PyQt5\Qt\plugins\platforms app\platforms\ /i')
 	os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_win = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-win')
+	dist_path_win = os.path.join(base_dir, 'SPMT-v' + version_str + '-win')
 	os.rename(dist_path, dist_path_win)
 	# Compress dist Dir
 	print('Compressing Windows App Folder')
@@ -101,7 +101,7 @@ if os_type == 'win32':
 if os_type == 'linux':
 	os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
+	dist_path_linux = os.path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
@@ -111,7 +111,7 @@ if os_type == 'linux':
 if os_type == 'darwin':
     os.chdir(base_dir)
 	# Rename dist Dir
-    dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
+    dist_path_mac = os.path.join(base_dir, 'SPMT-v' + version_str + '-MacOSX')
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
     for root, dirs, files in os.walk(app_path, topdown=False):
