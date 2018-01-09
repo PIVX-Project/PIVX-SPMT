@@ -117,11 +117,13 @@ if os_type == 'darwin':
     dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
-	for root, dirs, files in os.walk(app_path, topdown=False):
-	    for name in files:
-	        os.remove(os.path.join(root, name))
-	    for name in dirs:
-	        os.rmdir(os.path.join(root, name))
-	# Compress dist Dir
-	print('Compressing Mac App Folder')
-	os.system('zip -r "%s" "%s"' % (dist_path_mac + '.tar.gz', dist_path_mac))
+    for root, dirs, files in os.walk(app_path, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    # Compress dist Dir
+    print('Compressing Mac App Folder')
+    os.system('zip -r "%s" "%s"' % (dist_path_mac + '.tar.gz', dist_path_mac))
+
+    
