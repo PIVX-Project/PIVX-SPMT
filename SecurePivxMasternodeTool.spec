@@ -85,6 +85,10 @@ os.chdir(dist_path)
 from shutil import copyfile
 print('Copying README.md')
 copyfile(os.path.join(base_dir, 'README.md'), 'README.md')
+# Copy Icons
+print('Copying icons')
+copyfile(os.path.join(base_dir, 'img', 'spmt.ico'), os.path.join(app_path, 'spmt.ico'))
+copyfile(os.path.join(base_dir, 'img', 'spmt.icns'), os.path.join(app_path, 'spmt.icns'))
 
 if os_type == 'win32':
 	# Copy Qt5 Platforms
@@ -102,16 +106,13 @@ if os_type == 'linux':
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
-	# Apply executable icon
-	img_dir = os.path.join(base_dir, 'img')
-	exe_path = os.path.join(dist_path_linux, 'app', 'SecurePivxMasternodeTool')
-	os.system('gvfs-set-attribute -t string '+exe_path+' metadata::custom-icon file://'+ img_dir + '/spmtLogo_shield.png')
-	
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s %s' % ('SecurePivxMasternodeTool-v' + version_str + '-gnu_linux.tar.gz', dist_path_linux))
-	
+	os.system('tar -zcvf %s -C %s %s' % ('SecurePivxMasternodeTool-v' + version_str + '-gnu_linux.tar.gz', 
+                base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux'))
+
 if os_type == 'darwin':
+    os.chdir(base_dir)
 	# Rename dist Dir
 	dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
 	os.rename(dist_path, dist_path_mac)
