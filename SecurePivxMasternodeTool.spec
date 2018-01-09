@@ -99,7 +99,7 @@ if os_type == 'win32':
 if os_type == 'linux':
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
-	os.rename(dist_path, dist_path_win)
+	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
 	os.system('tar -zcvf %s %s' % (dist_path_linux + '.tar.gz', dist_path_linux))
@@ -107,7 +107,7 @@ if os_type == 'linux':
 if os_type == 'darwin':
 	# Rename dist Dir
 	dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
-	os.rename(dist_path, dist_path_win)
+	os.rename(dist_path, dist_path_mac)
 	# Remove 'app' folder
 	for root, dirs, files in os.walk(app_path, topdown=False):
 	    for name in files:
