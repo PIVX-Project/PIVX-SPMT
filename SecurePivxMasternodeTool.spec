@@ -85,10 +85,7 @@ os.chdir(dist_path)
 from shutil import copyfile
 print('Copying README.md')
 copyfile(os.path.join(base_dir, 'README.md'), 'README.md')
-# Copy Icons
-print('Copying icons')
-copyfile(os.path.join(base_dir, 'img', 'spmt.ico'), os.path.join(app_path, 'spmt.ico'))
-copyfile(os.path.join(base_dir, 'img', 'spmt.icns'), os.path.join(app_path, 'spmt.icns'))
+
 
 if os_type == 'win32':
 	# Copy Qt5 Platforms
