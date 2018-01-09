@@ -114,9 +114,9 @@ if os_type == 'linux':
 if os_type == 'darwin':
     os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
-	os.rename(dist_path, dist_path_mac)
-	# Remove 'app' folder
+    dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
+    os.rename(dist_path, dist_path_mac)
+    # Remove 'app' folder
 	for root, dirs, files in os.walk(app_path, topdown=False):
 	    for name in files:
 	        os.remove(os.path.join(root, name))
