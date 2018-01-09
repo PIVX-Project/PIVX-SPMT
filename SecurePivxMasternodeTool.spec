@@ -9,10 +9,11 @@ block_cipher = None
 base_dir = os.path.dirname(os.path.realpath('__file__'))
 
 # look for version string
+version_str = ''
 with open(os.path.join(base_dir, 'src', 'version.txt')) as version_file:
 	version_data = json.load(version_file)
 version_file.close()
-version_str = version_data["number"]
+version_str = version_data["number"] + version_data["tag"]
 
 add_files = [('src/masternodes.json', '.'), ('src/rpcServer.json', '.'), ('src/version.txt', '.'), ('img', 'img')]
 
@@ -75,3 +76,46 @@ if os_type == 'darwin':
              bundle_identifier=None,
              info_plist={'NSHighResolutionCapable': 'True'})
              
+   
+# Prepare bundles
+dist_path = os.path.join(base_dir, 'dist')
+app_path = os.path.join(dist_path, 'app')
+os.chdir(dist_path)
+# Copy Readme Files
+print('Copying README.md')
+os.system('copy ..\README.md README.md')
+
+if os_type == 'win32':
+	# Copy Qt5 Platforms
+	os.system('xcopy app\PyQt5\Qt\plugins\platforms app\platforms\ /i')
+	os.chdir(base_dir)
+	# Rename dist Dir
+	dist_path_win = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-win')
+	os.rename(dist_path, dist_path_win)
+	# Compress dist Dir
+	print('Compressing Windows App Folder')
+	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
+	
+if os_type == 'linux':
+	# Rename dist Dir
+	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
+	os.rename(dist_path, dist_path_win)
+	# Compress dist Dir
+	print('Compressing Linux App Folder')
+	os.system('tar -zcvf %s %s' % (dist_path_linux + '.tar.gz', dist_path_linux))
+	
+if os_type == 'darwin':
+	# Rename dist Dir
+	dist_path_mac = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-MacOSX')
+	os.rename(dist_path, dist_path_win)
+	# Remove 'app' folder
+	for root, dirs, files in os.walk(app_path, topdown=False):
+	    for name in files:
+	        os.remove(os.path.join(root, name))
+	    for name in dirs:
+	        os.rmdir(os.path.join(root, name))
+	# Compress dist Dir
+	print('Compressing Mac App Folder')
+	os.system('zip -r "%s" "%s"' % (dist_path_mac + '.tar.gz', dist_path_mac))
+	
+
