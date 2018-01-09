@@ -10,7 +10,7 @@ If you are using a binary version, just unzip the folder anywhere you like and u
 
 If you are running SPMT from the source-code instead, you will need Python3 and several libraries installed.<br>
 Needed libraries are listed in `requirements.txt`.<br>
-From the `src` directory, launch SPMT with:
+From the `SPMT` directory, launch the tool with:
 ```bash
 python3 spmt.py
 ```
