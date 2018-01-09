@@ -83,7 +83,7 @@ app_path = os.path.join(dist_path, 'app')
 os.chdir(dist_path)
 # Copy Readme Files
 print('Copying README.md')
-os.system('copy ..\README.md README.md')
+os.system('copy ' + os.path.join(base_dir, 'README.md') + ' README.md')
 
 if os_type == 'win32':
 	# Copy Qt5 Platforms
