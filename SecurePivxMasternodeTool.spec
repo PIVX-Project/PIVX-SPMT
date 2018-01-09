@@ -99,7 +99,8 @@ if os_type == 'win32':
 	
 if os_type == 'linux':
 	# Apply executable icon
-	os.system('gvfs-set-attribute -t string app/SecurePivxMasternodeTool metadata::custom-icon file://../img/spmtLogo_shield.png')
+	img_dir = os.path.join(base_dir, 'img')
+	os.system('gvfs-set-attribute -t string app/SecurePivxMasternodeTool metadata::custom-icon file://'+ img_dir + '/spmtLogo_shield.png')
 	# Rename dist Dir
 	dist_path_linux = os.path.join(base_dir, 'SecurePivxMasternodeTool-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
