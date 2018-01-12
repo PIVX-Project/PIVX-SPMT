@@ -81,6 +81,7 @@ if os_type == 'darwin':
 dist_path = os.path.join(base_dir, 'dist')
 app_path = os.path.join(dist_path, 'app')
 os.chdir(dist_path)
+
 # Copy Readme Files
 from shutil import copyfile
 print('Copying README.md')
@@ -98,6 +99,7 @@ if os_type == 'win32':
 	print('Compressing Windows App Folder')
 	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
 	
+	
 if os_type == 'linux':
 	os.chdir(base_dir)
 	# Rename dist Dir
@@ -107,6 +109,7 @@ if os_type == 'linux':
 	print('Compressing Linux App Folder')
 	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-gnu_linux.tar.gz', 
                 base_dir, 'SPMT-v' + version_str + '-gnu_linux'))
+
 
 if os_type == 'darwin':
     os.chdir(base_dir)
