@@ -6,6 +6,7 @@ from base64 import b64decode
 from utils import ecdsa_sign
 import time
 from pivx_hashlib import wif_to_privkey
+from btchip.btchipUtils import compress_public_key
 import binascii
 from constants import MPATH
 from misc import printOK, printDbg, printException, getCallerName, getFunctionName
@@ -43,8 +44,8 @@ class Masternode(QObject):
         self.sig_time = int(time.time())            
         serializedData = ipport(self.ip, self.port)
         serializedData += str(self.sig_time)
-        serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.collateral['pubKey'])))[::-1].hex()
-        serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
+        serializedData += self.collateral['pubKey']
+        serializedData += compress_public_key(binascii.unhexlify(self.mnPubKey)).hex()
         serializedData += str(self.protocol_version)    
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
         printDbg("SerializedData: %s" % serializedData) 
