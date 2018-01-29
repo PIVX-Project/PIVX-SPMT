@@ -29,8 +29,9 @@ class TabMNConf():
         self.ui.edt_txid.returnPressed.connect(lambda: self.onEditTx())
         self.ui.btn_cancelMNConf.clicked.connect(lambda: self.onCancelMNConfig())
         self.ui.btn_saveMNConf.clicked.connect(lambda: self.onSaveMNConf())
+        self.ui.btn_spathToAddress.clicked.connect(lambda: self.spathToAddress())
         
-     
+        
      
         
     def addressToSpath(self):
@@ -51,7 +52,7 @@ class TabMNConf():
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
         # first scan. Subsequent called by findSpath_done
-        self.spath_found, self.spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count)
+        self.spath_found, self.spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count, self.isTestnet())
         printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, self.spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
@@ -70,10 +71,10 @@ class TabMNConf():
             
             if self.spath_found:
                 printOK("spath is %d" % spath)
-                self.findPubKey()
                 mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
                 self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
                 self.ui.edt_spath.setValue(spath)
+                self.findPubKey()
                 
             else:
                 mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
@@ -113,7 +114,11 @@ class TabMNConf():
         while self.caller.tabMain.myList.item(row)['name'] < name:
             row += 1
         return row
-        
+    
+    
+    
+    def isTestnet(self):
+        return self.ui.testnetCheck.isChecked()
         
         
         
@@ -190,7 +195,7 @@ class TabMNConf():
         if reply == QMessageBox.No:
             return
         
-        newkey = generate_privkey()
+        newkey = generate_privkey(self.isTestnet())
         self.ui.edt_mnPrivKey.setText(newkey)
         
         
@@ -223,6 +228,7 @@ class TabMNConf():
             new_masternode['port'] = self.ui.edt_rpcPort.value()
             new_masternode['mnPrivKey'] = self.ui.edt_mnPrivKey.text().strip()
             new_masternode['hwAcc'] = self.ui.edt_hwAccount.value()
+            new_masternode['isTestnet'] = 0 if not self.isTestnet() else 1
 
             coll = {}
             coll['address'] = self.ui.edt_address.text().strip()
@@ -257,3 +263,20 @@ class TabMNConf():
         except Exception as e:
             printDbg("Exception %s" % e)
             
+    
+    
+    
+    @pyqtSlot()     
+    def spathToAddress(self):
+        printOK("spathToAddress pressed") 
+        currHwAcc = self.ui.edt_hwAccount.value()
+        currSpath = self.ui.edt_spath.value()
+        # Check dongle
+        printDbg("Checking HW device")
+        if self.caller.hwStatus != 2:
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
+            printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
+            return None
+        addr = self.caller.hwdevice.scanForAddress(currHwAcc, currSpath, self.isTestnet())
+        self.ui.edt_address.setText(addr)
+        self.findPubKey()

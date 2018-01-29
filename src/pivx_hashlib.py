@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import hashlib
 import bitcoin
-from constants import WIF_PREFIX, MAGIC_BYTE
+from constants import WIF_PREFIX, MAGIC_BYTE, TESTNET_WIF_PREFIX, TESTNET_MAGIC_BYTE
 from pivx_b58 import b58encode, b58decode
 
 def double_sha256(data):
@@ -13,26 +13,28 @@ def double_sha256(data):
 
 
 
-def generate_privkey():
+def generate_privkey(isTestnet=False):
     """
     Based on Andreas Antonopolous work from 'Mastering Bitcoin'.
     """
+    base58_secret = TESTNET_WIF_PREFIX if isTestnet else WIF_PREFIX
     valid = False
     privkey = 0
     while not valid:
         privkey = bitcoin.random_key()
         decoded_private_key = bitcoin.decode_privkey(privkey, 'hex')
         valid = 0 < decoded_private_key < bitcoin.N
-    data = bytes([WIF_PREFIX]) + bytes.fromhex(privkey)
+    data = bytes([base58_secret]) + bytes.fromhex(privkey)
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
 
 
 
-def pubkey_to_address(pubkey):
+def pubkey_to_address(pubkey, isTestnet=False):
+    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
     pubkey_bin = bytes.fromhex(pubkey)
     pub_hash = bitcoin.bin_hash160(pubkey_bin)
-    data = bytes([MAGIC_BYTE]) + pub_hash
+    data = bytes([base58_pubkey]) + pub_hash
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
 
@@ -62,7 +64,8 @@ def wif_to_privkey(string):
     vs = bytes.fromhex(pvkeyencoded[:-8])
     check = double_sha256(vs)[0:4]
 
-    if wifversion == WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex():
+    if (wifversion == WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex()) \
+    or (wifversion == TESTNET_WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex()):
 
         if wif_compressed:
             privkey = pvkeyencoded[2:-10]

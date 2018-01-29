@@ -11,6 +11,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.Qt import QObject
 from threads import ThreadFuns
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
+from pivx_hashlib import pubkey_to_address
 
 def process_ledger_exceptions(func):
 
@@ -192,11 +193,15 @@ class HWdevice(QObject):
     
     
     @process_ledger_exceptions
-    def scanForAddress(self, account, spath):
+    def scanForAddress(self, account, spath, isTestnet=False):
         printOK("Scanning for Address of path_id %s on account n° %s" % (str(spath), str(account)))
         curr_path = MPATH + "%d'/0/%d" % (account, spath) 
         try:
-            curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]                             
+            if not isTestnet:
+                curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
+            else:
+                pubkey = self.chip.getWalletPublicKey(curr_path).get('publicKey').hex()
+                curr_addr = pubkey_to_address(pubkey, isTestnet)                          
         except Exception as e:
             err_msg = 'error in scanForAddress'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
@@ -207,7 +212,7 @@ class HWdevice(QObject):
     
     
     @process_ledger_exceptions
-    def scanForBip32(self, account, address, starting_spath=0, spath_count=10):
+    def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
         found = False
         spath = -1
          
@@ -216,7 +221,12 @@ class HWdevice(QObject):
             curr_path = MPATH + "%d'/0/%d" % (account, i)
             printDbg("checking path... %s" % curr_path)
             try:
-                curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]              
+                if not isTestnet:
+                    curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
+                else:
+                    pubkey = self.chip.getWalletPublicKey(curr_path).get('publicKey').hex()
+                    
+                    curr_addr = pubkey_to_address(pubkey, isTestnet)              
                 if curr_addr == address:
                     found = True
                     spath = i

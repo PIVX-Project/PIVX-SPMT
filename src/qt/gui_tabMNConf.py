@@ -5,7 +5,8 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
+    QCheckBox
 from PyQt5.QtWidgets import QLineEdit
 
 class TabMNConf_gui(QWidget):
@@ -54,6 +55,10 @@ class TabMNConf_gui(QWidget):
         self.edt_rpcPort.setValue(masternode['port'])
         self.edt_mnPrivKey.setText(masternode['mnPrivKey'])
         self.edt_hwAccount.setValue(masternode['hwAcc'])
+        if masternode['isTestnet'] == 1:
+            self.testnetCheck.setChecked(True)
+        else:
+            self.testnetCheck.setChecked(False)
         self.edt_address.setText(masternode['collateral'].get('address'))
         self.edt_spath.setValue(masternode['collateral'].get('spath'))
         self.edt_pubKey.setText(masternode['collateral'].get('pubKey'))
@@ -75,6 +80,10 @@ class TabMNConf_gui(QWidget):
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         layout.setContentsMargins(10, 20, 10, 10)
         layout.setSpacing(13)
+        ## Testnet check
+        self.testnetCheck = QCheckBox()
+        self.testnetCheck.setToolTip("check for TESTNET masternode setup")
+        layout.addRow("testnet: ", self.testnetCheck)
         ##--- ROW 1
         self.edt_name = QLineEdit()
         self.edt_name.setToolTip("masternode Alias.\n-- example: My Masternode 1")
@@ -144,10 +153,12 @@ class TabMNConf_gui(QWidget):
         self.edt_spath.setToolTip("BIP44 spath for the address")
         self.edt_spath.setFixedWidth(100)
         self.edt_spath.setValue(0)
-        self.edt_spath.setEnabled(False)
+        self.btn_spathToAddress = QPushButton("<<")
+        self.btn_spathToAddress.setToolTip("find address and public key of given spath")
         self.btn_addressToSpath = QPushButton(">>")
         self.btn_addressToSpath.setToolTip("find spath_id and public key of address with hardware device")
         hBox3.addWidget(self.edt_address)
+        hBox3.addWidget(self.btn_spathToAddress)
         hBox3.addWidget(self.btn_addressToSpath)
         hBox3.addWidget(QLabel("spath_id"))
         hBox3.addWidget(self.edt_spath)
