@@ -61,7 +61,7 @@ class TestMasternodeMethods(unittest.TestCase):
     @pyqtSlot(str)    
     def finalizeStartMessage_end(self, text):
         # decode message
-        ret = self.caller.rpcClient.masternodebroadcast("decode", text)
+        ret = self.caller.rpcClient.decodemasternodebroadcast(text)
         # find masternode in list and check
         for mnode in self.mnode_list:
             ip_addr = mnode.ip + ":" + mnode.port

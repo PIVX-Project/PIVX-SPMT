@@ -150,15 +150,24 @@ class RpcClient:
             return "RPC status: NOT CONNECTED. remote or local PIVX-cli running?"
     
     
-    
-    
-    def masternodebroadcast(self, cmd, work):
+            
+            
+            
+    def decodemasternodebroadcast(self, work):
         try:
-            return self.conn.masternodebroadcast(cmd, work.strip())
+            return self.conn.decodemasternodebroadcast(work.strip())
         except Exception as e:
-            err_msg = "error in masternodebroadcast"
+            err_msg = "error in decodemasternodebroadcast"
             eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            
+            
     
+    def relaymasternodebroadcast(self, work):
+        try:
+            return self.conn.relaymasternodebroadcast(work.strip())
+        except Exception as e:
+            err_msg = "error in relaymasternodebroadcast"
+            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
     
 
 

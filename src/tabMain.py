@@ -273,14 +273,14 @@ class TabMain():
             
             
     # Activated by signal 'sigdone' from masternode       
-    @pyqtSlot(str)     
+         
     def sendBroadcast(self, text):
         if text == "None":
             self.sendBroadcastCheck()
             return
         
         printOK("Start Message: %s" % text)
-        ret = self.caller.rpcClient.masternodebroadcast("decode", text)
+        ret = self.caller.rpcClient.decodemasternodebroadcast(text)
         if ret is None:
             self.caller.myPopUp2(QMessageBox.Critical, 'message decoding failed', 'message decoding failed')
             self.sendBroadcastCheck()
@@ -292,7 +292,7 @@ class TabMain():
             self.sendBroadcastCheck()
             return
         
-        ret2 = self.caller.rpcClient.masternodebroadcast("relay", text)
+        ret2 = self.caller.rpcClient.relaymasternodebroadcast(text)
         self.caller.myPopUp2(QMessageBox.Information, 'message relayed', json.dumps(ret2, indent=4, sort_keys=True), QMessageBox.Ok)
         self.sendBroadcastCheck()
     
