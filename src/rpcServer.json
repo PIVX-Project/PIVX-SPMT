@@ -1,1 +1,1 @@
-{"rpc_password": "pass", "rpc_ip": "192.168.1.145", "rpc_user": "user", "rpc_port": 45458}
+{"rpc_user": "myUsername", "rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_password": "myPassword"}

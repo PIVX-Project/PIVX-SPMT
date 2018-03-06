@@ -71,8 +71,7 @@ class Masternode(QObject):
     
     
     
-    
-    @pyqtSlot(str)        
+            
     def finalizeStartMessage(self, text):
         sig1 = text
         if sig1=="None":
