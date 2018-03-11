@@ -11,7 +11,7 @@ class RpcClient:
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
         try:    
             self.conn = AuthServiceProxy(rpc_url, timeout=8)
-            eprintDbg("Contacting PIVX-cli server at %s:%d" % (self.rpc_ip, self.rpc_port))     
+            #eprintDbg("Contacting PIVX-cli server at %s:%d" % (self.rpc_ip, self.rpc_port))     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -133,9 +133,9 @@ class RpcClient:
             if str(e.args[0]) == "Loading block index..." or str(e.args[0]) == "Verifying blocks...":
                 eprintDbg(str(e.args[0]))
                 n = 1
-            else:
-                err_msg = "Error while contacting RPC server"
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
+            #else:
+                #err_msg = "Error while contacting RPC server"
+                #eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
         return status, n
     
     

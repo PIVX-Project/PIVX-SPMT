@@ -8,7 +8,7 @@ from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette,
 
 from spmtApp import App 
 from misc import readMNfile, updateSplash
-import time         
+import time      
     
 if __name__ == '__main__':
     # Create App
@@ -56,6 +56,7 @@ if __name__ == '__main__':
     masternode_list = readMNfile()
     # Create QMainWindow Widget
     ex = App(masternode_list, imgDir)
+    
     # Close Splashscreen
     splash.close()
     # Execute App

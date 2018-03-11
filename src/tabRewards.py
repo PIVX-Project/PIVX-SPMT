@@ -253,22 +253,24 @@ class TabRewards():
             
     @pyqtSlot()
     def onToggleCollateral(self):
-        if len(self.rewards) and self.ui.rewardsList.box.collateralRow is not None:
-            if not self.ui.collateralHidden:
-                self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
-                self.ui.btn_toggleCollateral.setText("Show Collateral")
-                self.ui.collateralHidden = True
-                self.updateSelection()
-            else:
-                self.ui.rewardsList.box.showRow(self.ui.rewardsList.box.collateralRow)
-                self.ui.btn_toggleCollateral.setText("Hide Collateral")
-                self.ui.collateralHidden = False
-                self.updateSelection()
-                self.ui.rewardsList.box.resizeColumnsToContents()
-                self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        if(self.rewards is not None):
             
-    
-    
+            if len(self.rewards) and self.ui.rewardsList.box.collateralRow is not None:
+                if not self.ui.collateralHidden:
+                    self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
+                    self.ui.btn_toggleCollateral.setText("Show Collateral")
+                    self.ui.collateralHidden = True
+                    self.updateSelection()
+                else:
+                    self.ui.rewardsList.box.showRow(self.ui.rewardsList.box.collateralRow)
+                    self.ui.btn_toggleCollateral.setText("Hide Collateral")
+                    self.ui.collateralHidden = False
+                    self.updateSelection()
+                    self.ui.rewardsList.box.resizeColumnsToContents()
+                    self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+            
+        else:
+            self.caller.myPopUp2(QMessageBox.Information, 'No Collateral', "No collateral selected")
             
     # Activated by signal sigTxdone from hwdevice       
     @pyqtSlot(bytearray, str)            

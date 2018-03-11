@@ -4,7 +4,7 @@ import sys
 import os.path
 from time import strftime, gmtime
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, WriteStream, WriteStreamReceiver, now
-from constants import starting_height
+from constants import starting_height, log_File
 
 from PyQt5.QtCore import pyqtSlot, Qt, QThread
 from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
@@ -54,11 +54,20 @@ class MainWindow(QWidget):
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
         self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
         self.rpc_watchdogThread.start()       
+        
         ###-- Create Queues and redirect stdout and stderr (eventually)
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
         #sys.stderr = WriteStream(self.queue2)        
+        
+        ###-- Init last logs
+        logFile = open(log_File, 'w+')
+        timestamp = strftime('%Y-%m-%d %H:%M:%S', gmtime(now()))
+        log_line = '<b style="color: blue">{}</b><br>'.format('STARTING SPMT at '+ timestamp)
+        logFile.write(log_line)
+        logFile.close()
+        
         ###-- Create the thread to update console log for stdout
         self.consoleLogThread = QThread()
         self.myWSReceiver = WriteStreamReceiver(self.queue)

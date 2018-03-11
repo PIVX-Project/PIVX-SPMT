@@ -8,3 +8,4 @@ TESTNET_MAGIC_BYTE = 139
 DEFAULT_PROTOCOL_VERSION = 70913
 starting_width = 933
 starting_height = 666
+log_File = 'lastLogs.html'

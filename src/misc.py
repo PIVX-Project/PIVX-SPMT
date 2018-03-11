@@ -6,6 +6,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
 
+from constants import log_File
+
 def clean_for_html(text):
     if text is None:
         return ""
@@ -19,6 +21,9 @@ def clear_screen():
 
 
 def eprint(*args, **kwargs):
+    logFile = open(log_File, 'a+')
+    print(*args, file=logFile, **kwargs)
+    logFile.close()
     print(*args, file=sys.stderr, **kwargs)
     
 
@@ -96,7 +101,11 @@ def printDbg_msg(what):
 
 def printDbg(what):
     log_line = printDbg_msg(what)
+    logFile = open(log_File, 'a+')
+    logFile.write(log_line)
+    logFile.close()
     print(log_line)
+    
     
     
     
@@ -124,12 +133,19 @@ def printException(caller_name,
         err_msg,
         errargs=None):
     text = printException_msg(caller_name, function_name, err_msg, errargs)
+    logFile = open(log_File, 'a+')
+    logFile.write(text)
+    logFile.close()
     print(text)
+    
     
     
 
 def printOK(what):
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
+    logFile = open(log_File, 'a+')
+    logFile.write(msg)
+    logFile.close()
     print(msg)
     
   
