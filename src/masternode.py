@@ -84,14 +84,15 @@ class Masternode(QObject):
         scriptSig = ''
         sequence = 0xffffffff
         
-        # block_hash = hash(currBlock-12)
-        currBlock = self.rpcClient.getBlockCount()
-        block_hash = self.rpcClient.getBlockHash(currBlock - 12)
-        
-        printDbg("Current block from PIVX client: %s" % str(currBlock))
-        printDbg("Hash of 12 blocks ago: %s" % block_hash)
-        
         try:
+            # block_hash = hash(currBlock-12)
+            currBlock = self.rpcClient.getBlockCount()
+            block_hash = self.rpcClient.getBlockHash(currBlock - 12)
+            
+            printDbg("Current block from PIVX client: %s" % str(currBlock))
+            printDbg("Hash of 12 blocks ago: %s" % block_hash)
+        
+        
             vintx = bytes.fromhex(self.collateral['txid'])[::-1].hex()
             vinno = self.collateral['txidn'].to_bytes(4, byteorder='big')[::-1].hex()
             vinsig = num_to_varint(len(scriptSig) / 2).hex() + bytes.fromhex(scriptSig)[::-1].hex()
