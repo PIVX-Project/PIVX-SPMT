@@ -16,9 +16,11 @@ if __name__ == '__main__':
     if getattr( sys, 'frozen', False ) :
         # running in a bundle
         imgDir = os.path.join(sys._MEIPASS, 'img')
+        #log_File = os.path.join(sys._MEIPASS, 'img')
     else :
         # running live
         imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
+        #log_File = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lastLogs.html')
     ### -- style stuff        
     spmtLogo_file = os.path.join(imgDir, 'splashscreen.png')
     labelstyle = "QLabel { font-size: 14px; color: purple; font-style: italic; text-align: center;}"

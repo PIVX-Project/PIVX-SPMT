@@ -127,7 +127,7 @@ class RpcClient:
             n = self.conn.getblockcount()
             if n > 0:
                 status = True
-                printDbg("RPC connected")
+                
         except Exception as e:
             # If loading block index set lastBlock=1
             if str(e.args[0]) == "Loading block index..." or str(e.args[0]) == "Verifying blocks...":
