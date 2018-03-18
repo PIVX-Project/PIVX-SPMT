@@ -12,6 +12,9 @@ def double_sha256(data):
     return hashlib.sha256(hashlib.sha256(data).digest()).digest()
 
 
+def single_sha256(data):
+    return hashlib.sha256(data).digest()
+
 
 def generate_privkey(isTestnet=False):
     """

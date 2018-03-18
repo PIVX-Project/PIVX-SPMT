@@ -11,7 +11,8 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.Qt import QObject
 from threads import ThreadFuns
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
-from pivx_hashlib import pubkey_to_address
+from pivx_hashlib import pubkey_to_address, single_sha256
+
 
 def process_ledger_exceptions(func):
 
@@ -265,17 +266,18 @@ class HWdevice(QObject):
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
+        message_sha = splitString(single_sha256(message).hex(),32);
         # Ask confirmation
         info = self.chip.signMessagePrepare(path, message)
         printDbg("info = %s" % str(info))
         printOK('Signing Message')
         self.mBox = QMessageBox(caller.ui)
-        messageText = splitString("Check display of your hardware device\n\n\n" + "masternode message:\n%s\n\npath:\t%s" % (message, path), 50)
+        messageText = "Check display of your hardware device\n\n" + "- masternode message hash:\n\n%s\n\n-path:\t%s\n" % (message_sha, path)
         self.mBox.setText(messageText)
         self.mBox.setIconPixmap(caller.ui.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox.setWindowTitle("CHECK YOUR LEDGER")
         self.mBox.setStandardButtons(QMessageBox.NoButton)
-        self.mBox.setMaximumWidth(500)
+        
         self.mBox.show()
         # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
