@@ -59,7 +59,8 @@ class MainWindow(QWidget):
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
-        #sys.stderr = WriteStream(self.queue2)        
+        #sys.stderr = WriteStream(self.queue2)  
+        sys.stderr = None      
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -263,7 +264,7 @@ class MainWindow(QWidget):
     def onToggleDebug(self):
         
         if self.consoleDebug:
-            sys.stderr = sys.__stderr__
+            sys.stderr = None
             self.consoleDebug = False
             self.btn_consoleToggleDebug.setIcon(self.switchOff_icon)
             
