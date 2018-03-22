@@ -201,7 +201,7 @@ class HWdevice(QObject):
             if not isTestnet:
                 curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
             else:
-                pubkey = self.chip.getWalletPublicKey(curr_path).get('publicKey').hex()
+                pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()
                 curr_addr = pubkey_to_address(pubkey, isTestnet)                          
         except Exception as e:
             err_msg = 'error in scanForAddress'
