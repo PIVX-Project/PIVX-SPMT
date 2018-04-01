@@ -64,7 +64,7 @@ class FindCollTx_dlg(QDialog):
         else:
             if self.apiConnected:
                 self.lblMessage.setText('<b style="color:red">Found no unspent transactions with 10000 PIVs '
-                                        'amount sent to address %s.</b>' %
+                                        'amount sent to address %s.</b> (or explorer offline - try manually)' %
                                         self.pivx_addr)
             else:
                 self.lblMessage.setText('<b style="color:purple">Unable to connect to API provider.\nEnter tx manually</b>')

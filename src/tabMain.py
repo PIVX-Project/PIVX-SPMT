@@ -42,8 +42,7 @@ class TabMain():
         
     def checkMN(self, ctrl):
         address = self.curr_masternode_address
-        # Check rpc connection
-        printDbg("Checking RPC connection")   
+        # Check rpc connection   
         if not self.caller.rpcConnected:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to RPC server first")
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
@@ -57,6 +56,7 @@ class TabMain():
     def displayMNStatus(self):
         statusData = self.curr_statusData
         masternode_alias = self.curr_masternode_alias
+        self.ui.btn_details[masternode_alias].disconnect()
         self.ui.btn_details[masternode_alias].clicked.connect(lambda: self.onDisplayStatusDetails(masternode_alias, statusData))
         self.ui.btn_details[masternode_alias].show()
         
@@ -134,8 +134,7 @@ class TabMain():
     def onDisplayStatusDetails(self, masternode_alias, statusData):
         try:
             ui = MnStatus_dlg(self.ui, masternode_alias, statusData)
-            if ui.exec_():
-                printDbg("Display Status Details")
+            ui.exec_()
                 
         except Exception as e:
             err_msg = "error in displayStatusDetails"
@@ -213,7 +212,6 @@ class TabMain():
     def onStartAllMN(self):
         printOK("Start-All pressed")
         # Check RPC & dongle
-        # Check rpc connection  
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")
@@ -241,8 +239,7 @@ class TabMain():
         
     @pyqtSlot()
     def onStartMN(self, data=None):
-        # Check RPC & dongle
-        # Check rpc connection  
+        # Check RPC & dongle  
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")

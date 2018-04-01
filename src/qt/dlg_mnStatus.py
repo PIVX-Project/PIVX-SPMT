@@ -32,7 +32,7 @@ class Ui_MnStatusDlg(object):
         name = QLabel("<b><i>%s</i></b>" % self.mnAlias)
         name.setAlignment(Qt.AlignCenter)
         layout.addWidget(name)
-        body = QFormLayout(MnStatusDlg)
+        body = QFormLayout()
         body.setLabelAlignment(Qt.AlignRight)
         body.setVerticalSpacing(20)
         body.setContentsMargins(25, 10, 25, 30)

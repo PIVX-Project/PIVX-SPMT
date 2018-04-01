@@ -30,6 +30,7 @@ class TabMNConf():
         self.ui.btn_cancelMNConf.clicked.connect(lambda: self.onCancelMNConfig())
         self.ui.btn_saveMNConf.clicked.connect(lambda: self.onSaveMNConf())
         self.ui.btn_spathToAddress.clicked.connect(lambda: self.spathToAddress())
+        self.ui.testnetCheck.clicked.connect(lambda: self.onChangeTestnet())
         
         
      
@@ -127,6 +128,15 @@ class TabMNConf():
         self.caller.tabs.setCurrentIndex(0)
         self.caller.tabs.removeTab(1)
         self.caller.mnode_to_change = None
+        
+        
+        
+    @pyqtSlot()
+    def onChangeTestnet(self):
+        if self.isTestnet():
+            self.ui.edt_rpcPort.setValue(51474)
+        else:
+            self.ui.edt_rpcPort.setValue(51472)
         
      
      
