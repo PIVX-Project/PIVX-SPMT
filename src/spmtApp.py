@@ -33,7 +33,7 @@ class App(QMainWindow):
         signal.signal(signal.SIGINT, service_shutdown)
         # Get version and title
         self.version = getSPMTVersion()
-        self.title = 'SPMT - Secure Pivx Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
+        self.title = 'SPMT - Secure PIVX Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
  
