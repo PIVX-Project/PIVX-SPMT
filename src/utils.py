@@ -6,6 +6,7 @@ from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_t
 from pivx_hashlib import wif_to_privkey
 from pivx_b58 import b58decode
 from bitcoin import bin_dbl_sha256
+from ipaddress import ip_address
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
 OP_HASH160 = b'\xA9'
@@ -112,12 +113,27 @@ def from_string_to_bytes(a):
 
 def ipmap(ip, port):
     try:
-        ipv6map = '00000000000000000000ffff'
-        ipdigit = map(int, ip.split('.'))
-        for i in ipdigit:
-            ipv6map += i.to_bytes(1, byteorder='big')[::-1].hex()
-    
+        ipAddr = ip_address(ip)
+        ipv6map = ''
+        
+        if ipAddr.version==4:
+            ipv6map = '00000000000000000000ffff'
+            ip_digits = map(int, ipAddr.exploded.split('.'))
+            for i in ip_digits:
+                ipv6map += i.to_bytes(1, byteorder='big')[::-1].hex()
+        
+        elif ipAddr.version==6:
+            ip_hextets = map(str, ipAddr.exploded.split(':'))
+            for a in ip_hextets:
+                ipv6map += a
+        
+        else:
+            raise Exception("invalid version number (%d)" % version)
+        
+              
         ipv6map += int(port).to_bytes(2, byteorder='big').hex()
+        if len(ipv6map) != 36:
+            raise Exception("Problems! len is %d" % len(ipv6map))
         return ipv6map
     
     except Exception as e:

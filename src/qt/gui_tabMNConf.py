@@ -5,8 +5,7 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
-    QCheckBox
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox
 from PyQt5.QtWidgets import QLineEdit
 
 class TabMNConf_gui(QWidget):
@@ -27,12 +26,10 @@ class TabMNConf_gui(QWidget):
         
         
     def clearConfigForm(self):
+        self.testnetCheck.setChecked(False)
         self.edt_name.setText('')
-        self.edt_rpcIp_byte1.setValue(127)
-        self.edt_rpcIp_byte2.setValue(0)
-        self.edt_rpcIp_byte3.setValue(0)
-        self.edt_rpcIp_byte4.setValue(1)
-        self.edt_rpcPort.setValue(51472)
+        self.edt_masternodeIp.setText('')
+        self.edt_masternodePort.setValue(51472)
         self.edt_mnPrivKey.setText('')
         self.edt_hwAccount.setValue(0)
         self.edt_address.setText('')
@@ -46,13 +43,9 @@ class TabMNConf_gui(QWidget):
         
         
     def fillConfigForm(self, masternode):
-        ip_bytes = [int(x) for x in masternode['ip'].split('.')]
         self.edt_name.setText(masternode['name'])
-        self.edt_rpcIp_byte1.setValue(ip_bytes[0])
-        self.edt_rpcIp_byte2.setValue(ip_bytes[1])
-        self.edt_rpcIp_byte3.setValue(ip_bytes[2])
-        self.edt_rpcIp_byte4.setValue(ip_bytes[3])
-        self.edt_rpcPort.setValue(masternode['port'])
+        self.edt_masternodeIp.setText(masternode['ip'])
+        self.edt_masternodePort.setValue(masternode['port'])
         self.edt_mnPrivKey.setText(masternode['mnPrivKey'])
         self.edt_hwAccount.setValue(masternode['hwAcc'])
         if masternode['isTestnet'] == 1:
@@ -90,41 +83,17 @@ class TabMNConf_gui(QWidget):
         layout.addRow(QLabel("Name"), self.edt_name)
         ##--- ROW 2
         line1 = QHBoxLayout()
-        self.edt_rpcIp_byte1 = QSpinBox()
-        self.edt_rpcIp_byte1.setRange(0, 255)
-        self.edt_rpcIp_byte1.setValue(127)
-        self.edt_rpcIp_byte1.setFixedWidth(50)
-        self.edt_rpcIp_byte1.setToolTip("remote masternode ip address \n-- example: 66.171.50.151")
-        line1.addWidget(self.edt_rpcIp_byte1)
-        line1.addWidget(QLabel("."))
-        self.edt_rpcIp_byte2 = QSpinBox()
-        self.edt_rpcIp_byte2.setRange(0, 255)
-        self.edt_rpcIp_byte2.setValue(0)
-        self.edt_rpcIp_byte2.setFixedWidth(50)
-        self.edt_rpcIp_byte2.setToolTip("remote masternode ip address \n-- example: 66.171.50.151")
-        line1.addWidget(self.edt_rpcIp_byte2)
-        line1.addWidget(QLabel("."))
-        self.edt_rpcIp_byte3 = QSpinBox()
-        self.edt_rpcIp_byte3.setRange(0, 255)
-        self.edt_rpcIp_byte3.setValue(0)
-        self.edt_rpcIp_byte3.setFixedWidth(50)
-        self.edt_rpcIp_byte3.setToolTip("remote masternode ip address \n-- example: 66.171.50.151")
-        line1.addWidget(self.edt_rpcIp_byte3)
-        line1.addWidget(QLabel("."))
-        self.edt_rpcIp_byte4 = QSpinBox()
-        self.edt_rpcIp_byte4.setRange(0, 255)
-        self.edt_rpcIp_byte4.setValue(1)
-        self.edt_rpcIp_byte4.setFixedWidth(50)
-        self.edt_rpcIp_byte4.setToolTip("remote masternode ip address \n-- example: 66.171.50.151")
-        line1.addWidget(self.edt_rpcIp_byte4)
-        line1.addStretch(1)
+        self.edt_masternodeIp = QLineEdit()
+        self.edt_masternodeIp.setToolTip("masternode IP address\n-- example [IPv4] 88.172.23.1\n-- example [IPv6] 2001:db8:85a3::8a2e:370:7334")
+        line1.addWidget(self.edt_masternodeIp)
+        #line1.addStretch(1)
         line1.addWidget(QLabel("IP Port"))
-        self.edt_rpcPort = QSpinBox()
-        self.edt_rpcPort.setRange(1, 65535)
-        self.edt_rpcPort.setValue(51472)
-        self.edt_rpcPort.setToolTip("remote masternode tcp port \n-- example: 51472")
-        self.edt_rpcPort.setFixedWidth(180)
-        line1.addWidget(self.edt_rpcPort)
+        self.edt_masternodePort = QSpinBox()
+        self.edt_masternodePort.setRange(1, 65535)
+        self.edt_masternodePort.setValue(51472)
+        self.edt_masternodePort.setToolTip("remote masternode tcp port \n-- example: 51472")
+        self.edt_masternodePort.setFixedWidth(180)
+        line1.addWidget(self.edt_masternodePort)
         layout.addRow(QLabel("IP Address"), line1)
         ##--- ROW 3
         self.edt_mnPrivKey = QLineEdit()

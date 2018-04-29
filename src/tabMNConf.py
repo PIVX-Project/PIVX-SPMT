@@ -3,6 +3,7 @@
 import sys
 import os.path
 from threads import ThreadFuns
+from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from misc import printDbg, printOK, writeMNfile
 from pivx_hashlib import generate_privkey
@@ -134,9 +135,9 @@ class TabMNConf():
     @pyqtSlot()
     def onChangeTestnet(self):
         if self.isTestnet():
-            self.ui.edt_rpcPort.setValue(51474)
+            self.ui.edt_masternodePort.setValue(51474)
         else:
-            self.ui.edt_rpcPort.setValue(51472)
+            self.ui.edt_masternodePort.setValue(51472)
         
      
      
@@ -234,8 +235,9 @@ class TabMNConf():
             # create new item
             new_masternode = {}
             new_masternode['name'] = self.ui.edt_name.text().strip()
-            new_masternode['ip'] = "%d.%d.%d.%d" % (self.ui.edt_rpcIp_byte1.value(), self.ui.edt_rpcIp_byte2.value(), self.ui.edt_rpcIp_byte3.value(), self.ui.edt_rpcIp_byte4.value())
-            new_masternode['port'] = self.ui.edt_rpcPort.value()
+            masternodeIp = ip_address(self.ui.edt_masternodeIp.text().strip())
+            new_masternode['ip'] = masternodeIp.compressed
+            new_masternode['port'] = self.ui.edt_masternodePort.value()
             new_masternode['mnPrivKey'] = self.ui.edt_mnPrivKey.text().strip()
             new_masternode['hwAcc'] = self.ui.edt_hwAccount.value()
             new_masternode['isTestnet'] = 0 if not self.isTestnet() else 1
@@ -271,7 +273,9 @@ class TabMNConf():
             self.onCancelMNConfig()
             
         except Exception as e:
-            printDbg("Exception %s" % e)
+            error_msg = "ERROR: %s" % e
+            printDbg(error_msg)
+            self.caller.myPopUp2(QMessageBox.Critical, 'ERROR', error_msg)
             
     
     

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os.path
+from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -79,7 +80,13 @@ def ipport(ip, port):
     if ip is None or port is None:
         return None
     else:
-        return ip + ':' + port
+        ipAddr = ip_address(ip)
+        if ipAddr.version == 4:
+            return ip + ':' + port
+        elif ipAddr.version == 6:
+            return "[" + ip + "]:" + port
+        else:
+            raise Exception("invalid IP version number")
 
 
 

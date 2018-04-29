@@ -21,7 +21,7 @@ def process_ledger_exceptions(func):
             return func(*args, **kwargs)
         except BTChipException as e:
             printDbg('Error while communicating with Ledger hardware wallet.')
-            if (e.sw == 0x6d00):
+            if (e.sw in (0x6d00, 0x6700)):
                 e.message += '\n\nMake sure the PIVX app is running on your Ledger device.'
             elif (e.sw == 0x6982):
                 e.message += '\n\nMake sure you have entered the PIN on your Ledger device.'
@@ -58,6 +58,7 @@ class HWdevice(QObject):
             err_msg = 'error Initializing Ledger'
             eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
             self.initialized = False
+            self.dongle.close()
             
         
     

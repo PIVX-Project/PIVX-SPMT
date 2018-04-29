@@ -40,7 +40,7 @@ class Masternode(QObject):
     
     
     def signature1(self, device):
-        self.sig_time = int(time.time())            
+        self.sig_time = int(time.time())         
         serializedData = ipport(self.ip, self.port)
         serializedData += str(self.sig_time)
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.collateral['pubKey'])))[::-1].hex()
