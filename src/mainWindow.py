@@ -59,8 +59,8 @@ class MainWindow(QWidget):
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
-        #sys.stderr = WriteStream(self.queue2)  
-        #sys.stderr = None      
+        sys.stderr = WriteStream(self.queue2)  
+      
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -119,7 +119,10 @@ class MainWindow(QWidget):
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
- 
+        # update last logs
+        logFile = open(log_File, 'a+')
+        logFile.write(text)
+        logFile.close()
             
             
             

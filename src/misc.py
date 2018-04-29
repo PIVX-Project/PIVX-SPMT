@@ -21,9 +21,6 @@ def clear_screen():
 
 
 def eprint(*args, **kwargs):
-    logFile = open(log_File, 'a+')
-    print(*args, file=logFile, **kwargs)
-    logFile.close()
     print(*args, file=sys.stderr, **kwargs)
     
 
@@ -234,7 +231,7 @@ def writeRPCfile(configuration):
     
     
     
-# Stream object to redirect sys.stdout to a queue
+# Stream object to redirect sys.stdout and sys.stderr to a queue
 class WriteStream(object):
     def __init__(self, queue):
         self.queue = queue
