@@ -174,7 +174,8 @@ class TabRewards():
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2] 
             result = self.apiClient.getBalance(self.curr_addr)
-            self.ui.addrAvailLine.setText("<i>%f PIVs</i>" % (result-10000))
+            if result is not None:
+                self.ui.addrAvailLine.setText("<i>%f PIVs</i>" % (result-10000))
             self.ui.selectedRewardsLine.setText("0.0")
             self.ui.rewardsList.box.clearSelection()
             self.ui.rewardsList.box.collateralRow = None
