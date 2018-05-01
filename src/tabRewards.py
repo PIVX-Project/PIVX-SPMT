@@ -37,7 +37,6 @@ class TabRewards():
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         # Init first selection
         self.loadMnSelect()
-        self.onChangeSelectedMN()
 
         
         
@@ -181,7 +180,8 @@ class TabRewards():
             self.ui.rewardsList.box.collateralRow = None
             self.ui.collateralHidden = True
             self.ui.btn_toggleCollateral.setText("Show Collateral")
-            self.runInThread = ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
+            if result is not None:
+                self.runInThread = ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
             
       
         

@@ -49,7 +49,7 @@ if __name__ == '__main__':
         updateSplash(label, i)
         progressBar.setFormat(str(i) + "%")
         t = time.time()
-        while time.time() < t + 0.025:
+        while time.time() < t + 0.015:
             app.processEvents()
            
     ### --------------       

@@ -1,5 +1,5 @@
 # SPMT
-SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on a Ledger Nano S hardware wallet.
+SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on Ledger Nano S hardware wallets.
 
 ## Installation
 This application does not require installation.<br>
@@ -82,11 +82,7 @@ coming soon
 
 
 ## Credits
-This work is based on the following Dash projects:
+A huge part of this work is inspired by the following Dash projects:
 - https://github.com/chaeplin/dashmnb
 - https://github.com/Bertrand256/dash-masternode-tool
 
-
-## Donations
-If you like this tool, feel free to coffee me:
-*DMEC4jnPmFjuVFsbGU2tX6V4ncUDD27dxo*

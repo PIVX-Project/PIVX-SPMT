@@ -5,7 +5,8 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox,\
+    QFrame
 from PyQt5.QtWidgets import QLineEdit
 
 class TabMNConf_gui(QWidget):
@@ -73,10 +74,6 @@ class TabMNConf_gui(QWidget):
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         layout.setContentsMargins(10, 20, 10, 10)
         layout.setSpacing(13)
-        ## Testnet check
-        self.testnetCheck = QCheckBox()
-        self.testnetCheck.setToolTip("check for TESTNET masternode setup")
-        layout.addRow("testnet: ", self.testnetCheck)
         ##--- ROW 1
         self.edt_name = QLineEdit()
         self.edt_name.setToolTip("masternode Alias.\n-- example: My Masternode 1")
@@ -86,7 +83,6 @@ class TabMNConf_gui(QWidget):
         self.edt_masternodeIp = QLineEdit()
         self.edt_masternodeIp.setToolTip("masternode IP address\n-- example [IPv4] 88.172.23.1\n-- example [IPv6] 2001:db8:85a3::8a2e:370:7334")
         line1.addWidget(self.edt_masternodeIp)
-        #line1.addStretch(1)
         line1.addWidget(QLabel("IP Port"))
         self.edt_masternodePort = QSpinBox()
         self.edt_masternodePort.setRange(1, 65535)
@@ -103,24 +99,27 @@ class TabMNConf_gui(QWidget):
         hBox2 = QHBoxLayout()
         hBox2.addWidget(self.edt_mnPrivKey)
         hBox2.addWidget(self.btn_genKey)
-        #hBox2.setContentsMargins(0, 0, 0, 5)
+        ## Testnet check
+        self.testnetCheck = QCheckBox()
+        self.testnetCheck.setToolTip("check for TESTNET masternode setup")
+        hBox2.addWidget(QLabel("testnet"))
+        hBox2.addWidget(self.testnetCheck)
         layout.addRow(QLabel("MN Priv Key"), hBox2)
         ##--- ROW 4/5
-        hBox2 = QHBoxLayout()
+        layout.addRow(QFrame())
+        layout.addRow(QLabel("<em>Masternode Collateral</em>"))
+        hBox3 = QHBoxLayout()
         self.edt_hwAccount = QSpinBox()
         self.edt_hwAccount.setFixedWidth(50)
         self.edt_hwAccount.setToolTip("account number of the hardware wallet.\nIf unsure put 0")
-        self.edt_hwAccount.setValue(0)
-        hBox2.addWidget(self.edt_hwAccount)
-        hBox2.addStretch(1)
-        hBox2.addWidget(QLabel("<i>Collateral</i>"))
-        layout.addRow(QLabel("Account HW"), hBox2)
-        hBox3 = QHBoxLayout()
+        self.edt_hwAccount.setValue(0)      
+        hBox3.addWidget(self.edt_hwAccount)
+        hBox3.addWidget(QLabel("PIVX Address"))
         self.edt_address = QLineEdit()
         self.edt_address.setToolTip("the address containing 10000 PIV")
         self.edt_spath = QSpinBox()
         self.edt_spath.setToolTip("BIP44 spath for the address")
-        self.edt_spath.setFixedWidth(100)
+        self.edt_spath.setFixedWidth(75)
         self.edt_spath.setValue(0)
         self.btn_spathToAddress = QPushButton("<<")
         self.btn_spathToAddress.setToolTip("find address and public key of given account/spath_id")
@@ -131,7 +130,7 @@ class TabMNConf_gui(QWidget):
         hBox3.addWidget(self.btn_addressToSpath)
         hBox3.addWidget(QLabel("spath_id"))
         hBox3.addWidget(self.edt_spath)
-        layout.addRow(QLabel("PIVX Address"), hBox3)
+        layout.addRow(QLabel("Account HW"), hBox3)
         ##--- ROW 6
         self.edt_pubKey = QLineEdit()
         self.edt_pubKey.setToolTip("public key corresponding to address")

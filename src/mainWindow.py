@@ -78,7 +78,6 @@ class MainWindow(QWidget):
         self.consoleLogThread.start()
         printDbg("Console Log thread started")       
         ###-- Create the thread to update console log for stderr
-        self.consoleDebug = False
         self.consoleLogThread2 = QThread()
         self.myWSReceiver2 = WriteStreamReceiver(self.queue2)
         self.myWSReceiver2.mysignal.connect(self.append_to_console)
@@ -134,10 +133,6 @@ class MainWindow(QWidget):
         self.btn_consoleToggle = QPushButton('Hide')
         self.btn_consoleToggle.setToolTip('Show/Hide console')
         self.btn_consoleToggle.clicked.connect(lambda: self.onToggleConsole())
-        self.btn_consoleToggleDebug = QPushButton()
-        self.btn_consoleToggleDebug.setToolTip('Turn Debug On-Off')
-        self.btn_consoleToggleDebug.setIcon(self.switchOff_icon)
-        self.btn_consoleToggleDebug.clicked.connect(lambda: self.onToggleDebug())
         consoleHeader = QHBoxLayout()
         consoleHeader.addWidget(self.btn_consoleToggle)
         self.consoleSaveButton = QPushButton('Save')
@@ -148,8 +143,6 @@ class MainWindow(QWidget):
         self.btn_consoleClean.clicked.connect(lambda: self.onCleanConsole())
         consoleHeader.addWidget(self.btn_consoleClean)
         consoleHeader.addStretch(1)
-        consoleHeader.addWidget(QLabel('Debug (On/Off):'))
-        consoleHeader.addWidget(self.btn_consoleToggleDebug)
         layout.addLayout(consoleHeader)
         self.consoleArea = QTextEdit()
         almostBlack = QColor(40, 40, 40)
@@ -172,9 +165,7 @@ class MainWindow(QWidget):
         self.ledRedV_icon = QPixmap(os.path.join(self.imgDir, 'icon_redLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
         self.ledGrayV_icon = QPixmap(os.path.join(self.imgDir, 'icon_grayLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
         self.ledGreenV_icon = QPixmap(os.path.join(self.imgDir, 'icon_greenLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
-        self.switchOff_icon = QIcon(os.path.join(self.imgDir, 'Switch-Off.png'))
-        self.switchOn_icon = QIcon(os.path.join(self.imgDir, 'Switch-On-Purple.png'))
-        
+       
         
         
         
@@ -243,6 +234,7 @@ class MainWindow(QWidget):
         # reload masternode list in tabs
         if self.tabs.currentWidget() == self.tabRewards:
             self.t_rewards.loadMnSelect()
+            self.t_rewards.onChangeSelectedMN()
             
         
         
@@ -261,20 +253,6 @@ class MainWindow(QWidget):
             self.consoleArea.show()  
             
             
-        
-            
-    @pyqtSlot()
-    def onToggleDebug(self):
-        
-        if self.consoleDebug:
-            sys.stderr = None
-            self.consoleDebug = False
-            self.btn_consoleToggleDebug.setIcon(self.switchOff_icon)
-            
-        else:
-            sys.stderr = WriteStream(self.queue2)
-            self.consoleDebug = True
-            self.btn_consoleToggleDebug.setIcon(self.switchOn_icon)
     
     
     
