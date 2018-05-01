@@ -312,10 +312,18 @@ class TabRewards():
     def updateSelection(self, clicked_item=None):
         total = 0
         self.selectedRewards = self.getSelection()
-        if len(self.selectedRewards):
+        numOfInputs = len(self.selectedRewards)
+        if numOfInputs:
             
-            for i in range(0, len(self.selectedRewards)):
+            for i in range(0, numOfInputs):
                 total += int(self.selectedRewards[i].get('value'))
-                
+                       
+        # update suggested fee and selected rewards
+        estimatedTxSize = (45+numOfInputs*146) / 1000   # kB
+        suggestedFee = round(self.caller.rpcClient.getFeePerKb() * estimatedTxSize, 8)
+        printDbg("estimatedTxSize is " + str(estimatedTxSize))
+        printDbg("suggested fee is " + str(suggestedFee))
+        
         self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
+        self.ui.feeLine.setValue(suggestedFee)
         

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from misc import getCallerName, getFunctionName, printException, printDbg, eprintDbg, eprintException, readRPCfile
-from constants import DEFAULT_PROTOCOL_VERSION
+from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 
 class RpcClient:
         
@@ -71,6 +71,18 @@ class RpcClient:
             else:
                 eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
     
+    
+    def getFeePerKb(self):
+        try:
+            # get transaction data from last 10 blocks
+            feePerKb = float(self.conn.getfeeinfo(10)['feeperkb'])
+            return (feePerKb if feePerKb > MINIMUM_FEE else MINIMUM_FEE)
+        except Exception as e:
+            err_msg = 'error in getFeePerKb'
+            if str(e.args[0]) != "Request-sent":
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            else:
+                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
