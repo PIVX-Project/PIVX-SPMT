@@ -221,18 +221,18 @@ class TabRewards():
         # Check Noob spending collateral
         if (self.ui.rewardsList.box.collateralRow is not None and 
                 self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected() ): 
-            warning1 = "Are you sure you want to transfer the collateral? (only n00bs click \"Yes\" )"
-            warning2 = "Are you sure you want to give up on a one-way trip to the moon?"
-            warning3 = "Take a deep breath. This is not the solution. Think again. Do you REALLY want to transfer your collateral?"
-            ans = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - da fuk!?', warning1)
+            warning1 = "Are you sure you want to transfer the collateral?"
+            warning2 = "Really?"
+            warning3 = "Take a deep breath. Do you REALLY want to transfer your collateral?"
+            ans = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - warning', warning1)
             if ans == QMessageBox.No:
                 return None
             else:
-                ans2 = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - da fuk!?', warning2)
+                ans2 = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - warning', warning2)
                 if ans2 == QMessageBox.No:
                     return None
                 else:
-                    ans3 = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - da fuk!?', warning3)
+                    ans3 = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - warning', warning3)
                     if ans3 == QMessageBox.No:
                         return None
                     
