@@ -235,7 +235,7 @@ class HWdevice(QObject):
                     spath = i
                     break
                 
-                sleep(0.1)
+                sleep(0.01)
             
             except Exception as e:
                 err_msg = 'error in scanForBip32'
@@ -374,6 +374,7 @@ class HWdevice(QObject):
         self.mBox2.accept()
         try:
             if self.tx_raw is not None:
+                # Signal to be catched by FinishSend on TabRewards
                 self.sigTxdone.emit(self.tx_raw, str(round(self.amount / 1e8, 8)))
             else:
                 printOK("Transaction refused by the user")
