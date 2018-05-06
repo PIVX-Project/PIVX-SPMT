@@ -103,6 +103,26 @@ class TabMNConf():
             return None
         
         result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
+        
+        # Connection pop-up
+        warningText = "Another application (such as Ledger Wallet app) has probably taken over "
+        warningText += "the communication with the Ledger device.<br><br>To continue, close that application and "
+        warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
+        mBox = QMessageBox(QMessageBox.Critical, "WARNING", warningText, QMessageBox.Retry)
+        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
+        
+        while result is None:      
+            ans = mBox.exec_()
+            # we need to reconnect the device
+            self.caller.hwdevice.dongle.close()
+            self.caller.hwdevice.initialized = False
+            self.caller.hwdevice.initDevice()
+            
+            if ans == QMessageBox.Abort:
+                return
+            
+            result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
+    
         mess = "Found public key:\n%s" % result
         self.caller.myPopUp2(QMessageBox.Information, "SPMT - findPubKey", mess)
         printOK("Public Key: %s" % result)

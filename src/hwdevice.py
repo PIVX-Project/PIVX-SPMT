@@ -52,7 +52,8 @@ class HWdevice(QObject):
             self.chip = btchip(self.dongle)
             printDbg("Ledger Initialized")
             self.initialized = True
-            printOK("Ledger HW device connected")
+            ver = self.chip.getFirmwareVersion()
+            printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
             
         except Exception as e:
             err_msg = 'error Initializing Ledger'
@@ -190,8 +191,7 @@ class HWdevice(QObject):
         self.mBox2.show()
         
         ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
-
-    
+        
     
     
     @process_ledger_exceptions
@@ -269,8 +269,32 @@ class HWdevice(QObject):
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
         message_sha = splitString(single_sha256(message).hex(),32);
+        
+        # Connection pop-up
+        mBox  = QMessageBox(caller.ui)
+        warningText = "Another application (such as Ledger Wallet app) has probably taken over "
+        warningText += "the communication with the Ledger device.<br><br>To continue, close that application and "
+        warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
+        mBox.setText(warningText)
+        mBox.setWindowTitle("WARNING")
+        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
+        
         # Ask confirmation
         info = self.chip.signMessagePrepare(path, message)
+        while info['confirmationNeeded'] and info['confirmationType'] == 34:
+            ans = mBox.exec_()        
+            # we need to reconnect the device
+            self.dongle.close()
+            self.initialized = False
+            self.initDevice()
+            
+            if ans == QMessageBox.Abort:
+                raise Exception('Message Signature failed')
+            
+            info = self.chip.signMessagePrepare(path, message)
+            
+            
+            
         printDbg("info = %s" % str(info))
         printOK('Signing Message')
         self.mBox = QMessageBox(caller.ui)
