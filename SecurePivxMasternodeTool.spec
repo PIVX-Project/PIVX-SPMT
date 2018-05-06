@@ -93,7 +93,7 @@ if os_type == 'win32':
 	os.system('xcopy app\PyQt5\Qt\plugins\platforms app\platforms\ /i')
 	os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_win = os.path.join(base_dir, 'SPMT-v' + version_str + '-win')
+	dist_path_win = os.path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
 	os.rename(dist_path, dist_path_win)
 	# Compress dist Dir
 	print('Compressing Windows App Folder')
@@ -107,7 +107,7 @@ if os_type == 'linux':
 	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-gnu_linux.tar.gz', 
+	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz', 
                 base_dir, 'SPMT-v' + version_str + '-gnu_linux'))
 
 
