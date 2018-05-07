@@ -234,7 +234,6 @@ class MainWindow(QWidget):
         # reload masternode list in tabs
         if self.tabs.currentWidget() == self.tabRewards:
             self.t_rewards.loadMnSelect()
-            self.t_rewards.onChangeSelectedMN()
             
         
         
