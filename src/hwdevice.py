@@ -293,9 +293,7 @@ class HWdevice(QObject):
             
             info = self.chip.signMessagePrepare(path, message)
             
-            
-            
-        printDbg("info = %s" % str(info))
+
         printOK('Signing Message')
         self.mBox = QMessageBox(caller.ui)
         messageText = "Check display of your hardware device\n\n" + "- masternode message hash:\n\n%s\n\n-path:\t%s\n" % (message_sha, path)

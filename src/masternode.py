@@ -47,7 +47,7 @@ class Masternode(QObject):
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
         serializedData += str(self.protocol_version)    
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
-        printDbg("SerializedData: %s" % serializedData) 
+        printDbg("SerializedData: MY_IP:%s" % serializedData.split(':')[1]) 
         try:
             device.signMess(self.caller, self.nodePath, serializedData)
             #wait for signal when device.sig1 is ready then --> finalizeStartMessage       
@@ -92,14 +92,13 @@ class Masternode(QObject):
             printDbg("Current block from PIVX client: %s" % str(currBlock))
             printDbg("Hash of 12 blocks ago: %s" % block_hash)
         
-        
             vintx = bytes.fromhex(self.collateral['txid'])[::-1].hex()
             vinno = self.collateral['txidn'].to_bytes(4, byteorder='big')[::-1].hex()
             vinsig = num_to_varint(len(scriptSig) / 2).hex() + bytes.fromhex(scriptSig)[::-1].hex()
             vinseq = sequence.to_bytes(4, byteorder='big')[::-1].hex()
             
             ipv6map = ipmap(self.ip, self.port)
-            printDbg("ipv6map: %s" % ipv6map)
+            #printDbg("ipv6map: %s" % ipv6map)
         
             collateral_in = num_to_varint(len(self.collateral['pubKey'])/2).hex() + self.collateral['pubKey']
             delegate_in = num_to_varint(len(self.mnPubKey)/2).hex() + self.mnPubKey
