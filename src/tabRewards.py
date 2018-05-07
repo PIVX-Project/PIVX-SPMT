@@ -11,7 +11,7 @@ from constants import MPATH
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
-from PyQt5.Qt import QTableWidgetItem, QHeaderView
+from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel
 from PyQt5.QtWidgets import QMessageBox
 
 from qt.gui_tabRewards import TabRewards_gui
@@ -62,8 +62,6 @@ class TabRewards():
                 # MARK COLLATERAL UTXO
                 if txId == self.curr_txid:
                     for i in range(0,4):
-                        self.ui.rewardsList.box.item(row, i).setBackground(Qt.lightGray)
-                        self.ui.rewardsList.box.item(row, i).setForeground(Qt.red)
                         self.ui.rewardsList.box.item(row, i).setFont(QFont("Arial", 9, QFont.Bold))
                     self.ui.rewardsList.box.collateralRow = row
                 
@@ -172,9 +170,9 @@ class TabRewards():
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2] 
-            result = self.apiClient.getBalance(self.curr_addr)
-            if result is not None:
-                self.ui.addrAvailLine.setText("<i>%f PIVs</i>" % (result-10000))
+            if self.curr_addr is not None:
+                result = self.apiClient.getBalance(self.curr_addr)
+                self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % (result))
             self.ui.selectedRewardsLine.setText("0.0")
             self.ui.rewardsList.box.clearSelection()
             self.ui.rewardsList.box.collateralRow = None
@@ -258,6 +256,13 @@ class TabRewards():
             
             if len(self.rewards) and self.ui.rewardsList.box.collateralRow is not None:
                 if not self.ui.collateralHidden:
+                    try:
+                        if self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected():
+                            self.ui.rewardsList.box.selectRow(self.ui.rewardsList.box.collateralRow)
+                    except Exception as e:
+                        err_msg = "Error while preparing transaction"
+                        printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                    
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
                     self.ui.btn_toggleCollateral.setText("Show Collateral")
                     self.ui.collateralHidden = True

@@ -117,4 +117,4 @@ class TabRewards_gui(QWidget):
         #--- Set Layout    
         self.rewardsForm.setLayout(layout)
         #--- ROW 5
-        self.btn_Cancel = QPushButton("Cancel")
+        self.btn_Cancel = QPushButton("Clear")
