@@ -65,26 +65,19 @@ class TabMain():
             msg = "<b>ERROR! Masternode not found</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
             self.ui.mnStatusLabel[masternode_alias].show()
-            self.ui.mnStatusProgress[masternode_alias].hide()
             self.ui.btn_details[masternode_alias].setEnabled(False)
         else:
             printDbg("Got status %s for %s (%s)" % (statusData['status'], masternode_alias, statusData['addr']))
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
                 display_text = '<b>Status: </b><span style="color:green">%s</span>' % statusData['status']
-                display_text += '&nbsp;&nbsp;&nbsp;'
-                display_text += '<b>Rank: </b>%s/%s' % (statusData['rank'], statusData['mnCount'])
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
                 display_text = '<b>Status: </b><span style="color:red">%s</span>' % statusData['status']
                
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
-            
-            self.ui.mnStatusProgress[masternode_alias].setRange(0, statusData['mnCount'])
-            self.ui.mnStatusProgress[masternode_alias].setValue(statusData['rank'])
-            self.ui.mnStatusProgress[masternode_alias].show()
-            
+                        
             self.ui.btn_details[masternode_alias].setEnabled(True)
             
             

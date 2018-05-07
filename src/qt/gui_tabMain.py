@@ -58,7 +58,6 @@ class TabMain_gui(QWidget):
         self.mnLabel = {}
         self.btn_details = {}
         self.mnStatusLabel = {}
-        self.mnStatusProgress = {}
         self.btn_remove = {}
         self.btn_edit = {}
         self.btn_start = {}
@@ -94,13 +93,6 @@ class TabMain_gui(QWidget):
         self.mnStatusLabel[name] = QLabel()
         mnRowLayout.addWidget(self.mnStatusLabel[name])
         self.mnStatusLabel[name].hide()
-        ##--- Rank bar
-        self.mnStatusProgress[name] = QProgressBar()
-        self.mnStatusProgress[name].setTextVisible(False)
-        self.mnStatusProgress[name].setMaximumHeight(15)
-        self.mnStatusProgress[name].setMaximumWidth(40)
-        mnRowLayout.addWidget(self.mnStatusProgress[name])
-        self.mnStatusProgress[name].hide()
         ##--- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
