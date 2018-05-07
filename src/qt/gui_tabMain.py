@@ -99,36 +99,36 @@ class TabMain_gui(QWidget):
         self.btn_details[name].setToolTip('Check STATUS details of masternode "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()         
-        ##--- Remove button
-        self.btn_remove[name] = QPushButton()
-        self.btn_remove[name].setToolTip('remove masternode "%s"' % name)        
-        self.btn_remove[name].setIcon(self.removeMN_icon)
-        self.btn_remove[name].alias = name
-        mnRowLayout.addWidget(self.btn_remove[name])
-        ##--- Edit button
-        self.btn_edit[name] = QPushButton()
-        self.btn_edit[name].setToolTip('edit masternode "%s"' % name)   
-        self.btn_edit[name].setIcon(self.editMN_icon)
-        self.btn_edit[name].alias = name
-        mnRowLayout.addWidget(self.btn_edit[name])
-        ##--- Start button
-        self.btn_start[name] = QPushButton()
-        self.btn_start[name].setToolTip('start masternode "%s"' % name)          
-        self.btn_start[name].setIcon(self.startMN_icon)
-        self.btn_start[name].alias = name
-        mnRowLayout.addWidget(self.btn_start[name])
-        ##--- Rewards button
-        self.btn_rewards[name] = QPushButton()
-        self.btn_rewards[name].setToolTip('tranfer rewards from masternode "%s"' % name)           
-        self.btn_rewards[name].setIcon(self.rewards_icon)
-        self.btn_rewards[name].alias = name
-        mnRowLayout.addWidget(self.btn_rewards[name])
         ##--- Status button
         self.btn_status[name] = QPushButton()
         self.btn_status[name].setToolTip('get status of masternode "%s"' % name)      
         self.btn_status[name].setIcon(self.getMNstatus_icon)
         self.btn_status[name].alias = name
         mnRowLayout.addWidget(self.btn_status[name])
+        ##--- Rewards button
+        self.btn_rewards[name] = QPushButton()
+        self.btn_rewards[name].setToolTip('tranfer rewards from masternode "%s"' % name)           
+        self.btn_rewards[name].setIcon(self.rewards_icon)
+        self.btn_rewards[name].alias = name
+        mnRowLayout.addWidget(self.btn_rewards[name])
+        ##--- Start button
+        self.btn_start[name] = QPushButton()
+        self.btn_start[name].setToolTip('start masternode "%s"' % name)          
+        self.btn_start[name].setIcon(self.startMN_icon)
+        self.btn_start[name].alias = name
+        mnRowLayout.addWidget(self.btn_start[name])
+        ##--- Edit button
+        self.btn_edit[name] = QPushButton()
+        self.btn_edit[name].setToolTip('edit masternode "%s"' % name)   
+        self.btn_edit[name].setIcon(self.editMN_icon)
+        self.btn_edit[name].alias = name
+        mnRowLayout.addWidget(self.btn_edit[name])
+        ##--- Remove button
+        self.btn_remove[name] = QPushButton()
+        self.btn_remove[name].setToolTip('remove masternode "%s"' % name)        
+        self.btn_remove[name].setIcon(self.removeMN_icon)
+        self.btn_remove[name].alias = name
+        mnRowLayout.addWidget(self.btn_remove[name])
         ##--- Three Dots
         threeDots = QLabel()
         threeDots.setPixmap(self.threeDots_icon.scaledToHeight(20, Qt.SmoothTransformation))
