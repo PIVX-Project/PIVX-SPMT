@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel, QSpacerItem, QSizePolicy, QTabl
 from PyQt5.Qt import QHBoxLayout, QHeaderView
 from threads import ThreadFuns
 from apiClient import ApiClient
-from misc import printDbg, eprintDbg
+from misc import printDbg
 
 class FindCollTx_dlg(QDialog):
     def __init__(self, main_wnd, rpcClient, pivx_addr):
@@ -85,7 +85,7 @@ class FindCollTx_dlg(QDialog):
                     self.apiConnected = True
                     self.blockCount = self.rpcClient.getBlockCount()
                     utxos = self.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
-                    eprintDbg("loading utxos\nblockCount=%s\n%s" % (str(self.blockCount), str(self.utxos)))
+                    printDbg("loading utxos\nblockCount=%s\n%s" % (str(self.blockCount), str(self.utxos)))
                     self.utxos = [utxo for utxo in utxos if round(int(utxo.get('value', 0))/1e8, 8) == 10000.00000000 ]
 
                 except Exception as e:

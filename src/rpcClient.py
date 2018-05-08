@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from misc import getCallerName, getFunctionName, printException, printDbg, eprintDbg, eprintException, readRPCfile
+from misc import getCallerName, getFunctionName, printException, printDbg, readRPCfile
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 
 class RpcClient:
@@ -10,8 +10,7 @@ class RpcClient:
         self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_passwd = readRPCfile()
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
         try:    
-            self.conn = AuthServiceProxy(rpc_url, timeout=8)
-            #eprintDbg("Contacting PIVX-cli server at %s:%d" % (self.rpc_ip, self.rpc_port))     
+            self.conn = AuthServiceProxy(rpc_url, timeout=8)     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -40,7 +39,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
             raise e
     
     
@@ -55,7 +54,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
@@ -69,7 +68,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     def getFeePerKb(self):
@@ -82,7 +81,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
@@ -100,7 +99,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
@@ -112,7 +111,7 @@ class RpcClient:
         
         except Exception as e:
             err_msg = 'error in getProtocolVersion'
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return DEFAULT_PROTOCOL_VERSION    
      
             
@@ -126,7 +125,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
     
     
@@ -143,11 +142,11 @@ class RpcClient:
         except Exception as e:
             # If loading block index set lastBlock=1
             if str(e.args[0]) == "Loading block index..." or str(e.args[0]) == "Verifying blocks...":
-                eprintDbg(str(e.args[0]))
+                printDbg(str(e.args[0]))
                 n = 1
             #else:
                 #err_msg = "Error while contacting RPC server"
-                #eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
+                #printException(getCallerName(), getFunctionName(), err_msg, e.args)    
         return status, n
     
     
@@ -170,7 +169,7 @@ class RpcClient:
             return self.conn.decodemasternodebroadcast(work.strip())
         except Exception as e:
             err_msg = "error in decodemasternodebroadcast"
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
             
             
     
@@ -179,7 +178,7 @@ class RpcClient:
             return self.conn.relaymasternodebroadcast(work.strip())
         except Exception as e:
             err_msg = "error in relaymasternodebroadcast"
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)    
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)    
     
 
 
@@ -192,7 +191,7 @@ class RpcClient:
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             else:
-                eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     
     
@@ -203,5 +202,5 @@ class RpcClient:
         
         except Exception as e:
             err_msg = "error in verifyMessage"
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
             

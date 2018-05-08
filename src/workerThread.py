@@ -5,7 +5,6 @@
             https://github.com/Bertrand256/dash-masternode-tool
 """
 from PyQt5.QtCore import QThread
-from misc import eprintDbg
 
 class CtrlObject(object):
     pass
@@ -34,5 +33,4 @@ class WorkerThread(QThread):
 
     def run(self):
         self.worker_result = self.worker_fun(self.ctrl_obj, *self.worker_fun_args)
-        eprintDbg('Stopping WorkerThread for: %s' % str(self.worker_fun))
         

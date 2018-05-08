@@ -4,7 +4,6 @@
             Based on project:
             https://github.com/Bertrand256/dash-masternode-tool
 """
-from misc import eprintDbg
 import threading
 import traceback
 from functools import partial
@@ -40,7 +39,7 @@ class ThreadFuns:
                 # starting thread from another thread causes an issue of not passing arguments'
                 # values to on_thread_finished_int function, so on_thread_finish is not called
                 st = traceback.format_stack()
-                eprintDbg('Running thread from inside another thread. Stack: \n' + ''.join(st))
+                print('Running thread from inside another thread. Stack: \n' + ''.join(st))
             
             thread = WorkerThread(worker_fun=worker_fun, worker_fun_args=worker_fun_args)
     
@@ -52,6 +51,5 @@ class ThreadFuns:
             thread.finished.connect(bound_on_thread_finished)
             thread.daemon = True
             thread.start()
-            eprintDbg('Started WorkerThread for: %s' % str(worker_fun))
             return thread
         

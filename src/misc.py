@@ -18,26 +18,6 @@ def clean_for_html(text):
 
 def clear_screen():
     os.system('clear')
-    
-
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-    
-
-    
-def eprintDbg(what):
-    log_line = printDbg_msg(what)
-    eprint(log_line)
-    
-
-    
-def eprintException(caller_name,
-        function_name,
-        err_msg,
-        errargs=None):
-    text = printException_msg(caller_name, function_name, err_msg, errargs)
-    eprint(text)
 
 
 

@@ -4,7 +4,7 @@ from btchip.btchip import btchip, getDongle, BTChipException
 from btchip.btchipUtils import compress_public_key, bitcoinTransaction, bitcoinInput, bitcoinOutput
 from bitcoin import bin_hash160
 from time import sleep
-from misc import printDbg, eprintDbg, printException, eprintException, printOK, getCallerName, getFunctionName, splitString
+from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString
 from constants import MPATH
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -45,7 +45,6 @@ class HWdevice(QObject):
         
     
     def initDevice(self):
-        eprintDbg("In initDevice")
         try:
             self.dongle = getDongle(False)
             printOK('Ledger Nano S drivers found')
@@ -57,7 +56,7 @@ class HWdevice(QObject):
             
         except Exception as e:
             err_msg = 'error Initializing Ledger'
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
             self.initialized = False
             self.dongle.close()
             
@@ -101,7 +100,7 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions
     def checkApp(self):
-        eprintDbg("Checking app")
+        printDbg("Checking app")
         try:
             firstAddress = self.chip.getWalletPublicKey(MPATH + "0'/0/0").get('address')[12:-2]
             if firstAddress[0] == 'D':
@@ -109,7 +108,7 @@ class HWdevice(QObject):
                 return True       
         except Exception as e:
             err_msg = 'error in checkApp'
-            eprintException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
         return False 
     
     
@@ -385,7 +384,7 @@ class HWdevice(QObject):
             self.tx_raw = bytearray(self.new_transaction.serialize())
             
         except Exception as e:
-            eprintException(getCallerName(), getFunctionName(), "Signature Exception", e.args)
+            printException(getCallerName(), getFunctionName(), "Signature Exception", e.args)
             self.tx_raw = None
     
     

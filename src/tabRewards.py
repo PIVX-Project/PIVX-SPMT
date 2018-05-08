@@ -3,7 +3,7 @@
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, eprintDbg, printException, getCallerName, getFunctionName
+from misc import printDbg, printException, getCallerName, getFunctionName
 from threads import ThreadFuns
 from utils import checkPivxAddr
 from apiClient import ApiClient
@@ -143,7 +143,7 @@ class TabRewards():
                             
                 except Exception as e:
                     self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                    eprintDbg(self.errorMsg)
+                    printDbg(self.errorMsg)
                     
         except Exception as e:
             print(e)
