@@ -7,7 +7,7 @@ from misc import printDbg, printException, getCallerName, getFunctionName
 from threads import ThreadFuns
 from utils import checkPivxAddr
 from apiClient import ApiClient
-from constants import MPATH
+from constants import MPATH, MINIMUM_FEE
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
@@ -28,6 +28,7 @@ class TabRewards():
         ##--- Initialize GUI
         self.ui = TabRewards_gui()
         self.caller.tabRewards = self.ui
+        self.ui.feeLine.setValue(MINIMUM_FEE)
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
         self.ui.btn_toggleCollateral.clicked.connect(lambda: self.onToggleCollateral())
@@ -157,7 +158,7 @@ class TabRewards():
         self.ui.selectedRewardsLine.setText("0.0")
         self.ui.mnSelect.setCurrentIndex(0)
         self.ui.destinationLine.setText('')
-        self.ui.feeLine.setValue(0.01)
+        self.ui.feeLine.setValue(MINIMUM_FEE)
         self.ui.btn_toggleCollateral.setText("Show Collateral")
         self.ui.collateralHidden = True
         self.onChangeSelectedMN()
@@ -194,7 +195,6 @@ class TabRewards():
     @pyqtSlot()
     def onDeselectAllRewards(self):
         self.ui.rewardsList.box.clearSelection()
-        self.ui.selectedRewardsLine.setText("0")
         self.updateSelection()
     
             
@@ -323,13 +323,17 @@ class TabRewards():
             
             for i in range(0, numOfInputs):
                 total += int(self.selectedRewards[i].get('value'))
-                       
-        # update suggested fee and selected rewards
-        estimatedTxSize = (45+numOfInputs*146) / 1000   # kB
-        suggestedFee = round(self.caller.rpcClient.getFeePerKb() * estimatedTxSize, 8)
-        printDbg("estimatedTxSize is " + str(estimatedTxSize))
-        printDbg("suggested fee is " + str(suggestedFee))
-        
-        self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
-        self.ui.feeLine.setValue(suggestedFee)
+                                     
+            # update suggested fee and selected rewards
+            estimatedTxSize = (45+numOfInputs*146) / 1000   # kB
+            suggestedFee = round(self.caller.rpcClient.getFeePerKb() * estimatedTxSize, 8)
+            printDbg("estimatedTxSize is " + str(estimatedTxSize))
+            printDbg("suggested fee is " + str(suggestedFee))
+            
+            self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
+            self.ui.feeLine.setValue(suggestedFee)
+            
+        else:
+            self.ui.selectedRewardsLine.setText("")
+            self.ui.feeLine.setValue(MINIMUM_FEE)
         
