@@ -33,6 +33,7 @@ class TabRewards():
         self.ui.btn_toggleCollateral.clicked.connect(lambda: self.onToggleCollateral())
         self.ui.rewardsList.box.itemClicked.connect(lambda: self.updateSelection())
         self.ui.btn_selectAllRewards.clicked.connect(lambda: self.onSelectAllRewards())
+        self.ui.btn_deselectAllRewards.clicked.connect(lambda: self.onDeselectAllRewards())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         # Init first selection
@@ -186,15 +187,15 @@ class TabRewards():
         
     @pyqtSlot()
     def onSelectAllRewards(self):
-        if self.ui.btn_selectAllRewards.text() == "Select All Rewards":
-            self.ui.btn_selectAllRewards.setText("Deselect All Rewards")
-            self.ui.rewardsList.box.selectAll()
-            self.updateSelection()                
-        else:
-            self.ui.btn_selectAllRewards.setText("Select All Rewards")
-            self.ui.rewardsList.box.clearSelection()
-            self.ui.selectedRewardsLine.setText("0")
-            self.updateSelection()
+        self.ui.rewardsList.box.selectAll()
+        self.updateSelection()                
+
+            
+    @pyqtSlot()
+    def onDeselectAllRewards(self):
+        self.ui.rewardsList.box.clearSelection()
+        self.ui.selectedRewardsLine.setText("0")
+        self.updateSelection()
     
             
             
