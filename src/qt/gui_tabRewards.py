@@ -111,6 +111,7 @@ class TabRewards_gui(QWidget):
         self.feeLine.setPrefix("PIV  ")
         self.feeLine.setToolTip("Insert a small fee amount")
         self.feeLine.setFixedWidth(150)
+        self.feeLine.setSingleStep(0.001)
         hBox3.addWidget(self.feeLine)
         self.btn_sendRewards = QPushButton("Send")
         hBox3.addWidget(self.btn_sendRewards)
