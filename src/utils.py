@@ -24,11 +24,11 @@ def b64encode(text):
 
 
 def checkPivxAddr(address):
-    # check leading char 'D'
-    if address[0] != 'D':
-        return False
-    
     try:
+        # check leading char 'D'
+        if address[0] != 'D':
+            return False
+        
         # decode and verify checksum
         addr_bin = bytes.fromhex(b58decode(address).hex())
         addr_bin_check = bin_dbl_sha256(addr_bin[0:-4])[0:4]
