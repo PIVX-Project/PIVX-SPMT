@@ -325,10 +325,11 @@ class TabRewards():
                 total += int(self.selectedRewards[i].get('value'))
                                      
             # update suggested fee and selected rewards
-            estimatedTxSize = (45+numOfInputs*146) / 1000   # kB
-            suggestedFee = round(self.caller.rpcClient.getFeePerKb() * estimatedTxSize, 8)
-            printDbg("estimatedTxSize is " + str(estimatedTxSize))
-            printDbg("suggested fee is " + str(suggestedFee))
+            estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
+            feePerKb = self.caller.rpcClient.getFeePerKb()
+            suggestedFee = round(feePerKb * estimatedTxSize, 8)
+            printDbg("estimatedTxSize is %s kB" % str(estimatedTxSize))
+            printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(suggestedFee), str(feePerKb)))
             
             self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
             self.ui.feeLine.setValue(suggestedFee)
