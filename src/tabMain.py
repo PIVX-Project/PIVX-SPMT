@@ -195,10 +195,8 @@ class TabMain():
             target = self.ui.sender()
             masternode_alias = target.alias
             tab_index = self.caller.tabs.indexOf(self.caller.tabRewards)
-            self.caller.tabs.setCurrentIndex(tab_index)
-            self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)
-    
-    
+            self.caller.tabs.setCurrentIndex(tab_index) 
+            self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)   
     
            
     @pyqtSlot()

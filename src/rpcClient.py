@@ -121,10 +121,8 @@ class RpcClient:
         try:
             return self.conn.getrawtransaction(txid)
         except Exception as e:
-            err_msg = "error in getRawTransaction"
+            err_msg = "error in getRawTransaction for txid=%s" % txid
             if str(e.args[0]) != "Request-sent":
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            else:
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
     
