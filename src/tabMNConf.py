@@ -255,8 +255,8 @@ class TabMNConf():
             # create new item
             new_masternode = {}
             new_masternode['name'] = self.ui.edt_name.text().strip()
-            masternodeIp = ip_address(self.ui.edt_masternodeIp.text().strip())
-            new_masternode['ip'] = masternodeIp.compressed
+            masternodeIp = ip_address(self.ui.edt_masternodeIp.text().strip()).compressed
+            new_masternode['ip'] = masternodeIp
             new_masternode['port'] = self.ui.edt_masternodePort.value()
             new_masternode['mnPrivKey'] = self.ui.edt_mnPrivKey.text().strip()
             new_masternode['hwAcc'] = self.ui.edt_hwAccount.value()

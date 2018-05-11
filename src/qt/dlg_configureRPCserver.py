@@ -7,8 +7,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox
 from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
 from PyQt5.QtCore import pyqtSlot
+from threads import ThreadFuns
 
-from misc import writeRPCfile, readRPCfile
+from misc import writeRPCfile, readRPCfile, printDbg
 
 
 class ConfigureRPCserver_dlg(QDialog):
@@ -77,7 +78,7 @@ class Ui_ConfigureRPCserverDlg(object):
     @pyqtSlot()
     def onButtonSave(self, main_dlg):
         try:
-            main_dlg.rpc_ip = ip_address(self.edt_rpcIp.text().strip())
+            main_dlg.rpc_ip = ip_address(self.edt_rpcIp.text().strip()).compressed
             main_dlg.rpc_port = int(self.edt_rpcPort.value())
             main_dlg.rpc_user = self.edt_rpcUser.text()
             main_dlg.rpc_password = self.edt_rpcPassword.text()
@@ -93,13 +94,13 @@ class Ui_ConfigureRPCserverDlg(object):
             # Update current RPC Server
             main_dlg.main_wnd.mainWindow.rpcClient = None
             main_dlg.main_wnd.mainWindow.rpcConnected = False
-            main_dlg.main_wnd.mainWindow.updateRPCstatus(None)
-            main_dlg.main_wnd.mainWindow.updateRPCled()
-            
+            printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
+            self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
+            main_dlg.close()
+
         except Exception as e:
             print(e)
         
-        main_dlg.close()
        
         
     @pyqtSlot()
