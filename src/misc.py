@@ -9,6 +9,16 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 from constants import log_File
 
+def append_to_logfile(text):
+    try:
+        logFile = open(log_File, 'a+')
+        logFile.write(text)
+        logFile.close()
+    except Exception as e:
+        print(e)
+        
+        
+
 def clean_for_html(text):
     if text is None:
         return ""
@@ -85,9 +95,7 @@ def printDbg_msg(what):
 
 def printDbg(what):
     log_line = printDbg_msg(what)
-    logFile = open(log_File, 'a+')
-    logFile.write(log_line)
-    logFile.close()
+    append_to_logfile(log_line)
     print(log_line)
     
     
@@ -117,9 +125,7 @@ def printException(caller_name,
         err_msg,
         errargs=None):
     text = printException_msg(caller_name, function_name, err_msg, errargs)
-    logFile = open(log_File, 'a+')
-    logFile.write(text)
-    logFile.close()
+    append_to_logfile(text)
     print(text)
     
     
@@ -127,9 +133,7 @@ def printException(caller_name,
 
 def printOK(what):
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
-    logFile = open(log_File, 'a+')
-    logFile.write(msg)
-    logFile.close()
+    append_to_logfile(msg)
     print(msg)
     
   
@@ -141,23 +145,32 @@ def splitString(text, n):
  
  
 def readMNfile():
-    import simplejson as json
-    mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
-    with open(mn_file) as data_file:
-        mnList = json.load(data_file)    
-    data_file.close()
+    try:
+        import simplejson as json
+        mn_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
+        with open(mn_file) as data_file:
+            mnList = json.load(data_file)    
+        data_file.close()
+    except Exception as e:
+        printException(getCallerName(), getFunctionName(), "error reading MN file", e.args)
+        return []
+    
     return mnList
 
 
 
 def readRPCfile():
-    import simplejson as json
-    config_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
-    with open(config_file) as data_file:
-        rpc_config = json.load(data_file)
-    data_file.close()
+    try:
+        import simplejson as json
+        config_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
+        with open(config_file) as data_file:
+            rpc_config = json.load(data_file)
+        data_file.close()
+    except Exception as e:
+        printException(getCallerName(), getFunctionName(), "error reading RPC file", e.args)
+        return "127.0.0.1", "45458", "default_user", "default_pass"
     
     rpc_ip = rpc_config.get('rpc_ip')
     rpc_port = int(rpc_config.get('rpc_port'))
@@ -198,23 +211,29 @@ def updateSplash(label, i):
 
 
 def writeMNfile(mnList):
-    import simplejson as json
-    mn_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
-    with open(mn_file, 'w+') as data_file:
-        json.dump(mnList, data_file)        
-    data_file.close()
+    try:
+        import simplejson as json
+        mn_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
+        with open(mn_file, 'w+') as data_file:
+            json.dump(mnList, data_file)        
+        data_file.close()
+    except Exception as e:
+        printException(getCallerName(), getFunctionName(), "error writing MN file", e.args)
+        
     
 
     
 def writeRPCfile(configuration):
-    import simplejson as json
-    rpc_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
-    with open(rpc_file, 'w+') as data_file:
-        json.dump(configuration, data_file)
-            
-    data_file.close()
+    try:
+        import simplejson as json
+        rpc_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
+        with open(rpc_file, 'w+') as data_file:
+            json.dump(configuration, data_file)      
+        data_file.close()
+    except Exception as e:
+        printException(getCallerName(), getFunctionName(), "error writing RPC file", e.args)
     
     
     
