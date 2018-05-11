@@ -180,7 +180,7 @@ class HWdevice(QObject):
         messageText = "Check display of your hardware device<br><br><br>"
         messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
         messageText += "To PIVX Address: <b>%s</b><br><br>" % dest_address
-        messageText += "PIV amount: <b>%s</b>\n" % str(round(self.amount / 1e8, 8))
+        messageText += "PIV amount: <b>%s</b><br>" % str(round(self.amount / 1e8, 8))
         messageText += "plus PIV for fee: <b>%s</b><br><br>" % str(round(int(tx_fee) / 1e8, 8))
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))

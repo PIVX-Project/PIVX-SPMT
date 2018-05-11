@@ -279,6 +279,8 @@ class TabRewards():
         else:
             self.caller.myPopUp2(QMessageBox.Information, 'No Collateral', "No collateral selected")
             
+  
+
     # Activated by signal sigTxdone from hwdevice       
     @pyqtSlot(bytearray, str)            
     def FinishSend(self, serialized_tx, amount_to_send):
@@ -294,8 +296,9 @@ class TabRewards():
                     self.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
                 
                 else:
-                    message = 'Broadcast signed transaction?\n\nDestination address: %s\nAmount to send: %s Piv' % (self.curr_addr, amount_to_send)
-                    message += 'Fee: %s Piv\nSize: %d bytes' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % (self.curr_addr)
+                    message += 'Amount to send: <b>%s PIV</b><br>' % amount_to_send
+                    message += 'Fee: <b>%s PIV</b><br>Size: <b>%d bytes</b>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     reply = self.caller.myPopUp(QMessageBox.Information, 'Send transaction', message)
                     if reply == QMessageBox.Yes:                   
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex)
