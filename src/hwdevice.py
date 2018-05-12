@@ -58,7 +58,8 @@ class HWdevice(QObject):
             err_msg = 'error Initializing Ledger'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             self.initialized = False
-            self.dongle.close()
+            if hasattr(self, 'dongle'):
+                self.dongle.close()
             
         
     
