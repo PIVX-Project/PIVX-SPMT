@@ -70,7 +70,7 @@ class TabRewards():
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
                     
-            if len(self.rewards) > 1:
+            if len(self.rewards) > 0:
                 self.ui.rewardsList.box.resizeColumnsToContents()
                 self.ui.rewardsList.statusLabel.setVisible(False)
                 self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
