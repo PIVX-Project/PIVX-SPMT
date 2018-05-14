@@ -202,8 +202,7 @@ class TabRewards():
             
     @pyqtSlot()
     def onSendRewards(self):
-        self.dest_addr = self.ui.destinationLine.text().strip()
-        printDbg("Sending rewards from masternode address %s to PIVX address %s" % (self.curr_addr, self.dest_addr))      
+        self.dest_addr = self.ui.destinationLine.text().strip() 
     
         # Check dongle
         printDbg("Checking HW device")
@@ -236,7 +235,8 @@ class TabRewards():
                         return None
                     
         # LET'S GO    
-        if self.selectedRewards:                      
+        if self.selectedRewards: 
+            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))                     
             self.currFee = self.ui.feeLine.value() * 1e8
             # connect signal
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
@@ -296,7 +296,7 @@ class TabRewards():
                     self.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
                 
                 else:
-                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % (self.curr_addr)
+                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % (self.dest_addr)
                     message += 'Amount to send: <b>%s PIV</b><br>' % amount_to_send
                     message += 'Fee: <b>%s PIV</b><br>Size: <b>%d bytes</b>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     reply = self.caller.myPopUp(QMessageBox.Information, 'Send transaction', message)
