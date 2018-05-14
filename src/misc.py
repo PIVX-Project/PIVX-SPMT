@@ -214,7 +214,7 @@ def updateSplash(label, i):
         progressText = "releasing the watchdogs..."
         label.setText(progressText)
     elif i==89:
-        progressText = "Enjoy the Purple Power!"
+        progressText = "Enjoy all this UPF!"
         label.setText(progressText)   
     elif i==99:
         time.sleep(0.4)

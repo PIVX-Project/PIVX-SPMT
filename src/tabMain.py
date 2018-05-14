@@ -281,7 +281,11 @@ class TabMain():
             return
         
         ret2 = self.caller.rpcClient.relaymasternodebroadcast(text)
-        self.caller.myPopUp2(QMessageBox.Information, 'message relayed', json.dumps(ret2, indent=4, sort_keys=True), QMessageBox.Ok)
+        message = json.dumps(ret2, indent=4, sort_keys=True)
+        message += "\n\nStart-message was successfully sent to the network."
+        message += "\nIf your remote server is correctly configured and connected to the network, "
+        message += "the output of the './pivx-cli masternode status' on the VPS should report as ENABLED in a few seconds"
+        self.caller.myPopUp2(QMessageBox.Information, 'message relayed', message, QMessageBox.Ok)
         self.sendBroadcastCheck()
     
        
@@ -304,7 +308,7 @@ class TabMain():
                 self.masternodeToStart = self.mnToStartList.pop()
                 printDbg("Starting...%s" % self.masternodeToStart.name)
                 self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
-                # wait for signal when masternode.work is ready then ---> showBroadcast
+                # wait for signal when masternode.work is ready then ---> sendBroadcast
             except Exception as e:
                 err_msg = "error in startMN"
                 printException(getCallerName(), getFunctionName(), err_msg, e)
