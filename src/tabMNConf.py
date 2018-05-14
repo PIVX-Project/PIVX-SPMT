@@ -233,7 +233,7 @@ class TabMNConf():
         
         
     @pyqtSlot()            
-    def onSaveMNConf(self):   
+    def onSaveMNConf(self):
         try:
             if self.ui.edt_pubKey.text() == "" or self.ui.edt_txid.text() == "" or self.ui.edt_mnPrivKey.text() == "":
                 mess_text = 'Attention! Complete the form before saving.<br>'
@@ -276,7 +276,9 @@ class TabMNConf():
             # re-sort the list
             self.caller.masternode_list.sort(key=self.caller.parent.extract_name)
             # Write to file
+            printDbg("saving MN configuration for %s" % new_masternode['name'])
             writeMNfile(self.caller.masternode_list)
+            printDbg("saved")
             # Insert item in list of Main tab and connect buttons
             name = new_masternode['name']
             namelist = [x['name'] for x in self.caller.masternode_list]

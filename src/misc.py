@@ -6,8 +6,7 @@ from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-
-from constants import log_File
+from constants import log_File, user_dir
 
 def append_to_logfile(text):
     try:
@@ -147,13 +146,19 @@ def splitString(text, n):
 def readMNfile():
     try:
         import simplejson as json
-        mn_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
-        with open(mn_file) as data_file:
-            mnList = json.load(data_file)    
-        data_file.close()
+        mn_file = os.path.join(user_dir, 'masternodes.json')
+        if os.path.exists(mn_file):
+            with open(mn_file) as data_file:
+                mnList = json.load(data_file)    
+            data_file.close()
+        else:
+            raise Exception("No masternodes.json found. Creating new.")
+            # save default config (empty list) and return it
+            writeMNfile([])
+            return []
+        
     except Exception as e:
-        printException(getCallerName(), getFunctionName(), "error reading MN file", e.args)
+        printDbg(e.args[0])
         return []
     
     return mnList
@@ -163,14 +168,20 @@ def readMNfile():
 def readRPCfile():
     try:
         import simplejson as json
-        config_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
-        with open(config_file) as data_file:
-            rpc_config = json.load(data_file)
-        data_file.close()
+        config_file = os.path.join(user_dir, 'rpcServer.json')
+        if os.path.exists(config_file):
+            with open(config_file) as data_file:
+                rpc_config = json.load(data_file)
+            data_file.close()
+        else:
+            raise Exception("No rpcServer.json found. Creating new.")
+        
     except Exception as e:
-        printException(getCallerName(), getFunctionName(), "error reading RPC file", e.args)
-        return "127.0.0.1", "45458", "default_user", "default_pass"
+        printDbg(e.args[0])
+        # save default config and return it
+        config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
+        writeRPCfile(config)
+        return "127.0.0.1", 45458, "myUsername", "myPassword"
     
     rpc_ip = rpc_config.get('rpc_ip')
     rpc_port = int(rpc_config.get('rpc_port'))
@@ -213,8 +224,7 @@ def updateSplash(label, i):
 def writeMNfile(mnList):
     try:
         import simplejson as json
-        mn_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'masternodes.json')
+        mn_file = os.path.join(user_dir, 'masternodes.json')
         with open(mn_file, 'w+') as data_file:
             json.dump(mnList, data_file)        
         data_file.close()
@@ -227,8 +237,7 @@ def writeMNfile(mnList):
 def writeRPCfile(configuration):
     try:
         import simplejson as json
-        rpc_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'rpcServer.json')
+        rpc_file = os.path.join(user_dir, 'rpcServer.json')
         with open(rpc_file, 'w+') as data_file:
             json.dump(configuration, data_file)      
         data_file.close()

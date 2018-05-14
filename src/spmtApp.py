@@ -5,7 +5,7 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import signal
 from misc import getSPMTVersion, printDbg
-from constants import starting_height, starting_width
+from constants import starting_height, starting_width, user_dir
 from PyQt5.Qt import QMainWindow, QIcon, QAction
 from mainWindow import MainWindow
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
@@ -34,6 +34,9 @@ class App(QMainWindow):
         # Get version and title
         self.version = getSPMTVersion()
         self.title = 'SPMT - Secure PIVX Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
+        # Create the userdir if it doesn't exist
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir)
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
  

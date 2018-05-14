@@ -15,7 +15,7 @@ with open(os.path.join(base_dir, 'src', 'version.txt')) as version_file:
 version_file.close()
 version_str = version_data["number"] + version_data["tag"]
 
-add_files = [('src/masternodes.json', '.'), ('src/rpcServer.json', '.'), ('src/version.txt', '.'), ('img', 'img')]
+add_files = [('src/version.txt', '.'), ('img', 'img')]
 
 lib_path = next(p for p in sys.path if 'site-packages' in p)
 if os_type == 'win32':
