@@ -189,7 +189,7 @@ class TabRewards():
     @pyqtSlot()
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
-        self.updateSelection()                
+        self.updateSelection() 
 
             
     @pyqtSlot()
@@ -216,8 +216,9 @@ class TabRewards():
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "Invalid Destination Address")
             return None
         
-        # Check Noob spending collateral
-        if (self.ui.rewardsList.box.collateralRow is not None and 
+        # Check spending collateral
+        if (not self.ui.collateralHidden and
+                self.ui.rewardsList.box.collateralRow is not None and
                 self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected() ): 
             warning1 = "Are you sure you want to transfer the collateral?"
             warning2 = "Really?"
@@ -236,7 +237,8 @@ class TabRewards():
                     
         # LET'S GO    
         if self.selectedRewards: 
-            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))                     
+            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
+            printDbg("Preparing transaction. Please wait...")                     
             self.currFee = self.ui.feeLine.value() * 1e8
             # connect signal
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
