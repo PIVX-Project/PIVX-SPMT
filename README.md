@@ -17,7 +17,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
 
 ## <a name="installation"></a>Installation
 This application does not require installation.<br>
-If you are using a binary version, just unzip the folder anywhere you like and use the executable to start the application:
+If you are using a [binary version](https://github.com/PIVX-Project/PIVX-SPMT/releases), just unzip the folder anywhere you like and use the executable to start the application:
 - *Linux*: double-click `SecurePivxMasternodeTool` file inside the `app` directory
 - *Windows*: double-click `SecurePivxMasternodeTool.exe` file inside the `app` directory
 - *Mac OsX*: double-click `SecurePivxMasternodeTool.app` application folder
