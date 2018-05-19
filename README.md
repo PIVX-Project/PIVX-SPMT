@@ -16,6 +16,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
 * [Credits](#credits)
 
 ## <a name="installation"></a>Installation
+<b>NOTE:</b> make sure you have the latest firmware installed on your Nano S device.
 This application does not require installation.<br>
 If you are using a [binary version](https://github.com/PIVX-Project/PIVX-SPMT/releases), just unzip the folder anywhere you like and use the executable to start the application:
 - *Linux*: double-click `SecurePivxMasternodeTool` file inside the `app` directory
@@ -139,6 +140,7 @@ It should appear on the Block Explorers and on the receiving wallet after a few 
 <br><img src="doc/img/21.png" width="670"><br><br>
 
 ## <a name="comingsoon"></a>Coming soon
+- Tor (.onion) address support
 - Voting
 - Lite Connection
 ...
