@@ -284,7 +284,7 @@ class TabRewards():
   
 
     # Activated by signal sigTxdone from hwdevice       
-    @pyqtSlot(bytearray, str)            
+    #@pyqtSlot(bytearray, str)            
     def FinishSend(self, serialized_tx, amount_to_send):
         if not self.txFinished:
             try:
