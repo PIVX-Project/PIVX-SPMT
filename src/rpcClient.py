@@ -21,11 +21,11 @@ class RpcClient:
     
     
     
-    def decodeRawTx(self, rawTx):
+    def decodeRawTransaction(self, rawTx):
         try:
             return self.conn.decoderawtransaction(rawTx)    
         except Exception as e:
-            err_msg = 'error in decodeRawTx'
+            err_msg = 'error in decodeRawTransaction'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             
     

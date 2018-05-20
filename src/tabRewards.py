@@ -15,6 +15,7 @@ from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel
 from PyQt5.QtWidgets import QMessageBox
 
 from qt.gui_tabRewards import TabRewards_gui
+import simplejson as json
 
 
 class TabRewards():
@@ -298,15 +299,21 @@ class TabRewards():
                     self.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
                 
                 else:
-                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % (self.dest_addr)
-                    message += 'Amount to send: <b>%s PIV</b><br>' % amount_to_send
+                    decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
+                    destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
+                    amount = decodedTx.get("vout")[0].get("value")
+                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % destination
+                    message += 'Amount to send: <b>%s PIV</b><br>' % str(amount)
                     message += 'Fee: <b>%s PIV</b><br>Size: <b>%d bytes</b>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    reply = self.caller.myPopUp(QMessageBox.Information, 'Send transaction', message)
+                    mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
+                    mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
+                    mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                   
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex)
-                        mess = QMessageBox(QMessageBox.Information, 'transaction Sent', 'transaction Sent')
-                        mess.setDetailedText(txid)
-                        mess.exec_()
+                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', 'transaction Sent')
+                        mess2.setDetailedText(txid)
+                        mess2.exec_()
                         self.onCancel()
                         
                     else:
