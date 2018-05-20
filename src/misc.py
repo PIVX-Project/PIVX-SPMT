@@ -68,6 +68,8 @@ def getTxidTxidn(txid, txidn):
 def ipport(ip, port):
     if ip is None or port is None:
         return None
+    elif ip.endswith('.onion'):
+        return ip + ':' + port
     else:
         ipAddr = ip_address(ip)
         if ipAddr.version == 4:
