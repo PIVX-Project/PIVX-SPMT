@@ -43,6 +43,17 @@ def getFunctionName():
         return sys._getframe(1).f_code.co_name
     except Exception:
         return None
+    
+    
+def getRemoteSPMTversion():
+    import requests
+    resp = requests.get("https://raw.githubusercontent.com/PIVX-Project/PIVX-SPMT/master/src/version.txt")
+    if resp.status_code == 200:
+        data = resp.json()
+        return data['number']
+    else:
+        print("Invalid response getting version from GitHub\n")
+        return "0.0.0"
 
 
 

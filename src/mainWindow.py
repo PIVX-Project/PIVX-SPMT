@@ -3,7 +3,8 @@
 import sys
 import os.path
 from time import strftime, gmtime
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, WriteStream, WriteStreamReceiver, now
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
+    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion
 from constants import starting_height, log_File
 
 from PyQt5.QtCore import pyqtSlot, Qt, QThread
@@ -110,6 +111,8 @@ class MainWindow(QWidget):
         ###-- Let's go
         self.mnode_to_change = None
         printOK("Hello! Welcome to " + parent.title)
+        ##-- Check version
+        self.onCheckVersion()
         
         
     
@@ -143,6 +146,13 @@ class MainWindow(QWidget):
         self.btn_consoleClean.clicked.connect(lambda: self.onCleanConsole())
         consoleHeader.addWidget(self.btn_consoleClean)
         consoleHeader.addStretch(1)
+        self.versionLabel = QLabel("--")
+        self.versionLabel.setOpenExternalLinks(True)
+        consoleHeader.addWidget(self.versionLabel)
+        self.btn_checkVersion = QPushButton("Check SPMT version")
+        self.btn_checkVersion.setToolTip("Check latest stable release of SPMT")
+        self.btn_checkVersion.clicked.connect(lambda: self.onCheckVersion())
+        consoleHeader.addWidget(self.btn_checkVersion)
         layout.addLayout(consoleHeader)
         self.consoleArea = QTextEdit()
         almostBlack = QColor(40, 40, 40)
@@ -198,6 +208,31 @@ class MainWindow(QWidget):
         printDbg("Checking RPC server...")      
         self.runInThread(self.updateRPCstatus, (), self.showRPCstatus) 
         
+        
+        
+    @pyqtSlot()
+    def onCheckVersion(self):
+        printDbg("Checking SPMT version...")
+        self.versionLabel.setText("--")      
+        self.runInThread(self.checkVersion, (), self.updateVersion) 
+        
+        
+    def checkVersion(self, ctrl):
+        local_version = self.parent.version['number'].split('.')
+        remote_version = getRemoteSPMTversion().split('.')
+        
+        if (remote_version[0] > local_version[0]) or \
+        (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
+        (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] > local_version[2]):
+            self.versionMess = '<b style="color:red">New Version Available:</b> %s.%s.%s  ' % (remote_version[0], remote_version[1], remote_version[2])
+            self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
+        else:
+            self.versionMess = "You have the latest version of SPMT"
+            
+            
+    def updateVersion(self):
+        if self.versionMess is not None:
+            self.versionLabel.setText(self.versionMess)
         
         
         
