@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeMNfile
 from masternode import Masternode
 from threads import ThreadFuns
-import json
+import simplejson as json
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.Qt import QApplication
@@ -281,11 +281,16 @@ class TabMain():
             return
         
         ret2 = self.caller.rpcClient.relaymasternodebroadcast(text)
-        message = json.dumps(ret2, indent=4, sort_keys=True)
-        message += "\n\nStart-message was successfully sent to the network."
-        message += "\nIf your remote server is correctly configured and connected to the network, "
-        message += "the output of the './pivx-cli masternode status' on the VPS should report as ENABLED in a few seconds"
-        self.caller.myPopUp2(QMessageBox.Information, 'message relayed', message, QMessageBox.Ok)
+        
+        if json.dumps(ret2)[1:26] == "Masternode broadcast sent":
+            message = "Start-message was successfully sent to the network.<br>"
+            message += "If your remote server is correctly configured and connected to the network, "
+            message += "the output of the <b>./pivx-cli masternode status</b> command on the VPS should show:<br>"
+            message += "<br><em>\"message\": \"Masternode successfully started\"</em>"
+            self.caller.myPopUp2(QMessageBox.Information, 'message relayed', message, QMessageBox.Ok)
+        else:
+            print(json.dumps(ret2)[1:26])
+            print("\n")
         self.sendBroadcastCheck()
     
        

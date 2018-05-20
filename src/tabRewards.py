@@ -311,7 +311,8 @@ class TabRewards():
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                   
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex)
-                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', 'transaction Sent')
+                        mess2_text = "Transaction sent.<br><b>NOTE:</b> selected UTXOs will not disappear from the list until TX is confirmed"
+                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
                         self.onCancel()
