@@ -16,7 +16,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
 * [Credits](#credits)
 
 ## <a name="installation"></a>Installation
-<b>NOTE:</b> make sure you have the latest firmware installed on your Nano S device.
+
 This application does not require installation.<br>
 If you are using a [binary version](https://github.com/PIVX-Project/PIVX-SPMT/releases), just unzip the folder anywhere you like and use the executable to start the application:
 - *Linux*: double-click `SecurePivxMasternodeTool` file inside the `app` directory
@@ -32,6 +32,9 @@ python3 spmt.py
 To make binary versions from source, [PyInstaller](http://www.pyinstaller.org/) can be used with the `SecurePivxMasternode.spec` file provided.
 
 ## <a name="setup"></a>Setup
+
+<b>NOTE:</b> :warning: make sure to have the latest firmware installed on your Nano S device.<br>
+
 #### <a name="setup1"></a>Setting up the RPC server
 In order to interact with the PIVX blockchain, the SPMT needs a local PIVX wallet running alongside (any empty pivx-cli wallet will do).
 Edit your local `pivx.conf` inserting rpcuser, rpcpassword, rpcport and rpcallowip. 
@@ -140,7 +143,6 @@ It should appear on the Block Explorers and on the receiving wallet after a few 
 <br><img src="doc/img/21.png" width="670"><br><br>
 
 ## <a name="comingsoon"></a>Coming soon
-- Tor (.onion) address support
 - Voting
 - Lite Connection
 ...
