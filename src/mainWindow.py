@@ -41,7 +41,8 @@ class MainWindow(QWidget):
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
         self.rpcConnected = False
-        self.rpcStatusMess = "Not Connected"        
+        self.rpcStatusMess = "Not Connected"
+        self.isBlockchainSynced = False      
         ###-- Load icons & images
         self.loadIcons()        
         ###-- Create main layout
@@ -350,9 +351,16 @@ class MainWindow(QWidget):
         if self.rpcLastBlock == 1:
             text = "Loading block index..."
         elif self.rpcLastBlock > 0 and self.rpcConnected:
-            text = str(self.rpcLastBlock)         
-            
+            text = str(self.rpcLastBlock)
+            text += " ("       
+            if not self.isBlockchainSynced:
+                text += "Synchronizing"
+            else:
+                text += "Synced"
+            text += ")"
+                
         self.header.lastBlockLabel.setText(text)
+        
        
         
 
@@ -395,6 +403,7 @@ class MainWindow(QWidget):
         self.rpcConnected = status
         self.rpcLastBlock = lastBlock
         self.rpcStatusMess = statusMess
+        self.isBlockchainSynced = self.rpcClient.isBlockchainSynced()
     
     
     

@@ -121,7 +121,7 @@ class RpcClient:
         try:
             return self.conn.getrawtransaction(txid)
         except Exception as e:
-            err_msg = "error in getRawTransaction for txid=%s" % txid
+            err_msg = "is Blockchain synced?"
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
@@ -159,25 +159,37 @@ class RpcClient:
             return "RPC status: NOT CONNECTED. remote or local PIVX-cli running?"
     
     
+    
+    def isBlockchainSynced(self):
+        try:
+            return self.conn.mnsync('status').get("IsBlockchainSynced")
+        
+        except Exception as e:
+            err_msg = "error in isBlockchainSynced"
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            return False
             
             
             
     def decodemasternodebroadcast(self, work):
         try:
             return self.conn.decodemasternodebroadcast(work.strip())
+        
         except Exception as e:
             err_msg = "error in decodemasternodebroadcast"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            return ""
             
             
     
     def relaymasternodebroadcast(self, work):
         try:
             return self.conn.relaymasternodebroadcast(work.strip())
+        
         except Exception as e:
             err_msg = "error in relaymasternodebroadcast"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)    
-    
+            return ""
 
 
     def sendRawTransaction(self, tx_hex):

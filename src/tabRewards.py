@@ -247,7 +247,9 @@ class TabRewards():
                 self.txFinished = False
                 self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.rawtransactions)
             except Exception as e:
-                err_msg = "Error while preparing transaction"
+                err_msg = "Error while preparing transaction. <br>"
+                err_msg += "Probably Blockchain wasn't synced when trying to fetch raw TXs.<br>" 
+                err_msg += "<b>Wait for full synchronization</b> then hit 'Clear/Reload'"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
         else:
             self.caller.myPopUp2(QMessageBox.Information, 'transaction NOT Sent', "No UTXO to send")         
