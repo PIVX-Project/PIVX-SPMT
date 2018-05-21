@@ -250,7 +250,7 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions
     def scanForPubKey(self, account, spath):
-        printOK("Scanning for Address of path_id %s on account n° %s" % (str(spath), str(account)))
+        printOK("Scanning for Address of path_id %d on account n° %d" % (spath, account))
         curr_path = MPATH + "%d'/0/%d" % (account, spath)
         try:
             nodeData = self.chip.getWalletPublicKey(curr_path)          

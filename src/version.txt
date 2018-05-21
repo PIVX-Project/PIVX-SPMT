@@ -1,5 +1,5 @@
 {
  "number": "0.1.1",
- "tag": "a",
- "comments": ["TOR support"]
+ "tag": "b",
+ "comments": ["OSX bug"]
  }
