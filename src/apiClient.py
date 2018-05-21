@@ -43,7 +43,7 @@ class ApiClient:
             self.parameters['a'] = address
             return self.checkResponse(self.parameters)
         except Exception as e:
-            err_msg = "error in getAddressUtxos"
+            err_msg = "error in getBalance"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
     
     

@@ -5,6 +5,7 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeMNfile
 from masternode import Masternode
+from apiClient import ApiClient
 from threads import ThreadFuns
 import simplejson as json
 
@@ -18,6 +19,7 @@ from qt.dlg_mnStatus import MnStatus_dlg
 class TabMain():
     def __init__(self, caller):
         self.caller = caller
+        self.apiClient = ApiClient()
         self.runInThread = ThreadFuns.runInThread
         self.curr_masternode_alias = None
         self.curr_masternode_address = None
@@ -48,7 +50,17 @@ class TabMain():
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
             return None
         
-        self.curr_statusData = self.caller.rpcClient.getMNStatus(address)  
+        self.curr_statusData = self.caller.rpcClient.getMNStatus(address)
+        try:
+            if self.curr_statusData is not None:
+                balance = self.apiClient.getBalance(address)
+                self.curr_statusData['balance'] = balance
+                
+        except Exception as e:
+            err_msg = "exception in checkMN"
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            
+            
     
     
     
@@ -74,6 +86,9 @@ class TabMain():
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
                 display_text = '<b>Status: </b><span style="color:red">%s</span>' % statusData['status']
+                
+            if statusData['balance'] is not None:
+                display_text += '&nbsp;&nbsp;&nbsp;<b>Balance: </b><span style="color:purple">%s PIV</span>' % str(statusData['balance'])
                
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
