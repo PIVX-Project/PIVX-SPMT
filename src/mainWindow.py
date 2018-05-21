@@ -199,7 +199,8 @@ class MainWindow(QWidget):
     @pyqtSlot()        
     def onCheckHw(self):
         printDbg("Checking for HW device...")
-        self.runInThread(self.updateHWstatus, (), self.showHWstatus)
+        self.updateHWstatus(None)
+        self.showHWstatus()
 
 
         

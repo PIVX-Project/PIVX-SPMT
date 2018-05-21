@@ -43,9 +43,11 @@ class HWdevice(QObject):
         printDbg("Creating HW device class")
         self.initDevice()
         
-    
+    @process_ledger_exceptions
     def initDevice(self):
         try:
+            if hasattr(self, 'dongle'):
+                self.dongle.close()
             self.dongle = getDongle(False)
             printOK('Ledger Nano S drivers found')
             self.chip = btchip(self.dongle)
