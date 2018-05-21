@@ -125,7 +125,7 @@ def printException_msg(
     msg += '<span style="color:white">function</span> : %s<br>' % function_name
     msg += '<span style="color:red">'
     if errargs:
-        msg += 'err: %s<br>' % str(errargs)
+        msg += 'err: %s<br>' % str(errargs[0])
         
     msg += '===> %s</span><br>' % err_msg 
     return msg

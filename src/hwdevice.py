@@ -12,6 +12,7 @@ from PyQt5.Qt import QObject
 from threads import ThreadFuns
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
 from pivx_hashlib import pubkey_to_address, single_sha256
+import threading
 
 
 def process_ledger_exceptions(func):
@@ -32,6 +33,7 @@ def process_ledger_exceptions(func):
 
 
 class HWdevice(QObject):
+    
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
     # signal: sigtx (thread) is done - emitted by signTxFinish
@@ -40,12 +42,14 @@ class HWdevice(QObject):
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         # Device Lock for threads
+        self.lock = threading.Lock()
         printDbg("Creating HW device class")
         self.initDevice()
         
     @process_ledger_exceptions
     def initDevice(self):
         try:
+            self.lock.acquire()
             if hasattr(self, 'dongle'):
                 self.dongle.close()
             self.dongle = getDongle(False)
@@ -56,12 +60,16 @@ class HWdevice(QObject):
             ver = self.chip.getFirmwareVersion()
             printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
             
+            
         except Exception as e:
             err_msg = 'error Initializing Ledger'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             self.initialized = False
             if hasattr(self, 'dongle'):
                 self.dongle.close()
+                
+        finally:
+            self.lock.release()
             
         
     
@@ -69,7 +77,6 @@ class HWdevice(QObject):
     # 0 - not connected
     # 1 - not in pivx app
     # 2 - fine
-    @process_ledger_exceptions
     def getStatusCode(self):
         try:
             if self.initialized:
@@ -88,7 +95,6 @@ class HWdevice(QObject):
     
     
         
-    @process_ledger_exceptions
     def getStatusMess(self, statusCode = None):
         if statusCode == None or not statusCode in [0, 1, 2]:
             statusCode = self.getStatusCode()
@@ -104,14 +110,19 @@ class HWdevice(QObject):
     @process_ledger_exceptions
     def checkApp(self):
         printDbg("Checking app")
+        self.lock.acquire()
         try:
             firstAddress = self.chip.getWalletPublicKey(MPATH + "0'/0/0").get('address')[12:-2]
+
             if firstAddress[0] == 'D':
                 printOK("found PIVX app on ledger device")
                 return True       
         except Exception as e:
             err_msg = 'error in checkApp'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            
+        finally:
+            self.lock.release()
         return False 
     
     
@@ -124,48 +135,54 @@ class HWdevice(QObject):
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
         self.arg_inputs = []
         self.amount = 0
-        for idx, utxo in enumerate(utxos_to_spend):
-            
-            self.amount += int(utxo['value'])
-            raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
-
-            if not raw_tx:
-                raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
-            
-            # parse the raw transaction, so that we can extract the UTXO locking script we refer to
-            prev_transaction = bitcoinTransaction(raw_tx)
-
-            utxo_tx_index = utxo['tx_ouput_n']
-            if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
-                raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
-
-            trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
-            self.trusted_inputs.append(trusted_input)
-           
-            # Hash check
-            curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
-            pubkey_hash = bin_hash160(curr_pubkey)
-            pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
-            if pubkey_hash != pubkey_hash_from_script:
-                text = "Error: different public key hashes for the BIP32 path and the UTXO"
-                text += "locking script. Your signed transaction will not be validated by the network.\n"
-                text += "pubkey_hash: %s\n" % str(pubkey_hash)
-                text += "pubkey_hash_from_script: %s\n" % str(pubkey_hash_from_script)
-                printDbg(text)
-
-            self.arg_inputs.append({
-                'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
-                'pubkey': curr_pubkey,
-                'bip32_path': bip32_path,
-                'outputIndex': utxo['tx_ouput_n'],
-                'txid': utxo['tx_hash']
-            })
-
-        self.amount -= int(tx_fee)
-        self.amount = int(self.amount)
-        arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
-        self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
-        self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+        self.lock.acquire()
+        try:
+            for idx, utxo in enumerate(utxos_to_spend):
+                
+                self.amount += int(utxo['value'])
+                raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
+    
+                if not raw_tx:
+                    raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
+                
+                # parse the raw transaction, so that we can extract the UTXO locking script we refer to
+                prev_transaction = bitcoinTransaction(raw_tx)
+    
+                utxo_tx_index = utxo['tx_ouput_n']
+                if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
+                    raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
+                
+                
+                trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
+                self.trusted_inputs.append(trusted_input)
+               
+                # Hash check
+                curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
+                pubkey_hash = bin_hash160(curr_pubkey)
+                pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
+                if pubkey_hash != pubkey_hash_from_script:
+                    text = "Error: different public key hashes for the BIP32 path and the UTXO"
+                    text += "locking script. Your signed transaction will not be validated by the network.\n"
+                    text += "pubkey_hash: %s\n" % pubkey_hash.hex()
+                    text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
+                    printDbg(text)
+    
+                self.arg_inputs.append({
+                    'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
+                    'pubkey': curr_pubkey,
+                    'bip32_path': bip32_path,
+                    'outputIndex': utxo['tx_ouput_n'],
+                    'txid': utxo['tx_hash']
+                })
+    
+            self.amount -= int(tx_fee)
+            self.amount = int(self.amount)
+            arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
+            self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
+            self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+        
+        finally:
+            self.lock.release()
         
         try:
             for o in arg_outputs:
@@ -175,6 +192,7 @@ class HWdevice(QObject):
                 self.new_transaction.outputs.append(output)
         except Exception:
             raise
+        
         
         # join all outputs - will be used by Ledger for signing transaction
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
@@ -198,19 +216,23 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
-        printOK("Scanning for Address of path_id %s on account n° %s" % (str(spath), str(account)))
+        printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
         curr_path = MPATH + "%d'/0/%d" % (account, spath) 
+        self.lock.acquire()
         try:
             if not isTestnet:
                 curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
             else:
                 pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()
                 curr_addr = pubkey_to_address(pubkey, isTestnet) 
+                
                                          
         except Exception as e:
             err_msg = 'error in scanForAddress'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
+        finally:
+            self.lock.release()
         return curr_addr
     
     
@@ -220,17 +242,19 @@ class HWdevice(QObject):
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
         found = False
         spath = -1
-         
+        
         printOK("Scanning for Bip32 path of address: %s" % address)
         for i in range(starting_spath, starting_spath+spath_count):
             curr_path = MPATH + "%d'/0/%d" % (account, i)
             printDbg("checking path... %s" % curr_path)
+            self.lock.acquire()
             try:
                 if not isTestnet:
                     curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
                 else:
                     pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()          
                     curr_addr = pubkey_to_address(pubkey, isTestnet)     
+
                              
                 if curr_addr == address:
                     found = True
@@ -243,6 +267,9 @@ class HWdevice(QObject):
                 err_msg = 'error in scanForBip32'
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
                 
+            finally:
+                self.lock.release()
+                
         return (found, spath)
             
             
@@ -250,15 +277,20 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions
     def scanForPubKey(self, account, spath):
-        printOK("Scanning for Address of path_id %d on account n° %d" % (spath, account))
+        self.lock.acquire()
+        printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
         curr_path = MPATH + "%d'/0/%d" % (account, spath)
         try:
-            nodeData = self.chip.getWalletPublicKey(curr_path)          
+            nodeData = self.chip.getWalletPublicKey(curr_path)
+                      
                 
         except Exception as e:
             err_msg = 'error in scanForPubKey'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
             return None
+    
+        finally:
+            self.lock.release()
         
         return compress_public_key(nodeData.get('publicKey')).hex()
     
@@ -267,6 +299,7 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions        
     def signMess(self, caller, path, message):
+        self.lock.acquire()
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
@@ -303,7 +336,7 @@ class HWdevice(QObject):
         self.mBox.setIconPixmap(caller.ui.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox.setWindowTitle("CHECK YOUR LEDGER")
         self.mBox.setStandardButtons(QMessageBox.NoButton)
-        
+        self.lock.release()
         self.mBox.show()
         # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
@@ -313,16 +346,20 @@ class HWdevice(QObject):
     
     @process_ledger_exceptions
     def signMessageSign(self, ctrl):
+        self.lock.acquire()
         try:
             self.signature = self.chip.signMessageSign()
             
+            
         except:
             self.signature = None
+            
+        finally:
+            self.lock.release()
     
     
     
-    
-    @process_ledger_exceptions        
+           
     def signMessageFinish(self):
         self.mBox.accept()
         if self.signature != None:
@@ -361,6 +398,7 @@ class HWdevice(QObject):
         
     @process_ledger_exceptions
     def signTxSign(self, ctrl):
+        self.lock.acquire()
         try:
             starting = True
             # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
@@ -382,7 +420,8 @@ class HWdevice(QObject):
                 self.new_transaction.inputs.append(inputTx)
 
                 starting = False
-    
+                
+            
             self.new_transaction.lockTime = bytearray([0, 0, 0, 0])
             self.tx_raw = bytearray(self.new_transaction.serialize())
             
@@ -390,10 +429,10 @@ class HWdevice(QObject):
             printException(getCallerName(), getFunctionName(), "Signature Exception", e.args)
             self.tx_raw = None
     
+        finally:
+            self.lock.release()
     
-    
-    
-    @process_ledger_exceptions        
+            
     def signTxFinish(self):
         self.mBox2.accept()
         try:
