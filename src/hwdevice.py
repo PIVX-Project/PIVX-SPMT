@@ -95,7 +95,7 @@ class HWdevice(QObject):
         messages = {
             0: 'Unable to connect to the device',
             1: 'Open PIVX app on Ledger device',
-            2: 'HW DEVICE CONNECTED!'}
+            2: 'Hardware device connected'}
         return messages[statusCode]
     
     

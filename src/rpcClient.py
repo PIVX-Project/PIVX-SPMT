@@ -154,9 +154,9 @@ class RpcClient:
         if status == None:
             status = self.getStatus()    
         if status: 
-            return "RPC status: CONNECTED!!!"
+            return "RPC status: Connected"
         else:
-            return "RPC status: NOT CONNECTED. remote or local PIVX-cli running?"
+            return "RPC status: Not connected. Is the remote or local PIVX-cli running?"
     
     
     
