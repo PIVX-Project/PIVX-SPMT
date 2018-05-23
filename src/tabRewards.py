@@ -209,12 +209,12 @@ class TabRewards():
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
+            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         
         # Check destination Address      
         if not checkPivxAddr(self.dest_addr):
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "Invalid Destination Address")
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
             return None
         
         # Check spending collateral
@@ -252,7 +252,7 @@ class TabRewards():
                 err_msg += "<b>Wait for full synchronization</b> then hit 'Clear/Reload'"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
         else:
-            self.caller.myPopUp2(QMessageBox.Information, 'transaction NOT Sent', "No UTXO to send")         
+            self.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "No UTXO to send")         
                     
             
             
@@ -304,23 +304,23 @@ class TabRewards():
                     decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
                     destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                     amount = decodedTx.get("vout")[0].get("value")
-                    message = 'Broadcast signed transaction?<br><br>Destination address:<br><b>%s</b><br><br>' % destination
-                    message += 'Amount to send: <b>%s PIV</b><br>' % str(amount)
-                    message += 'Fee: <b>%s PIV</b><br>Size: <b>%d bytes</b>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                    message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
+                    message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
+                    message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b>Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
                     mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                   
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex)
-                        mess2_text = "Transaction sent.<br><b>NOTE:</b> selected UTXOs will not disappear from the list until TX is confirmed"
+                        mess2_text = "<p>Transaction successfully sent.</p><p>(Note that the selected rewards will remain displayed in the app until the transaction is confirmed.)</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
                         self.onCancel()
                         
                     else:
-                        self.caller.myPopUp2(QMessageBox.Information, 'transaction NOT Sent', "transaction NOT sent")
+                        self.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "Transaction NOT sent")
                         self.onCancel()
                         
             except Exception as e:
