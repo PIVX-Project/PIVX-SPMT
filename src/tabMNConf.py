@@ -43,7 +43,7 @@ class TabMNConf():
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
+            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)     
     
@@ -99,7 +99,7 @@ class TabMNConf():
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
+            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         
         result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
@@ -313,7 +313,7 @@ class TabMNConf():
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
             self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect - hw status: %d" % self.caller.hwStatus)
+            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         addr = self.caller.hwdevice.scanForAddress(currHwAcc, currSpath, self.isTestnet())
         self.ui.edt_address.setText(addr)

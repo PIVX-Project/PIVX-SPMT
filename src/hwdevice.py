@@ -94,7 +94,7 @@ class HWdevice(QObject):
             statusCode = self.getStatusCode()
         messages = {
             0: 'Unable to connect to the device',
-            1: 'Open PIVX app on Ledger device',
+            1: 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
             2: 'Hardware device connected'}
         return messages[statusCode]
     
@@ -147,7 +147,7 @@ class HWdevice(QObject):
             pubkey_hash = bin_hash160(curr_pubkey)
             pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
             if pubkey_hash != pubkey_hash_from_script:
-                text = "Error: different public key hashes for the BIP32 path and the UTXO"
+                text = "Error: The hashes for the public key for the BIP32 path, and the UTXO do not match."
                 text += "locking script. Your signed transaction will not be validated by the network.\n"
                 text += "pubkey_hash: %s\n" % str(pubkey_hash)
                 text += "pubkey_hash_from_script: %s\n" % str(pubkey_hash_from_script)
@@ -180,11 +180,11 @@ class HWdevice(QObject):
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
 
         self.mBox2 = QMessageBox(caller)
-        messageText = "Check display of your hardware device<br><br><br>"
-        messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-        messageText += "To PIVX Address: <b>%s</b><br><br>" % dest_address
-        messageText += "PIV amount: <b>%s</b><br>" % str(round(self.amount / 1e8, 8))
-        messageText += "plus PIV for fee: <b>%s</b><br><br>" % str(round(int(tx_fee) / 1e8, 8))
+        messageText = "<p>Confirm transaction on your device, with the following details:</p>"
+        # messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
+        messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
+        messageText += "<p>Net amount:<br><b>%s</b> PIV</P>" % str(round(self.amount / 1e8, 8))
+        messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox2.setWindowTitle("CHECK YOUR LEDGER")

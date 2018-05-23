@@ -15,7 +15,7 @@ class MnStatus_dlg(QDialog):
         self.main_wnd = main_wnd
         self.mnAlias = mnAlias
         self.statusData = statusData
-        self.setWindowTitle('Masternode STATUS Details')
+        self.setWindowTitle('Masternode Details')
         self.setupUI()
     
         
