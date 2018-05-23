@@ -35,9 +35,9 @@ class TabMain_gui(QWidget):
         globalButtons = QHBoxLayout()
         self.button_addMasternode = QPushButton("New Masternode")
         globalButtons.addWidget(self.button_addMasternode)
-        self.button_startAll = QPushButton("Start All")
+        self.button_startAll = QPushButton("Start All Masternodes")
         globalButtons.addWidget(self.button_startAll)
-        self.button_getAllStatus = QPushButton("Get Status For All")
+        self.button_getAllStatus = QPushButton("Get Status of All Masternodes")
         globalButtons.addWidget(self.button_getAllStatus)
         self.globalButtons = globalButtons
         
@@ -78,7 +78,7 @@ class TabMain_gui(QWidget):
      
     def insert_mn_list(self, name, ip, port, row=None):   
         mnRow = QWidget()
-        mnRow.setToolTip("Drag & Drop rows to reorder")
+        mnRow.setToolTip("Drag rows to re-order.")
         mnRowLayout = QHBoxLayout()
         ##--- Led
         self.mnLed[name] = QLabel()
@@ -96,36 +96,36 @@ class TabMain_gui(QWidget):
         ##--- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
-        self.btn_details[name].setToolTip('Check STATUS details of masternode "%s"' % name)
+        self.btn_details[name].setToolTip('Check status of "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()         
         ##--- Status button
         self.btn_status[name] = QPushButton()
-        self.btn_status[name].setToolTip('get status of masternode "%s"' % name)      
+        self.btn_status[name].setToolTip('Check status of "%s"' % name)      
         self.btn_status[name].setIcon(self.getMNstatus_icon)
         self.btn_status[name].alias = name
         mnRowLayout.addWidget(self.btn_status[name])
         ##--- Rewards button
         self.btn_rewards[name] = QPushButton()
-        self.btn_rewards[name].setToolTip('tranfer rewards from masternode "%s"' % name)           
+        self.btn_rewards[name].setToolTip('Transfer rewards from "%s"' % name)           
         self.btn_rewards[name].setIcon(self.rewards_icon)
         self.btn_rewards[name].alias = name
         mnRowLayout.addWidget(self.btn_rewards[name])
         ##--- Start button
         self.btn_start[name] = QPushButton()
-        self.btn_start[name].setToolTip('start masternode "%s"' % name)          
+        self.btn_start[name].setToolTip('Start masternode "%s"' % name)          
         self.btn_start[name].setIcon(self.startMN_icon)
         self.btn_start[name].alias = name
         mnRowLayout.addWidget(self.btn_start[name])
         ##--- Edit button
         self.btn_edit[name] = QPushButton()
-        self.btn_edit[name].setToolTip('edit masternode "%s"' % name)   
+        self.btn_edit[name].setToolTip('Edit masternode "%s"' % name)   
         self.btn_edit[name].setIcon(self.editMN_icon)
         self.btn_edit[name].alias = name
         mnRowLayout.addWidget(self.btn_edit[name])
         ##--- Remove button
         self.btn_remove[name] = QPushButton()
-        self.btn_remove[name].setToolTip('remove masternode "%s"' % name)        
+        self.btn_remove[name].setToolTip('Delete masternode "%s"' % name)        
         self.btn_remove[name].setIcon(self.removeMN_icon)
         self.btn_remove[name].alias = name
         mnRowLayout.addWidget(self.btn_remove[name])

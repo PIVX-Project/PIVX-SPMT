@@ -218,16 +218,16 @@ def sec_to_time(seconds):
 
 def updateSplash(label, i):
     if i==10:
-        progressText = "loading masternode conf..."
+        progressText = "Loading masternode configuration data..."
         label.setText(progressText)
     elif i==30:
-        progressText = "drawing GUI..."
+        progressText = "Creating the user interface..."
         label.setText(progressText)
     elif i==59:
-        progressText = "releasing the watchdogs..."
+        progressText = "Releasing the watchdogs..."
         label.setText(progressText)
     elif i==89:
-        progressText = "Enjoy all this UPF!"
+        progressText = "Enjoy using the Secure PIVX Masternode Tool!"
         label.setText(progressText)   
     elif i==99:
         time.sleep(0.4)
