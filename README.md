@@ -95,6 +95,7 @@ To inspect the status details click on the little magnifying glass icon.
 <br><img src="doc/img/09.png" width="670"><br><br>
 
 ### <a name="features2"></a>Starting masternode
+Click `Start All Masternodes` to send a start-message for all masternode entries or click the little rocket icon next to a particular entry to start that one masternode.
 <br><img src="doc/img/10.png" width="670"><br><br>
 
 Click `yes` to confirm
