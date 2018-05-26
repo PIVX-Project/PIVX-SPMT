@@ -36,7 +36,7 @@ class TabRewards_gui(QWidget):
         self.mnSelect = QComboBox()
         self.mnSelect.setToolTip("Select Masternode") 
         hBox.addWidget(self.mnSelect)
-        label = QLabel("Total Balance")
+        label = QLabel("Total Rewards Balance")
         label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         hBox.addWidget(label)
         self.addrAvailLine = QLabel()

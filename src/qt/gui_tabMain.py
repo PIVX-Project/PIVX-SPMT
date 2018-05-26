@@ -96,7 +96,7 @@ class TabMain_gui(QWidget):
         ##--- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
-        self.btn_details[name].setToolTip('Check status of "%s"' % name)
+        self.btn_details[name].setToolTip('Check status details of masternode "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()         
         ##--- Status button

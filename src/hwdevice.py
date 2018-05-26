@@ -147,8 +147,8 @@ class HWdevice(QObject):
             pubkey_hash = bin_hash160(curr_pubkey)
             pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
             if pubkey_hash != pubkey_hash_from_script:
-                text = "Error: The hashes for the public key for the BIP32 path, and the UTXO do not match."
-                text += "locking script. Your signed transaction will not be validated by the network.\n"
+                text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match. "
+                text += "Your signed transaction will not be validated by the network.\n"
                 text += "pubkey_hash: %s\n" % str(pubkey_hash)
                 text += "pubkey_hash_from_script: %s\n" % str(pubkey_hash_from_script)
                 printDbg(text)
