@@ -130,7 +130,7 @@ class TabMNConf_gui(QWidget):
         hBox3.addWidget(self.btn_addressToSpath)
         hBox3.addWidget(QLabel("spath_id"))
         hBox3.addWidget(self.edt_spath)
-        layout.addRow(QLabel("Account HW"), hBox3)
+        layout.addRow(QLabel("Account"), hBox3)
         ##--- ROW 6
         self.edt_pubKey = QLineEdit()
         self.edt_pubKey.setToolTip("public key corresponding to address")

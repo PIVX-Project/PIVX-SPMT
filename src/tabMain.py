@@ -46,7 +46,7 @@ class TabMain():
         address = self.curr_masternode_address
         # Check rpc connection   
         if not self.caller.rpcConnected:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to RPC server first")
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
             return None
         
@@ -74,7 +74,7 @@ class TabMain():
         
         if statusData is None:
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
-            msg = "<b>ERROR! Masternode not found</b>"
+            msg = "<b>Masternode not found.</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
             self.ui.mnStatusLabel[masternode_alias].show()
             self.ui.btn_details[masternode_alias].setEnabled(False)
@@ -82,13 +82,13 @@ class TabMain():
             printDbg("Got status %s for %s (%s)" % (statusData['status'], masternode_alias, statusData['addr']))
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
-                display_text = '<b>Status: </b><span style="color:green">%s</span>' % statusData['status']
+                display_text = '<span style="color:green">%s</span>' % statusData['status']
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
-                display_text = '<b>Status: </b><span style="color:red">%s</span>' % statusData['status']
+                display_text = '<span style="color:red">%s</span>' % statusData['status']
                 
             if statusData['balance'] is not None:
-                display_text += '&nbsp;&nbsp;&nbsp;<b>Balance: </b><span style="color:purple">%s PIV</span>' % str(statusData['balance'])
+                display_text += '&nbsp;—&nbsp;<span style="color:purple">%s PIV</span>' % str(statusData['balance'])
                
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()

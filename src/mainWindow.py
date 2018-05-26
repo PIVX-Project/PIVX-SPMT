@@ -296,14 +296,14 @@ class MainWindow(QWidget):
     
     def showHWstatus(self):
         self.updateHWleds()
-        self.myPopUp2(QMessageBox.Information, 'SPMT - hw check', "STATUS: %s" % self.hwStatusMess, QMessageBox.Ok)
+        self.myPopUp2(QMessageBox.Information, 'SPMT - hw check', "%s" % self.hwStatusMess, QMessageBox.Ok)
         
         
     
         
     def showRPCstatus(self):
         self.updateRPCled()
-        self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "STATUS: %s" % self.rpcStatusMess, QMessageBox.Ok)
+        self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "%s" % self.rpcStatusMess, QMessageBox.Ok)
 
             
             
