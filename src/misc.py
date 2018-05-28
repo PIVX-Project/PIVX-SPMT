@@ -6,7 +6,7 @@ from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-from constants import log_File, user_dir
+from constants import log_File, masternodes_File, rpc_File, user_dir
 
 def append_to_logfile(text):
     try:
@@ -159,7 +159,7 @@ def splitString(text, n):
 def readMNfile():
     try:
         import simplejson as json
-        mn_file = os.path.join(user_dir, 'masternodes.json')
+        mn_file = os.path.join(user_dir, masternodes_File)
         if os.path.exists(mn_file):
             with open(mn_file) as data_file:
                 mnList = json.load(data_file)    
@@ -167,7 +167,7 @@ def readMNfile():
         else:
             raise Exception("No masternodes.json found. Creating new.")
             # save default config (empty list) and return it
-            writeMNfile([])
+            writeToFile([], masternodes_File)
             return []
         
     except Exception as e:
@@ -181,7 +181,7 @@ def readMNfile():
 def readRPCfile():
     try:
         import simplejson as json
-        config_file = os.path.join(user_dir, 'rpcServer.json')
+        config_file = os.path.join(user_dir, rpc_File)
         if os.path.exists(config_file):
             with open(config_file) as data_file:
                 rpc_config = json.load(data_file)
@@ -193,7 +193,7 @@ def readRPCfile():
         printDbg(e.args[0])
         # save default config and return it
         config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
-        writeRPCfile(config)
+        writeRPCfile(config, rpc_File)
         return "127.0.0.1", 45458, "myUsername", "myPassword"
     
     rpc_ip = rpc_config.get('rpc_ip')
@@ -227,35 +227,23 @@ def updateSplash(label, i):
         progressText = "Releasing the watchdogs..."
         label.setText(progressText)
     elif i==89:
-        progressText = "Enjoy using the Secure PIVX Masternode Tool!"
+        progressText = "Enjoy the UPF!"
         label.setText(progressText)   
     elif i==99:
-        time.sleep(0.4)
+        time.sleep(0.1)
 
 
 
-def writeMNfile(mnList):
+def writeToFile(data, filename):
     try:
         import simplejson as json
-        mn_file = os.path.join(user_dir, 'masternodes.json')
-        with open(mn_file, 'w+') as data_file:
-            json.dump(mnList, data_file)        
+        datafile_name = os.path.join(user_dir, filename)
+        with open(datafile_name, 'w+') as data_file:
+            json.dump(data, data_file)        
         data_file.close()
     except Exception as e:
-        printException(getCallerName(), getFunctionName(), "error writing MN file", e.args)
-        
-    
-
-    
-def writeRPCfile(configuration):
-    try:
-        import simplejson as json
-        rpc_file = os.path.join(user_dir, 'rpcServer.json')
-        with open(rpc_file, 'w+') as data_file:
-            json.dump(configuration, data_file)      
-        data_file.close()
-    except Exception as e:
-        printException(getCallerName(), getFunctionName(), "error writing RPC file", e.args)
+        errorMsg = "error writing file %s" % filename
+        printException(getCallerName(), getFunctionName(), errorMsg, e.args)
     
     
     

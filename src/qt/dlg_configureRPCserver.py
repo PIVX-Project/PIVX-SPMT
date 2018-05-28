@@ -9,7 +9,8 @@ from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
 
-from misc import writeRPCfile, readRPCfile, printDbg
+from misc import writeToFile, readRPCfile, printDbg
+from constants import rpc_File
 
 
 class ConfigureRPCserver_dlg(QDialog):
@@ -89,7 +90,7 @@ class Ui_ConfigureRPCserverDlg(object):
             conf["rpc_password"] = main_dlg.rpc_password
             
             # Update File
-            writeRPCfile(conf)
+            writeToFile(conf, rpc_File)
             
             # Update current RPC Server
             main_dlg.main_wnd.mainWindow.rpcClient = None

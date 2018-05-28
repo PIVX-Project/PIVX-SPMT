@@ -16,3 +16,5 @@ APPDATA_DIRNAME = ".SecurePivxMasternodeTool"
 home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
+masternodes_File = 'masternodes.json'
+rpc_File = 'rpcServer.json'

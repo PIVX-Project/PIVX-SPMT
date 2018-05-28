@@ -5,7 +5,8 @@ import os.path
 from threads import ThreadFuns
 from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, printOK, writeMNfile
+from misc import printDbg, printOK, writeToFile
+from constants import masternodes_File
 from pivx_hashlib import generate_privkey
 
 from PyQt5.QtCore import pyqtSlot
@@ -285,7 +286,7 @@ class TabMNConf():
             self.caller.masternode_list.sort(key=self.caller.parent.extract_name)
             # Write to file
             printDbg("saving MN configuration for %s" % new_masternode['name'])
-            writeMNfile(self.caller.masternode_list)
+            writeToFile(self.caller.masternode_list, masternodes_File)
             printDbg("saved")
             # Insert item in list of Main tab and connect buttons
             name = new_masternode['name']

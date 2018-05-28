@@ -3,7 +3,8 @@
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeMNfile
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile
+from constants import masternodes_File
 from masternode import Masternode
 from apiClient import ApiClient
 from threads import ThreadFuns
@@ -196,7 +197,7 @@ class TabMain():
                     self.caller.masternode_list.remove(masternode)
                     break
             try:
-                writeMNfile(self.caller.masternode_list)
+                writeToFile(self.caller.masternode_list, masternodes_File)
                 self.ui.myList.takeItem(self.ui.myList.row(self.ui.current_mn[masternode_alias]))
             except Exception as e:
                 err_msg = "Error writing masternode file"
