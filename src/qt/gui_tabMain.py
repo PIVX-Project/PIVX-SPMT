@@ -78,6 +78,7 @@ class TabMain_gui(QWidget):
      
     def insert_mn_list(self, name, ip, port, row=None):   
         mnRow = QWidget()
+        mnRow.alias = name
         mnRow.setToolTip("Drag rows to re-order.")
         mnRowLayout = QHBoxLayout()
         ##--- Led

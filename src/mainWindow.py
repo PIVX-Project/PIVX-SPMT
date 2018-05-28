@@ -78,7 +78,7 @@ class MainWindow(QWidget):
         self.myWSReceiver.moveToThread(self.consoleLogThread)
         self.consoleLogThread.started.connect(self.myWSReceiver.run)
         self.consoleLogThread.start()
-        printDbg("Console Log thread started")       
+        printDbg("Console Log thread started")
         ###-- Create the thread to update console log for stderr
         self.consoleLogThread2 = QThread()
         self.myWSReceiver2 = WriteStreamReceiver(self.queue2)
@@ -87,11 +87,13 @@ class MainWindow(QWidget):
         self.consoleLogThread2.started.connect(self.myWSReceiver2.run)
         self.consoleLogThread2.start()
         printDbg("Console Log thread 2 started")       
+        
         ###-- Initialize tabs
         self.tabs = QTabWidget()
         self.t_main = TabMain(self)
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
+        
         ###-- Add tabs
         self.tabs.addTab(self.tabMain, "Masternode Control")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
@@ -107,11 +109,17 @@ class MainWindow(QWidget):
         self.splitter.setStretchFactor(1,1)
         self.splitter.setSizes(self.parent.cache.get("splitter_sizes"))
         self.layout.addWidget(self.splitter)
+        
         ###-- Set Layout
         self.setLayout(self.layout)
         ###-- Let's go
         self.mnode_to_change = None
         printOK("Hello! Welcome to " + parent.title)
+        
+        ###-- Hide console if it was previously hidden
+        if self.parent.cache.get("console_hidden"):
+            self.onToggleConsole()
+            
         ##-- Check version
         self.onCheckVersion()
         

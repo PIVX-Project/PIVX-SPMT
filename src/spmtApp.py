@@ -56,11 +56,17 @@ class App(QMainWindow):
         self.rpcConfMenu = QAction(self.spmtIcon, 'Local RPC Server...', self)
         self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
         confMenu.addAction(self.rpcConfMenu)
-        # Sort masternode list by alias
-        masternode_list.sort(key=self.extract_name)
+        
+        # Sort masternode list (by alias if no previous order set)
+        if self.cache.get('mnList_order') is not {}:
+            masternode_list.sort(key=self.extract_order)
+        else:
+            masternode_list.sort(key=self.extract_name)
+        
         # Create main window
         self.mainWindow = MainWindow(self, masternode_list, imgDir)
         self.setCentralWidget(self.mainWindow)
+        
         # Show
         self.show()
         self.activateWindow()
@@ -68,6 +74,15 @@ class App(QMainWindow):
     def extract_name(self, json):
         try:
             return json['name'].lower()
+        except KeyError:
+            return 0
+        
+    
+    def extract_order(self, json):
+        try:
+            name = json['name']
+            return self.cache.get('mnList_order').get(name)
+        
         except KeyError:
             return 0
         
@@ -88,6 +103,17 @@ class App(QMainWindow):
         self.cache["window_width"] = self.width()
         self.cache["window_height"] = self.height()
         self.cache["splitter_sizes"] = self.mainWindow.splitter.sizes()
+        self.cache["console_hidden"] = (self.mainWindow.btn_consoleToggle.text() == 'Show')
+        
+        # Save mnList order to cache file
+        mnOrder = {}
+        mnList = self.mainWindow.tabMain.myList
+        for i in range(mnList.count()):
+            mnName = mnList.itemWidget(mnList.item(i)).alias
+            mnOrder[mnName] = i
+        self.cache['mnList_order'] = mnOrder
+        
+        # Write cache file
         writeToFile(self.cache, cache_File)
         print("Bye Bye.")
         return QMainWindow.closeEvent(self, *args, **kwargs)
