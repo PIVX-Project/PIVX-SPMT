@@ -6,7 +6,7 @@ from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-from constants import log_File, masternodes_File, rpc_File, user_dir
+from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, DEFAULT_CACHE
 
 def append_to_logfile(text):
     try:
@@ -153,6 +153,25 @@ def printOK(what):
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
+
+
+def readCacheFile():
+    try:
+        import simplejson as json
+        cache_file = os.path.join(user_dir, cache_File)
+        if os.path.exists(cache_file):
+            with open(cache_file) as data_file:
+                cache = json.load(data_file)
+            data_file.close()
+        else:
+            writeToFile(DEFAULT_CACHE, cache_File)
+            raise Exception("No cache file found. Creating new.")
+        
+    except Exception as e:
+        printDbg(e.args[0])
+        return DEFAULT_CACHE
+        
+    return cache
     
  
  
@@ -165,10 +184,9 @@ def readMNfile():
                 mnList = json.load(data_file)    
             data_file.close()
         else:
-            raise Exception("No masternodes.json found. Creating new.")
             # save default config (empty list) and return it
             writeToFile([], masternodes_File)
-            return []
+            raise Exception("No masternodes file found. Creating new.")
         
     except Exception as e:
         printDbg(e.args[0])
@@ -187,13 +205,13 @@ def readRPCfile():
                 rpc_config = json.load(data_file)
             data_file.close()
         else:
+            # save default config and return it
+            config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
+            writeToFile(config, rpc_File)
             raise Exception("No rpcServer.json found. Creating new.")
         
     except Exception as e:
         printDbg(e.args[0])
-        # save default config and return it
-        config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
-        writeRPCfile(config, rpc_File)
         return "127.0.0.1", 45458, "myUsername", "myPassword"
     
     rpc_ip = rpc_config.get('rpc_ip')

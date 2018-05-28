@@ -18,3 +18,10 @@ user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
 masternodes_File = 'masternodes.json'
 rpc_File = 'rpcServer.json'
+cache_File = 'cache.json'
+DEFAULT_CACHE = {
+    "lastAddress": "",
+    "window_width": starting_width,
+    "window_height": starting_height,
+    "mnList_order": []
+    }

@@ -4,7 +4,7 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import signal
-from misc import getSPMTVersion, printDbg
+from misc import getSPMTVersion, printDbg, readCacheFile
 from constants import starting_height, starting_width, user_dir
 from PyQt5.Qt import QMainWindow, QIcon, QAction
 from mainWindow import MainWindow
@@ -37,6 +37,8 @@ class App(QMainWindow):
         # Create the userdir if it doesn't exist
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
+        # Read cache
+        self.cache = readCacheFile()
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
  

@@ -3,11 +3,11 @@
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, printException, getCallerName, getFunctionName
+from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile
 from threads import ThreadFuns
 from utils import checkPivxAddr
 from apiClient import ApiClient
-from constants import MPATH, MINIMUM_FEE
+from constants import MPATH, MINIMUM_FEE, cache_File
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
@@ -29,6 +29,7 @@ class TabRewards():
         ##--- Initialize GUI
         self.ui = TabRewards_gui()
         self.caller.tabRewards = self.ui
+        self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress"))
         self.ui.feeLine.setValue(MINIMUM_FEE)
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
@@ -239,7 +240,12 @@ class TabRewards():
         # LET'S GO    
         if self.selectedRewards: 
             printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
-            printDbg("Preparing transaction. Please wait...")                     
+            printDbg("Preparing transaction. Please wait...")
+            # save destination address to cache
+            if self.dest_addr != self.caller.parent.cache.get("lastAddress"):
+                self.caller.parent.cache["lastAddress"] = self.dest_addr
+                writeToFile(self.caller.parent.cache, cache_File)
+                                
             self.currFee = self.ui.feeLine.value() * 1e8
             # connect signal
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
