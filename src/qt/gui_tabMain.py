@@ -87,7 +87,7 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.mnLed[name])
         ##--- Label        
         self.mnLabel[name] = QLabel()
-        self.mnLabel[name].setText("%s &nbsp; [<i style='color: #2f005f'>%s:%s</i>]" % (name, ip, port))
+        self.mnLabel[name].setText(name)
         mnRowLayout.addWidget(self.mnLabel[name])
         mnRowLayout.addStretch(1)
         ##--- Status Label
