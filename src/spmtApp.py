@@ -4,8 +4,8 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import signal
-from misc import getSPMTVersion, printDbg, readCacheFile
-from constants import starting_height, starting_width, user_dir
+from misc import getSPMTVersion, printDbg, readCacheFile, writeToFile
+from constants import starting_height, starting_width, user_dir, cache_File
 from PyQt5.Qt import QMainWindow, QIcon, QAction
 from mainWindow import MainWindow
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
@@ -45,7 +45,7 @@ class App(QMainWindow):
     def initUI(self, masternode_list, imgDir):
         # Set title and geometry
         self.setWindowTitle(self.title)
-        self.resize(starting_width, starting_height)
+        self.resize(self.cache.get("window_width"), self.cache.get("window_height"))
         # Set Icon
         spmtIcon_file = os.path.join(imgDir, 'spmtLogo_shield.png')
         self.spmtIcon = QIcon(spmtIcon_file)
@@ -83,6 +83,12 @@ class App(QMainWindow):
         if getattr(self.mainWindow.hwdevice, 'dongle', None) is not None:
             self.mainWindow.hwdevice.dongle.close()
             print("Dongle closed")
+            
+        # Save window/splitter size to cache file
+        self.cache["window_width"] = self.width()
+        self.cache["window_height"] = self.height()
+        self.cache["splitter_sizes"] = self.mainWindow.splitter.sizes()
+        writeToFile(self.cache, cache_File)
         print("Bye Bye.")
         return QMainWindow.closeEvent(self, *args, **kwargs)
     

@@ -23,5 +23,6 @@ DEFAULT_CACHE = {
     "lastAddress": "",
     "window_width": starting_width,
     "window_height": starting_height,
+    "splitter_sizes": [342, 133],
     "mnList_order": []
     }

@@ -105,7 +105,7 @@ class MainWindow(QWidget):
         self.splitter.addWidget(self.console)
         self.splitter.setStretchFactor(0,0)
         self.splitter.setStretchFactor(1,1)
-        self.splitter.setSizes([2,1])
+        self.splitter.setSizes(self.parent.cache.get("splitter_sizes"))
         self.layout.addWidget(self.splitter)
         ###-- Set Layout
         self.setLayout(self.layout)
@@ -281,10 +281,10 @@ class MainWindow(QWidget):
         if self.btn_consoleToggle.text() == 'Hide':
             self.btn_consoleToggle.setText('Show')
             self.consoleArea.hide()
-            self.previousH = self.splitter.sizes()[1]
+            self.console.setMinimumHeight(70)
             self.console.setMaximumHeight(70)
         else:
-            self.console.setMinimumHeight(self.previousH)
+            self.console.setMinimumHeight(70)
             self.console.setMaximumHeight(starting_height)
             self.btn_consoleToggle.setText('Hide')
             self.consoleArea.show()  
