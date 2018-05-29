@@ -18,7 +18,7 @@ class TabMain_gui(QWidget):
         ###-- Initialize
         self.loadIcons()
         self.initGlobalButtons()
-        self.initMNList()        
+        self.initBody()        
         ###-- Compose layout
         mainVertical = QVBoxLayout()
         mainVertical.setSpacing(10)
@@ -33,18 +33,18 @@ class TabMain_gui(QWidget):
     def initGlobalButtons(self):
         ###-- Global Buttons
         globalButtons = QHBoxLayout()
-        self.button_addMasternode = QPushButton("New Masternode")
-        globalButtons.addWidget(self.button_addMasternode)
         self.button_startAll = QPushButton("Start All Masternodes")
         globalButtons.addWidget(self.button_startAll)
         self.button_getAllStatus = QPushButton("Get Status of All Masternodes")
         globalButtons.addWidget(self.button_getAllStatus)
+        self.button_sweepAllRewards = QPushButton("Sweep All Rewards")
+        globalButtons.addWidget(self.button_sweepAllRewards)
         self.globalButtons = globalButtons
         
         
         
         
-    def initMNList(self):
+    def initBody(self):
         ###-- CENTRAL PART
         self.body = QGroupBox()
         self.body.setTitle("My Masternodes")
@@ -71,6 +71,8 @@ class TabMain_gui(QWidget):
         
         vBox = QVBoxLayout()
         vBox.addWidget(self.myList)
+        self.button_addMasternode = QPushButton("New Masternode")
+        vBox.addWidget(self.button_addMasternode)
         vBox.stretch(1)
         self.body.setLayout(vBox)  
         

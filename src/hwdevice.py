@@ -38,6 +38,8 @@ class HWdevice(QObject):
     sig1done = pyqtSignal(str)
     # signal: sigtx (thread) is done - emitted by signTxFinish
     sigTxdone = pyqtSignal(bytearray, str)
+    # signal: sigtx (thread) is done (aborted) - emitted by signTxFinish
+    sigTxabort = pyqtSignal()
     
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -174,6 +176,93 @@ class HWdevice(QObject):
                     'outputIndex': utxo['tx_ouput_n'],
                     'txid': utxo['tx_hash']
                 })
+    
+            self.amount -= int(tx_fee)
+            self.amount = int(self.amount)
+            arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
+            self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
+            self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+        
+        finally:
+            self.lock.release()
+        
+        try:
+            for o in arg_outputs:
+                output = bitcoinOutput()
+                output.script = compose_tx_locking_script(o['address'])
+                output.amount = int.to_bytes(o['valueSat'], 8, byteorder='little')
+                self.new_transaction.outputs.append(output)
+        except Exception:
+            raise
+        
+        
+        # join all outputs - will be used by Ledger for signing transaction
+        self.all_outputs_raw = self.new_transaction.serializeOutputs()
+
+        self.mBox2 = QMessageBox(caller)
+        messageText = "<p>Confirm transaction on your device, with the following details:</p>"
+        #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
+        messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
+        messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
+        messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        self.mBox2.setText(messageText)
+        self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
+        self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
+        self.mBox2.setStandardButtons(QMessageBox.NoButton)
+        self.mBox2.setMaximumWidth(500)
+        self.mBox2.show()
+        
+        ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
+        
+        
+        
+    @process_ledger_exceptions
+    def prepare_transfer_tx_bulk(self, caller, mnodes, dest_address, tx_fee, rawtransactions):
+        # For each UTXO create a Ledger 'trusted input'
+        self.trusted_inputs = []
+        #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
+        self.arg_inputs = []
+        self.amount = 0
+        self.lock.acquire()
+        try:
+            for mnode in mnodes:
+                for idx, utxo in enumerate(mnode['utxos']):
+                
+                    self.amount += int(utxo['value'])
+                    raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
+    
+                    if not raw_tx:
+                        raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
+                
+                    # parse the raw transaction, so that we can extract the UTXO locking script we refer to
+                    prev_transaction = bitcoinTransaction(raw_tx)
+    
+                    utxo_tx_index = utxo['tx_ouput_n']
+                    if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
+                        raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
+                
+                
+                    trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
+                    self.trusted_inputs.append(trusted_input)
+               
+                    # Hash check
+                    curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(mnode['path'])['publicKey'])
+                    pubkey_hash = bin_hash160(curr_pubkey)
+                    pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
+                    if pubkey_hash != pubkey_hash_from_script:
+                        text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match."
+                        text += "Your signed transaction will not be validated by the network.\n"
+                        text += "pubkey_hash: %s\n" % pubkey_hash.hex()
+                        text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
+                        printDbg(text)
+    
+                    self.arg_inputs.append({
+                        'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
+                        'pubkey': curr_pubkey,
+                        'bip32_path': mnode['path'],
+                        'outputIndex': utxo['tx_ouput_n'],
+                        'txid': utxo['tx_hash']
+                    })
     
             self.amount -= int(tx_fee)
             self.amount = int(self.amount)
@@ -437,10 +526,11 @@ class HWdevice(QObject):
         self.mBox2.accept()
         try:
             if self.tx_raw is not None:
-                # Signal to be catched by FinishSend on TabRewards
+                # Signal to be catched by FinishSend on TabRewards / dlg_sewwpAll
                 self.sigTxdone.emit(self.tx_raw, str(round(self.amount / 1e8, 8)))
             else:
                 printOK("Transaction refused by the user")
+                self.sigTxabort.emit()
                 
         except Exception as e:    
             printDbg(e) 

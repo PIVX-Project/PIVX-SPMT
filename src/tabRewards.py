@@ -159,7 +159,6 @@ class TabRewards():
     def onCancel(self):
         self.ui.selectedRewardsLine.setText("0.0")
         self.ui.mnSelect.setCurrentIndex(0)
-        self.ui.destinationLine.setText('')
         self.ui.feeLine.setValue(MINIMUM_FEE)
         self.ui.btn_toggleCollateral.setText("Show Collateral")
         self.ui.collateralHidden = True
@@ -330,7 +329,7 @@ class TabRewards():
                         self.onCancel()
                         
             except Exception as e:
-                err_msg = "Exception in sendRewards"
+                err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
                 
    

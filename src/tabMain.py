@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QMessageBox
 
 from qt.gui_tabMain import TabMain_gui
 from qt.dlg_mnStatus import MnStatus_dlg
+from qt.dlg_sweepAll import SweepAll_dlg
 
 class TabMain():
     def __init__(self, caller):
@@ -33,6 +34,7 @@ class TabMain():
         self.ui.button_addMasternode.clicked.connect(lambda: self.onNewMasternode())
         self.ui.button_startAll.clicked.connect(lambda: self.onStartAllMN())
         self.ui.button_getAllStatus.clicked.connect(lambda: self.onCheckAllMN())
+        self.ui.button_sweepAllRewards.clicked.connect(lambda: self.onSweepAllRewards())
         for masternode in self.caller.masternode_list:
             name = masternode['name']
             self.ui.btn_remove[name].clicked.connect(lambda: self.onRemoveMN())
@@ -255,6 +257,19 @@ class TabMain():
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
             
+            
+    
+    @pyqtSlot()
+    def onSweepAllRewards(self):
+        try:
+            ui = SweepAll_dlg(self)
+            ui.exec_()
+            
+        except Exception as e:
+            err_msg = "exception in SweepAll_dlg"
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+        
+        
             
             
             
