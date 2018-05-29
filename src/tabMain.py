@@ -79,21 +79,19 @@ class TabMain():
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
                 display_text += '<span style="color:green">%s</span>&nbsp;&nbsp;' % statusData['status']
+                position = statusData.get('queue_pos')
+                total_count = len(self.all_masternodes.get('masternodes'))
+                display_text += '%d/%d' % (position, total_count) 
+                
+                self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
+                self.ui.mnStatusProgress[masternode_alias].setValue(total_count-position)
+                self.ui.mnStatusProgress[masternode_alias].show()
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
                 display_text += '<span style="color:red">%s</span>&nbsp;&nbsp;' % statusData['status']
-            
-            position = statusData.get('queue_pos')
-            total_count = len(self.all_masternodes.get('masternodes'))
-            display_text += '%d/%d' % (position, total_count) 
-               
+       
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
-            
-            self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
-            self.ui.mnStatusProgress[masternode_alias].setValue(total_count-position)
-            self.ui.mnStatusProgress[masternode_alias].show()
-                            
             self.ui.btn_details[masternode_alias].setEnabled(True)
             
             
