@@ -282,8 +282,6 @@ class TabMNConf():
 
             # add new item
             self.caller.masternode_list.append(new_masternode)
-            # re-sort the list
-            self.caller.masternode_list.sort(key=self.caller.parent.extract_name)
             # Write to file
             printDbg("saving MN configuration for %s" % new_masternode['name'])
             writeToFile(self.caller.masternode_list, masternodes_File)

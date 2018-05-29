@@ -81,7 +81,7 @@ class TabMain():
                 display_text += '<span style="color:green">%s</span>&nbsp;&nbsp;' % statusData['status']
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
-                display_text += 'status: <span style="color:red">%s</span>&nbsp;&nbsp;' % statusData['status']
+                display_text += '<span style="color:red">%s</span>&nbsp;&nbsp;' % statusData['status']
             
             position = statusData.get('queue_pos')
             total_count = len(self.all_masternodes.get('masternodes'))
