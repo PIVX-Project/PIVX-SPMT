@@ -276,8 +276,18 @@ class MainWindow(QWidget):
             
     @pyqtSlot()
     def onTabChange(self):
-        # reload masternode list in tabs
+        # reload (and re-sort)masternode list in tabs
         if self.tabs.currentWidget() == self.tabRewards:
+            # get new order
+            mnOrder = {}
+            mnList = self.tabMain.myList
+            for i in range(mnList.count()):
+                mnName = mnList.itemWidget(mnList.item(i)).alias
+                mnOrder[mnName] = i
+            self.parent.cache['mnList_order'] = mnOrder
+            # Sort masternode list (by alias if no previous order set)
+            if self.parent.cache.get('mnList_order') is not {}:
+                self.masternode_list.sort(key=self.parent.extract_order)
             self.t_rewards.loadMnSelect()
             self.t_rewards.selectedRewards = None
             

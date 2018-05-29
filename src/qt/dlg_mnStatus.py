@@ -41,6 +41,7 @@ class Ui_MnStatusDlg(object):
         body.addRow(QLabel("<b>Network</b>"), QLabel(self.statusData['network']))
         body.addRow(QLabel("<b>Version</b>"), QLabel(str(self.statusData['version'])))
         body.addRow(QLabel("<b>Rank</b>"), QLabel(str(self.statusData['rank'])))
+        body.addRow(QLabel("<b>Queue Position</b>"), QLabel(str(self.statusData['queue_pos'])))
         body.addRow(QLabel("<b>Active Time</b>"), QLabel(sec_to_time(self.statusData['activetime'])))
         body.addRow(QLabel("<b>Last Seen</b>"), QLabel(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(self.statusData['lastseen']))))
         body.addRow(QLabel("<b>Last Paid</b>"), QLabel(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(self.statusData['lastpaid']))))

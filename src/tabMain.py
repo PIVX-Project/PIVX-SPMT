@@ -3,7 +3,7 @@
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile, now
 from constants import masternodes_File
 from masternode import Masternode
 from apiClient import ApiClient
@@ -24,7 +24,8 @@ class TabMain():
         self.runInThread = ThreadFuns.runInThread
         self.curr_masternode_alias = None
         self.curr_masternode_address = None
-        self.curr_statusData = None
+        self.all_masternodes = {}
+        self.all_masternodes['last_update'] = 0
         self.mnToStartList = []
         self.ui = TabMain_gui(caller)
         self.caller.tabMain = self.ui       
@@ -37,63 +38,60 @@ class TabMain():
             self.ui.btn_remove[name].clicked.connect(lambda: self.onRemoveMN())
             self.ui.btn_edit[name].clicked.connect(lambda: self.onEditMN())
             self.ui.btn_start[name].clicked.connect(lambda: self.onStartMN())
-            self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())
-            self.ui.btn_status[name].clicked.connect(lambda: self.onCheckMN())            
-        
-        
-        
-        
-    def checkMN(self, ctrl):
-        address = self.curr_masternode_address
-        # Check rpc connection   
-        if not self.caller.rpcConnected:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
-            printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
-            return None
-        
-        self.curr_statusData = self.caller.rpcClient.getMNStatus(address)
-        try:
-            if self.curr_statusData is not None:
-                balance = self.apiClient.getBalance(address)
-                self.curr_statusData['balance'] = balance
-                
-        except Exception as e:
-            err_msg = "exception in checkMN"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
-            
-            
-    
+            self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())           
+           
     
     
     
     def displayMNStatus(self):
-        statusData = self.curr_statusData
+        statusData = None
+        for mn in self.all_masternodes.get('masternodes'):
+            if mn.get('addr') == self.curr_masternode_address:
+                
+                statusData = mn
+                if statusData is not None:   
+                    try:
+                        statusData['balance'] = self.apiClient.getBalance(self.curr_masternode_address)
+                    except Exception as e:
+                        err_msg = "error getting balance of %s" % self.curr_masternode_address
+                        printException(getCallerName(), getFunctionName(), err_msg, e)
+                        
         masternode_alias = self.curr_masternode_alias
         self.ui.btn_details[masternode_alias].disconnect()
         self.ui.btn_details[masternode_alias].clicked.connect(lambda: self.onDisplayStatusDetails(masternode_alias, statusData))
         self.ui.btn_details[masternode_alias].show()
-        
+    
         if statusData is None:
+            printDbg("%s (%s) not found" % (masternode_alias, self.curr_masternode_address))
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
             msg = "<b>Masternode not found.</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
             self.ui.mnStatusLabel[masternode_alias].show()
             self.ui.btn_details[masternode_alias].setEnabled(False)
         else:
+            display_text = ""
+            if statusData['balance'] is not None:
+                self.ui.mnBalance[masternode_alias].setText('- Balance: <span style="color:purple">%s PIV</span>' % str(statusData['balance']))
+                self.ui.mnBalance[masternode_alias].show()
             printDbg("Got status %s for %s (%s)" % (statusData['status'], masternode_alias, statusData['addr']))
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
-                display_text = '<span style="color:green">%s</span>' % statusData['status']
+                display_text += '<span style="color:green">%s</span>&nbsp;&nbsp;' % statusData['status']
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
-                display_text = '<span style="color:red">%s</span>' % statusData['status']
-                
-            if statusData['balance'] is not None:
-                display_text += '&nbsp;—&nbsp;<span style="color:purple">%s PIV</span>' % str(statusData['balance'])
+                display_text += 'status: <span style="color:red">%s</span>&nbsp;&nbsp;' % statusData['status']
+            
+            position = statusData.get('queue_pos')
+            total_count = len(self.all_masternodes.get('masternodes'))
+            display_text += '%d/%d' % (position, total_count) 
                
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
-                        
+            
+            self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
+            self.ui.mnStatusProgress[masternode_alias].setValue(total_count-position)
+            self.ui.mnStatusProgress[masternode_alias].show()
+                            
             self.ui.btn_details[masternode_alias].setEnabled(True)
             
             
@@ -101,40 +99,24 @@ class TabMain():
             
     @pyqtSlot()
     def onCheckAllMN(self):
+        if not self.caller.rpcConnected:
+            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+            printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+            return
         try:
             printOK("Check-All pressed")
+            self.updateAllMasternodes()
             for masternode in self.caller.masternode_list:
-                self.curr_masternode_address = masternode['collateral'].get('address')
                 self.curr_masternode_alias = masternode['name']
+                self.curr_masternode_address = masternode['collateral'].get('address')
                 printOK("Checking %s (%s)..." % (self.curr_masternode_alias, self.curr_masternode_address))
-                self.checkMN(None)
                 self.displayMNStatus()
                 QApplication.processEvents()        
         
         except Exception as e:
             err_msg = "error in checkAllMN"
             printException(getCallerName(), getFunctionName(), err_msg, e)        
-            
-            
-            
-            
-    @pyqtSlot()
-    def onCheckMN(self, data=None):
-        if not data:
-            try:
-                target = self.ui.sender()
-                masternode_alias = target.alias
-                for mn_conf in self.caller.masternode_list:
-                    if mn_conf['name'] == masternode_alias:
-                        masternodeAddr = mn_conf['collateral'].get('address')
-                        self.curr_masternode_alias = masternode_alias
-                        self.curr_masternode_address = masternodeAddr
-                        self.runInThread(self.checkMN, (), self.displayMNStatus)
-                        break
-                    
-            except Exception as e:
-                err_msg = "error in onCheckMN"
-                printException(getCallerName(), getFunctionName(), err_msg, e)           
+                     
         
         
         
@@ -333,3 +315,22 @@ class TabMain():
             except Exception as e:
                 err_msg = "error in startMN"
                 printException(getCallerName(), getFunctionName(), err_msg, e)
+                
+      
+                
+                
+    def updateAllMasternodes(self):
+        # update only after 1 min
+        try:
+            if now()-self.all_masternodes['last_update'] > 60:
+                # Check rpc connection   
+                if not self.caller.rpcConnected:
+                    self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+                    printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+                    return
+                else:
+                    self.all_masternodes = self.caller.rpcClient.getMasternodes()
+
+        except Exception as e:
+            print(e)
+            

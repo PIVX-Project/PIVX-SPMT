@@ -1,5 +1,5 @@
 {
- "number": "0.1.2",
- "tag": "a",
- "comments": ["OSX bundle bugs"]
+ "number": "0.1.1",
+ "tag": "c",
+ "comments": ["cache file"]
  }

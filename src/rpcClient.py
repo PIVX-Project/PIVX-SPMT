@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from misc import getCallerName, getFunctionName, printException, printDbg, readRPCfile
+from misc import getCallerName, getFunctionName, printException, printDbg, readRPCfile, now
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 
 class RpcClient:
@@ -98,8 +98,43 @@ class RpcClient:
             err_msg = "error in getMNStatus"
             if str(e.args[0]) != "Request-sent":
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            #else:
+            #    printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                
+                
+                
+    def getMasternodes(self):
+        mnList = {}
+        mnList['last_update'] = now()
+        score = []
+        try:
+            masternodes = self.conn.listmasternodes()
+        except Exception as e:
+            err_msg = "error in getMasternodes"
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        
+        for mn in masternodes:
+            
+            if mn.get('status') == 'ENABLED':
+                if mn.get('lastpaid') == 0:
+                    mn['score'] = mn.get('activetime')
+                else:
+                    lastpaid_ago = now() - mn.get('lastpaid')
+                    mn['score'] = min(lastpaid_ago, mn.get('activetime'))
+                
             else:
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                mn['score'] = 0
+                
+            score.append(mn)
+        
+        score.sort(key=lambda x: x['score'], reverse=True)
+        
+        for mn in masternodes:
+            mn['queue_pos'] = score.index(mn)
+                
+        mnList['masternodes'] = masternodes
+                
+        return mnList
     
     
     

@@ -56,13 +56,14 @@ class TabMain_gui(QWidget):
         self.current_mn = {}
         self.mnLed = {}
         self.mnLabel = {}
+        self.mnBalance = {}
         self.btn_details = {}
         self.mnStatusLabel = {}
+        self.mnStatusProgress = {}
         self.btn_remove = {}
         self.btn_edit = {}
         self.btn_start = {}
         self.btn_rewards = {}
-        self.btn_status = {}
         
         for masternode in self.caller.masternode_list:
             name = masternode['name']
@@ -85,27 +86,31 @@ class TabMain_gui(QWidget):
         self.mnLed[name] = QLabel()
         self.mnLed[name].setPixmap(self.caller.ledGrayV_icon)
         mnRowLayout.addWidget(self.mnLed[name])
-        ##--- Label        
+        ##--- Label & Balance    
         self.mnLabel[name] = QLabel()
-        self.mnLabel[name].setText(name)
+        self.mnLabel[name].setText("%s &nbsp; [<i style='color: #2f005f'>%s</i>]" % (name, ip))
         mnRowLayout.addWidget(self.mnLabel[name])
+        self.mnBalance[name] = QLabel()
+        mnRowLayout.addWidget(self.mnBalance[name])
+        self.mnBalance[name].hide()
         mnRowLayout.addStretch(1)
         ##--- Status Label
         self.mnStatusLabel[name] = QLabel()
         mnRowLayout.addWidget(self.mnStatusLabel[name])
-        self.mnStatusLabel[name].hide()
+        self.mnStatusLabel[name].hide()        
+        ##--- Rank bar
+        self.mnStatusProgress[name] = QProgressBar()
+        self.mnStatusProgress[name].setMaximumHeight(15)
+        self.mnStatusProgress[name].setMaximumWidth(40)
+        self.mnStatusProgress[name].setTextVisible(False)
+        mnRowLayout.addWidget(self.mnStatusProgress[name])
+        self.mnStatusProgress[name].hide()
         ##--- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
         self.btn_details[name].setToolTip('Check status details of masternode "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()         
-        ##--- Status button
-        self.btn_status[name] = QPushButton()
-        self.btn_status[name].setToolTip('Check status of "%s"' % name)      
-        self.btn_status[name].setIcon(self.getMNstatus_icon)
-        self.btn_status[name].alias = name
-        mnRowLayout.addWidget(self.btn_status[name])
         ##--- Rewards button
         self.btn_rewards[name] = QPushButton()
         self.btn_rewards[name].setToolTip('Transfer rewards from "%s"' % name)           
@@ -154,7 +159,6 @@ class TabMain_gui(QWidget):
         self.editMN_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_edit.png'))
         self.startMN_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_rocket.png'))
         self.rewards_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_money.png'))
-        self.getMNstatus_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_dashboard.png'))
         self.details_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_search.png'))
         self.ledgerImg = QPixmap(os.path.join(self.caller.imgDir, 'ledger.png'))
         self.threeDots_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_3dots.png'))
