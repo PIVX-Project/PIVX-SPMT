@@ -298,8 +298,7 @@ class TabMNConf():
             self.caller.tabMain.btn_remove[name].clicked.connect(lambda: self.caller.t_main.onRemoveMN())
             self.caller.tabMain.btn_edit[name].clicked.connect(lambda: self.caller.t_main.onEditMN())
             self.caller.tabMain.btn_start[name].clicked.connect(lambda: self.caller.t_main.onStartMN())
-            self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())
-            self.caller.tabMain.btn_status[name].clicked.connect(lambda: self.caller.t_main.onCheckMN())   
+            self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())   
             # go back
             self.onCancelMNConfig()
             
