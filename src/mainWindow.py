@@ -286,7 +286,7 @@ class MainWindow(QWidget):
                 mnOrder[mnName] = i
             self.parent.cache['mnList_order'] = mnOrder
             # Sort masternode list (by alias if no previous order set)
-            if self.parent.cache.get('mnList_order') is not {}:
+            if self.parent.cache.get('mnList_order') != {}:
                 self.masternode_list.sort(key=self.parent.extract_order)
             self.t_rewards.loadMnSelect()
             self.t_rewards.selectedRewards = None

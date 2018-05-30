@@ -59,7 +59,7 @@ class App(QMainWindow):
         confMenu.addAction(self.rpcConfMenu)
         
         # Sort masternode list (by alias if no previous order set)
-        if self.cache.get('mnList_order') is not {}:
+        if self.cache.get('mnList_order') != {}:
             masternode_list.sort(key=self.extract_order)
         else:
             masternode_list.sort(key=self.extract_name)
