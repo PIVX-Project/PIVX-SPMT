@@ -12,6 +12,7 @@ SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX
   - [Getting masternode status](#features1)
   - [Starting masternode](#features2)
   - [Spending masternode rewards](#features3)
+    - [Sweeping all masternode rewards](#features4)
 * [Coming Soon](#comingsoon)
 * [Credits](#credits)
 
@@ -58,17 +59,17 @@ Otherwise set the IP address of the machine running the Core PIVX wallet.
 
 #### <a name="setup2"></a>Connections
 If the IP and the credentials of the PIVX wallet are correct, it should connect with SPMT instantly.<br>
-Otherwise use the `Connect` button next to "PIVX server: Local Wallet".<br>
+Otherwise use the `Connect` button next to "PIVX RPC server: Local Wallet".<br>
 Connect the hardware device to USB and open the PIVX-App on it.<br>
 
-Click the button `Connect` next to "HW device: Ledger Nano S" to connect to the hardware device.
+Click the button `Connect` next to "Hardware Device: Ledger Nano S" to connect to the hardware device.
 <br><img src="doc/img/03.png" width="670"><br><br>
 
-Once successfully connected, it gives a confirmation message and the led turns purple.
+Once successfully connected, it gives a confirmation message and the light turns purple.
 <br><img src="doc/img/04.png" width="670"><br><br>
 
 #### <a name="setup3"></a>Setting up a Masternode configuration
-Click on `New Masternode` and fill all the informations of the remote node: 
+Click `New Masternode` (big button below the list) and fill all the informations of the remote node: 
  - <b>Name</b> : an alias for the masternode entry
  - <b>IP Address / IP Port</b> : Public IP address and port of the remote masternode
  - <b>MN Priv Key</b> : masternode private key. If you have already seup the remote node, copy here the `masternodeprivkey` from the pivx.conf file.<br>
@@ -80,6 +81,12 @@ If you have just one account in your Ledger wallet, leave account number to `0`.
 Then click `>>` to look for path and public key.
 <br><img src="doc/img/05.png" width="670"><br><br>
 
+The tool looks for the public key and path of the given address (in batches of 10 paths per scan, asking confirmation to continue if needed). 
+When found, a notification message is displayed.
+<br><img src="doc/img/05b.png" width="670"><br><br>
+
+If the user already knows the correct `spath_id` (address number) he can, instead, insert it and click `<<` to look for the corresponding address and public key.<br><br>
+
 Click `Lookup` to find the collateral TxHash or click `Edit` to fill it manually, and then `OK`.<br>
 Click `Save` to save the configuration and go back to main view.
 <br><img src="doc/img/06.png" width="670"><br><br>
@@ -87,7 +94,7 @@ Click `Save` to save the configuration and go back to main view.
 
 ## <a name="features"></a>Features
 ### <a name="features1"></a>Getting masternode status
-Click on `Get Status For All` to inspect the status of all masternode entries or click the dashboard icon next to a particular entry to get status for that one.
+Click on `Get Status For All Masternodes` to inspect the status of all masternode entries.
 <br><img src="doc/img/07.png" width="670"><br><br>
 
 To inspect the status details click on the little magnifying glass icon.
@@ -134,13 +141,36 @@ If everything checks out, click "yes" (right button) on the device.
 <br><img src="doc/img/19.png" width="670"><br><br>
 
 The transaction is now assembled and signed.<br>
-SPMT asks one more time to check the details before broadcasting the transaction (thus spending the selected rewards).
+SPMT asks one more time to check the details before broadcasting the transaction (thus spending the selected rewards).<br>
+Click `Show Details` to inspect the decoded raw transaction.
 <br><img src="doc/img/20.png" width="670"><br><br>
 
 Click `Yes` to finally broadcast the transaction to the PIVX network.<br>
 Click `Show Details` to get the TX-id that identify the transaction.<br>
 It should appear on the Block Explorers and on the receiving wallet after a few seconds.
 <br><img src="doc/img/21.png" width="670"><br><br>
+
+
+#### <a name="features4"></a>Sweeping all masternode rewards
+With this feature it is possible to send all rewards from all masternodes in list with a single TX (provided it doesn't get too big).<br>
+<br>
+Click on `Sweep All Rewards` to open the summary dialog.
+<br><img src="doc/img/22.png" width="670"><br><br>
+
+Insert the destination address, adjust the fee and click `Send`
+<br><img src="doc/img/23.png" width="670"><br><br>
+
+Preparing the TX is an expensive operation. The more rewards included, the more time is needed. 
+<br><img src="doc/img/24.png" width="670"><br><br>
+
+Eventually SPMT shows the confirmation dialog
+<br><img src="doc/img/25.png" width="670"><br><br>
+
+Signing all the inputs is time consuming as well.<br>
+If the operation is too long, try sending separate TXs first.<br>
+After some time it prompts the usual message
+<br><img src="doc/img/26.png" width="670"><br><br>
+
 
 ## <a name="comingsoon"></a>Coming soon
 - Voting
