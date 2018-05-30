@@ -239,6 +239,7 @@ class Ui_SweepAllDlg(object):
         self.tableW.setHorizontalHeaderItem(2, item)
         layout.addWidget(self.tableW)
         myForm = QFormLayout()
+        myForm.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         hBox = QHBoxLayout()
         self.totalLine = QLabel("<b>0 PIV</b>")
         hBox.addWidget(self.totalLine)
