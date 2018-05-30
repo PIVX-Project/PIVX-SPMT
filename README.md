@@ -167,7 +167,7 @@ Eventually SPMT shows the confirmation dialog
 <br><img src="doc/img/25.png" width="670"><br><br>
 
 Signing all the inputs is time consuming as well.<br>
-If the operation is too long, try sending separate TXs first.<br>
+If the operation takes too long, the number of inputs is probably too high. try sending separate TXs first.<br>
 After some time it prompts the usual message
 <br><img src="doc/img/26.png" width="670"><br><br>
 
