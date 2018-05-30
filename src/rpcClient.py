@@ -238,8 +238,9 @@ class RpcClient:
             self.lock.acquire()
             res = self.conn.mnsync('status').get("IsBlockchainSynced")
         except Exception as e:
-            err_msg = "error in isBlockchainSynced"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            if str(e.args[0]) != "Request-sent":
+                err_msg = "error in isBlockchainSynced"
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)
             res = False
         finally:
             self.lock.release()

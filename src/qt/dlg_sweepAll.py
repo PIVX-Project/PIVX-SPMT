@@ -104,22 +104,17 @@ class SweepAll_dlg(QDialog):
                 
     
     
-    @pyqtSlot()
-    def onButtonSend(self):
-        self.ui.loadingLine.show()
-        self.main_tab.caller.parent.app.processEvents()
-        self.sendRewards()
-    
-    
     
     @pyqtSlot()
     def onButtonCancel(self):
         self.ui.loadingLine.hide()
         self.close()
         
-
         
-    def sendRewards(self):
+        
+
+    @pyqtSlot()
+    def onButtonSend(self):
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
             self.currFee = self.ui.feeLine.value() * 1e8
@@ -135,6 +130,8 @@ class SweepAll_dlg(QDialog):
                 return None
             
             printDbg("Preparing transaction. Please wait...")
+            self.ui.loadingLine.show()
+            self.main_tab.caller.parent.app.processEvents()
             # save destination address to cache
             if self.dest_addr != self.main_tab.caller.parent.cache.get("lastAddress"):
                 self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
