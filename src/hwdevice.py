@@ -269,6 +269,9 @@ class HWdevice(QObject):
             arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
             self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
             self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+            
+        except Exception:
+            raise
         
         finally:
             self.lock.release()

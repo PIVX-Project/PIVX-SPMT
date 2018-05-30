@@ -98,7 +98,8 @@ class SweepAll_dlg(QDialog):
                 rawtx = self.main_tab.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
                 self.rawtransactions[utxo['tx_hash']] = rawtx
                 if rawtx is None:
-                    self.main_tab.caller.myPopUp2(QMessageBox.Critical, 'SPMT - rpc device check', "Unable to get raw TX from RPC server")
+                    err_msg = "Unable to get raw TX from RPC server"
+                    printException(getCallerName(), getFunctionName(), err_msg, "rawtx None")
                     return
                 
     
@@ -148,7 +149,9 @@ class SweepAll_dlg(QDialog):
             
                 
         except Exception as e:
-            print(e)
+            err_msg = "Exception in SendRewards"
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+           
             
     
     # Activated by signal sigTxabort from hwdevice
