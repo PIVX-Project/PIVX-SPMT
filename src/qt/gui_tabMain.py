@@ -90,7 +90,7 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.mnLed[name])
         ##--- Label & Balance    
         self.mnLabel[name] = QLabel()
-        self.mnLabel[name].setText("%s &nbsp; [<i style='color: #2f005f'>%s</i>]" % (name, ip))
+        self.mnLabel[name].setText("%s [<i>%s</i>]" % (name, ip))
         mnRowLayout.addWidget(self.mnLabel[name])
         self.mnBalance[name] = QLabel()
         mnRowLayout.addWidget(self.mnBalance[name])

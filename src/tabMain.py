@@ -73,7 +73,7 @@ class TabMain():
         else:
             display_text = ""
             if statusData['balance'] is not None:
-                self.ui.mnBalance[masternode_alias].setText('- Balance: <span style="color:purple">%s PIV</span>' % str(statusData['balance']))
+                self.ui.mnBalance[masternode_alias].setText('&nbsp;<span style="color:purple">%s PIV</span>' % str(statusData['balance']))
                 self.ui.mnBalance[masternode_alias].show()
             printDbg("Got status %s for %s (%s)" % (statusData['status'], masternode_alias, statusData['addr']))
             if statusData['status'] == 'ENABLED':

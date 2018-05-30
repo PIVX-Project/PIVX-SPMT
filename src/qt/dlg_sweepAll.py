@@ -98,8 +98,7 @@ class SweepAll_dlg(QDialog):
                 rawtx = self.main_tab.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
                 self.rawtransactions[utxo['tx_hash']] = rawtx
                 if rawtx is None:
-                    err_msg = "Unable to get raw TX from RPC server"
-                    printException(getCallerName(), getFunctionName(), err_msg, "rawtx None")
+                    print("Unable to get raw TX from RPC server\n")
                     self.rewards = []
                     return
                 
