@@ -278,6 +278,8 @@ class MainWindow(QWidget):
     def onTabChange(self):
         # reload (and re-sort)masternode list in tabs
         if self.tabs.currentWidget() == self.tabRewards:
+            # reload last used address
+            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
             # get new order
             mnOrder = {}
             mnList = self.tabMain.myList
