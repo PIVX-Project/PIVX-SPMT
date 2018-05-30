@@ -175,7 +175,7 @@ class SweepAll_dlg(QDialog):
                     amount = decodedTx.get("vout")[0].get("value")
                     message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
                     message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
-                    message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b>Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                    message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
                     mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
