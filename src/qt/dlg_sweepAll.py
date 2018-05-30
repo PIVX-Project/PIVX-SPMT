@@ -100,6 +100,7 @@ class SweepAll_dlg(QDialog):
                 if rawtx is None:
                     err_msg = "Unable to get raw TX from RPC server"
                     printException(getCallerName(), getFunctionName(), err_msg, "rawtx None")
+                    self.rewards = []
                     return
                 
     
