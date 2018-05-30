@@ -95,7 +95,11 @@ class SweepAll_dlg(QDialog):
             
         # get raw transactions
             for utxo in mnode['utxos']:
-                self.rawtransactions[utxo['tx_hash']] = self.main_tab.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                rawtx = self.main_tab.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                self.rawtransactions[utxo['tx_hash']] = rawtx
+                if rawtx is None:
+                    self.main_tab.caller.myPopUp2(QMessageBox.Critical, 'SPMT - rpc device check', "Unable to get raw TX from RPC server")
+                    return
                 
     
     
