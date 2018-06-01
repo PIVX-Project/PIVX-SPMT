@@ -29,7 +29,8 @@ class TabMain():
         self.all_masternodes['last_update'] = 0
         self.mnToStartList = []
         self.ui = TabMain_gui(caller)
-        self.caller.tabMain = self.ui       
+        self.caller.tabMain = self.ui
+        self.sweepAllDlg = SweepAll_dlg(self)
         # Connect GUI buttons
         self.ui.button_addMasternode.clicked.connect(lambda: self.onNewMasternode())
         self.ui.button_startAll.clicked.connect(lambda: self.onStartAllMN())
@@ -260,8 +261,7 @@ class TabMain():
     @pyqtSlot()
     def onSweepAllRewards(self):
         try:
-            ui = SweepAll_dlg(self)
-            ui.exec_()
+            self.sweepAllDlg.exec_()
             
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"

@@ -246,8 +246,14 @@ class TabRewards():
                 writeToFile(self.caller.parent.cache, cache_File)
                                 
             self.currFee = self.ui.feeLine.value() * 1e8
-            # connect signal
+            
+            # re-connect signal
+            try:
+                self.caller.hwdevice.sigTxdone.disconnect()
+            except:
+                pass
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
+            
             try:
                 self.txFinished = False
                 self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.rawtransactions)

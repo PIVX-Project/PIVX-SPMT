@@ -45,31 +45,35 @@ class SweepAll_dlg(QDialog):
             item.setFlags(Qt.NoItemFlags)
             return item
         
-        self.ui.tableW.setRowCount(len(self.rewards))
-        numOfInputs = 0
-        for row, mnode in enumerate(self.rewards):
-            self.ui.tableW.setItem(row, 0, item(mnode['name']))
-            self.ui.tableW.setItem(row, 1, item(mnode['addr']))
-            newInputs = len(mnode['utxos'])
-            numOfInputs += newInputs
-            rewards_line = "%s PIV (%d payments)" % (mnode['total_rewards'], newInputs)
-            self.ui.tableW.setItem(row, 2, item(rewards_line))
-        
-        self.ui.tableW.resizeColumnsToContents()
-        self.ui.lblMessage.setVisible(False)
-        self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        
-        total = sum([float(mnode['total_rewards']) for mnode in self.rewards])
-        self.ui.totalLine.setText("<b>%s</b>" % str(total))
-        
-        # update fee
-        estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
-        feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()
-        suggestedFee = round(feePerKb * estimatedTxSize, 8)
-        self.ui.feeLine.setValue(suggestedFee)
-        
-        # load last used destination from cache
-        self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
+        if len(self.rewards) == 0:
+            self.ui.lblMessage.setText("Unable to get raw TX from RPC server\nPlease wait for full synchronization and try again.")
+            
+        else:
+            self.ui.tableW.setRowCount(len(self.rewards))
+            numOfInputs = 0
+            for row, mnode in enumerate(self.rewards):
+                self.ui.tableW.setItem(row, 0, item(mnode['name']))
+                self.ui.tableW.setItem(row, 1, item(mnode['addr']))
+                newInputs = len(mnode['utxos'])
+                numOfInputs += newInputs
+                rewards_line = "%s PIV (%d payments)" % (mnode['total_rewards'], newInputs)
+                self.ui.tableW.setItem(row, 2, item(rewards_line))
+            
+            self.ui.tableW.resizeColumnsToContents()
+            self.ui.lblMessage.setVisible(False)
+            self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+            
+            total = sum([float(mnode['total_rewards']) for mnode in self.rewards])
+            self.ui.totalLine.setText("<b>%s</b>" % str(total))
+            
+            # update fee
+            estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
+            feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()
+            suggestedFee = round(feePerKb * estimatedTxSize, 8)
+            self.ui.feeLine.setValue(suggestedFee)
+            
+            # load last used destination from cache
+            self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
 
     
        
@@ -137,7 +141,12 @@ class SweepAll_dlg(QDialog):
                 self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
                 writeToFile(self.main_tab.caller.parent.cache, cache_File)
                 
-            # connect signals
+            # re-connect signals
+            try:
+                self.main_tab.caller.hwdevice.sigTxdone.disconnect()
+                self.main_tab.caller.hwdevice.sigTxabort.disconnect()
+            except:
+                pass
             self.main_tab.caller.hwdevice.sigTxdone.connect(self.FinishSend)
             self.main_tab.caller.hwdevice.sigTxabort.connect(self.AbortSend)
             
