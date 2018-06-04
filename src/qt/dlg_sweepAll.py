@@ -22,6 +22,9 @@ class SweepAll_dlg(QDialog):
         self.setWindowTitle('Sweep All Rewards')
         self.setupUI()
         self.connectButtons()
+        
+        
+    def load_data(self):
         ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
         
     

@@ -261,6 +261,7 @@ class TabMain():
     @pyqtSlot()
     def onSweepAllRewards(self):
         try:
+            self.sweepAllDlg.load_data()
             self.sweepAllDlg.exec_()
             
         except Exception as e:
