@@ -14,7 +14,7 @@ class RpcClient:
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
         try:
             self.lock.acquire()
-            self.conn = AuthServiceProxy(rpc_url, timeout=8)     
+            self.conn = AuthServiceProxy(rpc_url, timeout=5)     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
