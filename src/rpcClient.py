@@ -211,7 +211,7 @@ class RpcClient:
             if str(e.args[0]) == "Loading block index..." or str(e.args[0]) == "Verifying blocks...":
                 printDbg(str(e.args[0]))
                 n = 1
-            else:
+            elif str(e.args[0]) != "Request-sent" and str(e.args[0]) != "10061":
                 err_msg = "Error while contacting RPC server"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
                 

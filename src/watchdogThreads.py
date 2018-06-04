@@ -7,7 +7,7 @@ class CtrlObject(object):
     pass
 
 class RpcWatchdog(QObject):
-    def __init__(self, control_tab, timer_off=1, timer_on=3, *args, **kwargs):
+    def __init__(self, control_tab, timer_off=3, timer_on=7, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.shutdown_flag = Event()
         self.control_tab = control_tab

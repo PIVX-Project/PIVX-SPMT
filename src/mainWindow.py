@@ -54,8 +54,7 @@ class MainWindow(QWidget):
         self.rpc_watchdogThread = QThread()
         self.myRpcWd = RpcWatchdog(self)
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
-        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
-        self.rpc_watchdogThread.start()       
+        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)       
         
         ###-- Create Queues and redirect stdout and stderr (eventually)
         self.queue = Queue()
