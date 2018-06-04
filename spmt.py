@@ -66,6 +66,12 @@ if __name__ == '__main__':
     ex.mainWindow.rpc_watchdogThread.start()
     
     # Execute App
-    sys.exit(app.exec_())
+    app.exec_()
+    try:
+        app.deleteLater()
+    except Exception as e:
+        print(e)
+        
+    sys.exit()
     
     
