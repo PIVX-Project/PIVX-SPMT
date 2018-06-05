@@ -6,7 +6,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
-    QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox
+    QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
+    QApplication
 from PyQt5.Qt import QLabel
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
@@ -138,7 +139,7 @@ class SweepAll_dlg(QDialog):
             
             printDbg("Preparing transaction. Please wait...")
             self.ui.loadingLine.show()
-            self.main_tab.caller.parent.app.processEvents()
+            QApplication.processEvents()
             # save destination address to cache
             if self.dest_addr != self.main_tab.caller.parent.cache.get("lastAddress"):
                 self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
@@ -173,7 +174,7 @@ class SweepAll_dlg(QDialog):
     #@pyqtSlot(bytearray, str)  
     def FinishSend(self, serialized_tx, amount_to_send):
         self.ui.loadingLine.hide()
-        self.main_tab.caller.parent.app.processEvents()
+        QApplication.processEvents()
         if not self.txFinished:
             try:
                 self.txFinished = True

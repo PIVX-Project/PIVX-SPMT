@@ -9,6 +9,7 @@ from masternode import Masternode
 from apiClient import ApiClient
 from threads import ThreadFuns
 import simplejson as json
+import time
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.Qt import QApplication
@@ -22,8 +23,6 @@ class TabMain():
     def __init__(self, caller):
         self.caller = caller
         self.runInThread = ThreadFuns.runInThread
-        self.curr_masternode_alias = None
-        self.curr_masternode_address = None
         self.all_masternodes = {}
         self.all_masternodes['last_update'] = 0
         self.mnToStartList = []
@@ -45,26 +44,27 @@ class TabMain():
     
     
     
-    def displayMNStatus(self):
+    
+    def displayMNStatus(self, currMN):
         statusData = None
         for mn in self.all_masternodes.get('masternodes'):
-            if mn.get('addr') == self.curr_masternode_address:
+            if mn.get('addr') == currMN['collateral'].get('address'):
                 
                 statusData = mn
                 if statusData is not None:   
                     try:
-                        statusData['balance'] = self.caller.apiClient.getBalance(self.curr_masternode_address)
+                        statusData['balance'] = self.caller.apiClient.getBalance(mn.get('addr'))
                     except Exception as e:
-                        err_msg = "error getting balance of %s" % self.curr_masternode_address
+                        err_msg = "error getting balance of %s" % mn.get('addr')
                         printException(getCallerName(), getFunctionName(), err_msg, e)
-                        
-        masternode_alias = self.curr_masternode_alias
+        
+        masternode_alias = currMN['name']               
         self.ui.btn_details[masternode_alias].disconnect()
         self.ui.btn_details[masternode_alias].clicked.connect(lambda: self.onDisplayStatusDetails(masternode_alias, statusData))
         self.ui.btn_details[masternode_alias].show()
     
         if statusData is None:
-            printDbg("%s (%s) not found" % (masternode_alias, self.curr_masternode_address))
+            printDbg("%s (%s) not found" % (masternode_alias, currMN['collateral'].get('address')))
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
             msg = "<b>Masternode not found.</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
@@ -93,7 +93,7 @@ class TabMain():
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
             self.ui.btn_details[masternode_alias].setEnabled(True)
-            
+        QApplication.processEvents()     
             
             
             
@@ -107,11 +107,9 @@ class TabMain():
             printOK("Check-All pressed")
             self.updateAllMasternodes()
             for masternode in self.caller.masternode_list:
-                self.curr_masternode_alias = masternode['name']
-                self.curr_masternode_address = masternode['collateral'].get('address')
-                printOK("Checking %s (%s)..." % (self.curr_masternode_alias, self.curr_masternode_address))
-                self.displayMNStatus()
-                QApplication.processEvents()        
+                printOK("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('address')))
+                self.displayMNStatus(masternode)
+                time.sleep(0.2)    
         
         except Exception as e:
             err_msg = "error in checkAllMN"

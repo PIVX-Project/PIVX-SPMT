@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # Read Masternode List
     masternode_list = readMNfile()
     # Create QMainWindow Widget
-    ex = App(masternode_list, imgDir, app)
+    ex = App(masternode_list, imgDir)
     
     # Close Splashscreen
     splash.close()

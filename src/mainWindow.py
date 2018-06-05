@@ -44,7 +44,7 @@ class MainWindow(QWidget):
         self.rpcConnected = False
         self.rpcStatusMess = "Not Connected"
         self.isBlockchainSynced = False
-        self.apiClient = ApiClient() 
+        
         ###-- Load icons & images
         self.loadIcons()        
         ###-- Create main layout
@@ -61,8 +61,8 @@ class MainWindow(QWidget):
         ###-- Create Queues and redirect stdout and stderr (eventually)
         self.queue = Queue()
         self.queue2 = Queue()
-        #sys.stdout = WriteStream(self.queue)
-        #sys.stderr = WriteStream(self.queue2)  
+        sys.stdout = WriteStream(self.queue)
+        sys.stderr = WriteStream(self.queue2)  
       
         
         ###-- Init last logs
@@ -123,6 +123,9 @@ class MainWindow(QWidget):
             
         ##-- Check version
         self.onCheckVersion()
+        
+        ##-- init Api Client
+        self.apiClient = ApiClient() 
         
         
     
