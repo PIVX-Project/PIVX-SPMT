@@ -11,16 +11,14 @@ class ApiClient:
     def __init__(self):
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {}
-        self.key = choice(api_keys)
-        self.client = requests.session()
-        printDbg("Initialized Api Client with key=%s" % self.key)
       
       
         
    
     def checkResponse(self, parameters):
-        parameters['key'] = self.key
-        resp = self.client.get(self.url, params=parameters)
+        key = choice(api_keys)
+        parameters['key'] = key
+        resp = requests.get(self.url, params=parameters)
         if resp.status_code == 200:
             data = resp.json()
             return data
