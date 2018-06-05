@@ -21,7 +21,6 @@ import simplejson as json
 class TabRewards():
     def __init__(self, caller):
         self.caller = caller
-        self.apiClient = ApiClient()
         ##--- Initialize Selection
         self.rewards = None
         self.selectedRewards = None
@@ -39,8 +38,6 @@ class TabRewards():
         self.ui.btn_deselectAllRewards.clicked.connect(lambda: self.onDeselectAllRewards())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
-        # Init first selection
-        self.loadMnSelect()
 
         
         
@@ -72,7 +69,7 @@ class TabRewards():
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
                     
-            if len(self.rewards) > 0:
+            if len(self.rewards) > 1:  # (collateral is a reward)
                 self.ui.rewardsList.box.resizeColumnsToContents()
                 self.ui.rewardsList.statusLabel.setVisible(False)
                 self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
@@ -136,11 +133,11 @@ class TabRewards():
             
             else:
                 try:
-                    if self.apiClient.getStatus() != 200:
+                    if self.caller.apiClient.getStatus() != 200:
                         return
                     self.apiConnected = True
                     self.blockCount = self.caller.rpcClient.getBlockCount()
-                    self.rewards = self.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
+                    self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
                     for utxo in self.rewards:
                         self.rawtransactions[utxo['tx_hash']] = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
                             
@@ -174,7 +171,7 @@ class TabRewards():
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2] 
             if self.curr_addr is not None:
-                result = self.apiClient.getBalance(self.curr_addr)
+                result = self.caller.apiClient.getBalance(self.curr_addr)
                 self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % result)
             self.ui.selectedRewardsLine.setText("0.0")
             self.ui.rewardsList.box.clearSelection()

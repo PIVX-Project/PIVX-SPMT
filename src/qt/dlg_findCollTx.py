@@ -8,14 +8,12 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QSpacerItem, QSizePolicy, QTableWidget, QAbstractScrollArea, QAbstractItemView, QTableWidgetItem
 from PyQt5.Qt import QHBoxLayout, QHeaderView
 from threads import ThreadFuns
-from apiClient import ApiClient
 from misc import printDbg
 
 class FindCollTx_dlg(QDialog):
     def __init__(self, mainTab):
         QDialog.__init__(self, parent=mainTab.ui)
         self.mainTab = mainTab
-        self.apiClient = ApiClient()
         self.utxos = []
         self.blockCount = 0
         self.setupUI()
@@ -82,11 +80,11 @@ class FindCollTx_dlg(QDialog):
                 printDbg('PIVX daemon not connected')
             else:
                 try:
-                    if self.apiClient.getStatus() != 200:
+                    if self.mainTab.caller.apiClient.getStatus() != 200:
                         return
                     self.apiConnected = True
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
-                    utxos = self.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
+                    utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
                     printDbg("loading utxos\nblockCount=%s\n%s" % (str(self.blockCount), str(self.utxos)))
                     self.utxos = [utxo for utxo in utxos if round(int(utxo.get('value', 0))/1e8, 8) == 10000.00000000 ]
 

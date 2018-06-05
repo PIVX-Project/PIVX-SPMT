@@ -21,7 +21,6 @@ from qt.dlg_sweepAll import SweepAll_dlg
 class TabMain():
     def __init__(self, caller):
         self.caller = caller
-        self.apiClient = ApiClient()
         self.runInThread = ThreadFuns.runInThread
         self.curr_masternode_alias = None
         self.curr_masternode_address = None
@@ -54,7 +53,7 @@ class TabMain():
                 statusData = mn
                 if statusData is not None:   
                     try:
-                        statusData['balance'] = self.apiClient.getBalance(self.curr_masternode_address)
+                        statusData['balance'] = self.caller.apiClient.getBalance(self.curr_masternode_address)
                     except Exception as e:
                         err_msg = "error getting balance of %s" % self.curr_masternode_address
                         printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -263,6 +262,7 @@ class TabMain():
         try:
             self.sweepAllDlg.load_data()
             self.sweepAllDlg.exec_()
+            
             
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"

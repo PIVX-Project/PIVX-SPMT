@@ -16,6 +16,7 @@ from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor
 from queue import Queue
 
 from rpcClient import RpcClient
+from apiClient import ApiClient
 from hwdevice import HWdevice
 from qt.guiHeader import GuiHeader
 from tabMain import TabMain
@@ -42,7 +43,8 @@ class MainWindow(QWidget):
         self.rpcClient = None
         self.rpcConnected = False
         self.rpcStatusMess = "Not Connected"
-        self.isBlockchainSynced = False      
+        self.isBlockchainSynced = False
+        self.apiClient = ApiClient() 
         ###-- Load icons & images
         self.loadIcons()        
         ###-- Create main layout
@@ -59,8 +61,8 @@ class MainWindow(QWidget):
         ###-- Create Queues and redirect stdout and stderr (eventually)
         self.queue = Queue()
         self.queue2 = Queue()
-        sys.stdout = WriteStream(self.queue)
-        sys.stderr = WriteStream(self.queue2)  
+        #sys.stdout = WriteStream(self.queue)
+        #sys.stderr = WriteStream(self.queue2)  
       
         
         ###-- Init last logs
