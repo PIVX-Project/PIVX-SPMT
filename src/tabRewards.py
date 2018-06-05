@@ -11,7 +11,8 @@ from constants import MPATH, MINIMUM_FEE, cache_File
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
-from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel
+from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel,\
+    QApplication
 from PyQt5.QtWidgets import QMessageBox
 
 from qt.gui_tabRewards import TabRewards_gui
@@ -160,6 +161,7 @@ class TabRewards():
         self.ui.btn_toggleCollateral.setText("Show Collateral")
         self.ui.collateralHidden = True
         self.onChangeSelectedMN()
+        self.AbortSend()
     
     
     
@@ -237,6 +239,9 @@ class TabRewards():
         if self.selectedRewards: 
             printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
             printDbg("Preparing transaction. Please wait...")
+            self.ui.loadingLine.show()
+            self.ui.loadingLinePercent.show()
+            QApplication.processEvents()            
             # save destination address to cache
             if self.dest_addr != self.caller.parent.cache.get("lastAddress"):
                 self.caller.parent.cache["lastAddress"] = self.dest_addr
@@ -249,8 +254,18 @@ class TabRewards():
                 self.caller.hwdevice.sigTxdone.disconnect()
             except:
                 pass
+            try:
+                self.caller.hwdevice.sigTxabort.disconnect()
+            except:
+                pass
+            try:
+                self.caller.hwdevice.tx_progress.disconnect()
+            except:
+                pass
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-            
+            self.caller.hwdevice.sigTxabort.connect(self.AbortSend)
+            self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+
             try:
                 self.txFinished = False
                 self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.rawtransactions)
@@ -297,6 +312,7 @@ class TabRewards():
     # Activated by signal sigTxdone from hwdevice       
     #@pyqtSlot(bytearray, str)            
     def FinishSend(self, serialized_tx, amount_to_send):
+        self.AbortSend()
         if not self.txFinished:
             try:
                 self.txFinished = True
@@ -335,7 +351,21 @@ class TabRewards():
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
                 
-   
+    
+    # Activated by signal sigTxabort from hwdevice
+    def AbortSend(self):
+        self.ui.loadingLine.hide()
+        self.ui.loadingLinePercent.setValue(0)
+        self.ui.loadingLinePercent.hide()
+        
+        
+             
+    # Activated by signal tx_progress from hwdevice
+    #@pyqtSlot(str)
+    def updateProgressPercent(self, percent):
+        self.ui.loadingLinePercent.setValue(percent)
+        QApplication.processEvents()
+        
  
  
     def updateSelection(self, clicked_item=None):

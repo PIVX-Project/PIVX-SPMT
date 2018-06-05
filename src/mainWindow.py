@@ -58,7 +58,7 @@ class MainWindow(QWidget):
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
         self.rpc_watchdogThread.started.connect(self.myRpcWd.run)       
         
-        ###-- Create Queues and redirect stdout and stderr (eventually)
+        ###-- Create Queues and redirect stdout and stderr
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
@@ -125,8 +125,8 @@ class MainWindow(QWidget):
         self.onCheckVersion()
         
         ##-- init Api Client
-        self.apiClient = ApiClient() 
-        
+        self.apiClient = ApiClient()
+               
         
     
         

@@ -7,13 +7,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
     QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
-    QApplication
+    QApplication, QProgressBar
 from PyQt5.Qt import QLabel
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
 from constants import MPATH, cache_File
 from utils import checkPivxAddr
-from misc import printDbg, writeToFile
+from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException
 import simplejson as json
 
 class SweepAll_dlg(QDialog):
@@ -115,7 +115,7 @@ class SweepAll_dlg(QDialog):
     
     @pyqtSlot()
     def onButtonCancel(self):
-        self.ui.loadingLine.hide()
+        self.AbortSend()
         self.close()
         
         
@@ -139,6 +139,7 @@ class SweepAll_dlg(QDialog):
             
             printDbg("Preparing transaction. Please wait...")
             self.ui.loadingLine.show()
+            self.ui.loadingLinePercent.show()
             QApplication.processEvents()
             # save destination address to cache
             if self.dest_addr != self.main_tab.caller.parent.cache.get("lastAddress"):
@@ -148,18 +149,26 @@ class SweepAll_dlg(QDialog):
             # re-connect signals
             try:
                 self.main_tab.caller.hwdevice.sigTxdone.disconnect()
+            except:
+                pass
+            try:
                 self.main_tab.caller.hwdevice.sigTxabort.disconnect()
+            except:
+                pass
+            try:
+                self.main_tab.caller.hwdevice.tx_progress.disconnect()
             except:
                 pass
             self.main_tab.caller.hwdevice.sigTxdone.connect(self.FinishSend)
             self.main_tab.caller.hwdevice.sigTxabort.connect(self.AbortSend)
-            
+            self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+
             self.txFinished = False
             self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions)
             
                 
         except Exception as e:
-            err_msg = "Exception in SendRewards"
+            err_msg = "Exception in onButtonSend"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
            
             
@@ -167,13 +176,15 @@ class SweepAll_dlg(QDialog):
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.loadingLine.hide()
+        self.ui.loadingLinePercent.setValue(0)
+        self.ui.loadingLinePercent.hide()
     
     
     
     # Activated by signal sigTxdone from hwdevice       
     #@pyqtSlot(bytearray, str)  
     def FinishSend(self, serialized_tx, amount_to_send):
-        self.ui.loadingLine.hide()
+        self.AbortSend()
         QApplication.processEvents()
         if not self.txFinished:
             try:
@@ -214,7 +225,14 @@ class SweepAll_dlg(QDialog):
                 
             finally:
                 self.close()
-        
+                
+                
+                
+    # Activated by signal tx_progress from hwdevice
+    #@pyqtSlot(str)
+    def updateProgressPercent(self, percent):
+        self.ui.loadingLinePercent.setValue(percent)
+        QApplication.processEvents()
         
         
    
@@ -256,9 +274,15 @@ class Ui_SweepAllDlg(object):
         hBox = QHBoxLayout()
         self.totalLine = QLabel("<b>0 PIV</b>")
         hBox.addWidget(self.totalLine)
-        self.loadingLine = QLabel("<b style='color:red'>Preparing TX. Please wait...</b>")
+        self.loadingLine = QLabel("<b style='color:red'>Preparing TX. Please wait...</b> Completed: ")
+        self.loadingLinePercent = QProgressBar()
+        self.loadingLinePercent.setMaximumWidth(200)
+        self.loadingLinePercent.setMaximumHeight(10)
+        self.loadingLinePercent.setRange(0, 100)
         hBox.addWidget(self.loadingLine)
+        hBox.addWidget(self.loadingLinePercent)
         self.loadingLine.hide()
+        self.loadingLinePercent.hide()
         myForm.addRow(QLabel("Total Rewards: "), hBox)
         hBox = QHBoxLayout()
         self.edt_destination = QLineEdit()

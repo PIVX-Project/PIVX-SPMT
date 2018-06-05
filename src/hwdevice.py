@@ -6,7 +6,7 @@ from bitcoin import bin_hash160
 from time import sleep
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString
 from constants import MPATH
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QApplication
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.Qt import QObject
 from threads import ThreadFuns
@@ -40,6 +40,10 @@ class HWdevice(QObject):
     sigTxdone = pyqtSignal(bytearray, str)
     # signal: sigtx (thread) is done (aborted) - emitted by signTxFinish
     sigTxabort = pyqtSignal()
+    # signal: tx_progress percent - emitted by perepare_transfer_tx_bulk
+    tx_progress = pyqtSignal(int)
+    # signal: sig_progress percent - emitted by signTxSign
+    sig_progress = pyqtSignal(str)
     
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -47,6 +51,8 @@ class HWdevice(QObject):
         self.lock = threading.Lock()
         printDbg("Creating HW device class")
         self.initDevice()
+        # Connect signal
+        self.sig_progress.connect(self.updateSigProgress)
         
     @process_ledger_exceptions
     def initDevice(self):
@@ -156,6 +162,11 @@ class HWdevice(QObject):
                 
                 
                 trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
+                
+                # completion percent emitted
+                completion = int(45*idx / len(utxos_to_spend))
+                self.tx_progress.emit(completion)
+                
                 self.trusted_inputs.append(trusted_input)
                
                 # Hash check
@@ -176,12 +187,19 @@ class HWdevice(QObject):
                     'outputIndex': utxo['tx_ouput_n'],
                     'txid': utxo['tx_hash']
                 })
+                
+                # completion percent emitted
+                completion = int(95*idx / len(utxos_to_spend))
+                self.tx_progress.emit(completion)
     
             self.amount -= int(tx_fee)
             self.amount = int(self.amount)
             arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
             self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
             self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+            
+            # completion percent emitted
+            self.tx_progress.emit(99)
         
         finally:
             self.lock.release()
@@ -195,16 +213,20 @@ class HWdevice(QObject):
         except Exception:
             raise
         
+        # completion percent emitted
+        self.tx_progress.emit(100)
         
         # join all outputs - will be used by Ledger for signing transaction
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
 
         self.mBox2 = QMessageBox(caller)
-        messageText = "<p>Confirm transaction on your device, with the following details:</p>"
+        self.messageText = "<p>Confirm transaction on your device, with the following details:</p>"
         #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-        messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
-        messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-        messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
+        self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
+        self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        messageText = self.messageText + "Completed: 0 %" 
+        self.mBox2.setText(messageText)
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
@@ -224,10 +246,13 @@ class HWdevice(QObject):
         self.arg_inputs = []
         self.amount = 0
         self.lock.acquire()
+        num_of_sigs = sum([len(mnode['utxos']) for mnode in mnodes])
+        curr_utxo_checked = 0
         try:
-            for mnode in mnodes:
-                for idx, utxo in enumerate(mnode['utxos']):
+            for i, mnode in enumerate(mnodes): 
                 
+                for idx, utxo in enumerate(mnode['utxos']):
+                                       
                     self.amount += int(utxo['value'])
                     raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
     
@@ -263,12 +288,19 @@ class HWdevice(QObject):
                         'outputIndex': utxo['tx_ouput_n'],
                         'txid': utxo['tx_hash']
                     })
+                    
+                    # completion percent emitted
+                    curr_utxo_checked += 1
+                    completion = int(95*curr_utxo_checked / num_of_sigs)
+                    self.tx_progress.emit(completion)
     
             self.amount -= int(tx_fee)
             self.amount = int(self.amount)
             arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
             self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
             self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
+            
+            self.tx_progress.emit(99)
             
         except Exception:
             raise
@@ -284,24 +316,26 @@ class HWdevice(QObject):
                 self.new_transaction.outputs.append(output)
         except Exception:
             raise
-        
+    
+        self.tx_progress.emit(100)
         
         # join all outputs - will be used by Ledger for signing transaction
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
 
         self.mBox2 = QMessageBox(caller)
-        messageText = "<p>Confirm transaction on your device, with the following details:</p>"
+        self.messageText = "<p>Confirm transaction on your device, with the following details:</p>"
         #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-        messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
-        messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-        messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
+        self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
+        self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        messageText = self.messageText + "Completed: 0 %" 
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
         self.mBox2.setStandardButtons(QMessageBox.NoButton)
         self.mBox2.setMaximumWidth(500)
         self.mBox2.show()
-        
+                
         ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
         
     
@@ -493,8 +527,10 @@ class HWdevice(QObject):
         self.lock.acquire()
         try:
             starting = True
+            curr_input_signed = 0
             # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
             for idx, new_input in enumerate(self.arg_inputs):
+                    
                 self.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
                 
                 self.chip.finalizeInputFull(self.all_outputs_raw)
@@ -513,9 +549,15 @@ class HWdevice(QObject):
 
                 starting = False
                 
+                # signature percent emitted
+                curr_input_signed += 1
+                completion = int(100*curr_input_signed / len(self.arg_inputs))
+                self.sig_progress.emit(str(completion))
+                
             
             self.new_transaction.lockTime = bytearray([0, 0, 0, 0])
             self.tx_raw = bytearray(self.new_transaction.serialize())
+            self.sig_progress.emit("100")
             
         except Exception as e:
             printException(getCallerName(), getFunctionName(), "Signature Exception", e.args)
@@ -538,3 +580,9 @@ class HWdevice(QObject):
         except Exception as e:    
             printDbg(e) 
                     
+    
+    
+    def updateSigProgress(self, text):
+        messageText = self.messageText + "Completed: " + text + " %" 
+        self.mBox2.setText(messageText)
+        QApplication.processEvents()

@@ -5,7 +5,8 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
 from PyQt5.Qt import QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
+    QProgressBar
 from PyQt5.QtWidgets import QLineEdit, QComboBox
 
 class TabRewards_gui(QWidget):
@@ -99,6 +100,15 @@ class TabRewards_gui(QWidget):
         self.selectedRewardsLine.setToolTip("PIVX to move away")
         hBox2.addWidget(self.selectedRewardsLine)    
         hBox2.addStretch(1)
+        self.loadingLine = QLabel("<b style='color:red'>Preparing TX. Please wait...</b> Completed: ")
+        self.loadingLinePercent = QProgressBar()
+        self.loadingLinePercent.setMaximumWidth(200)
+        self.loadingLinePercent.setMaximumHeight(10)
+        self.loadingLinePercent.setRange(0, 100)
+        hBox2.addWidget(self.loadingLine)
+        hBox2.addWidget(self.loadingLinePercent)
+        self.loadingLine.hide()
+        self.loadingLinePercent.hide()
         layout.addRow(hBox2)
         ##--- ROW 4
         hBox3 = QHBoxLayout()
