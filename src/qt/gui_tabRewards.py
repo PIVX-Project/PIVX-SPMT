@@ -100,7 +100,7 @@ class TabRewards_gui(QWidget):
         self.selectedRewardsLine.setToolTip("PIVX to move away")
         hBox2.addWidget(self.selectedRewardsLine)    
         hBox2.addStretch(1)
-        self.loadingLine = QLabel("<b style='color:red'>Preparing TX. Please wait...</b> Completed: ")
+        self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
         self.loadingLinePercent = QProgressBar()
         self.loadingLinePercent.setMaximumWidth(200)
         self.loadingLinePercent.setMaximumHeight(10)

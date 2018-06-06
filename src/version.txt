@@ -1,5 +1,5 @@
 {
- "number": "0.2.1",
- "tag": "b",
- "comments": ["missing order bug"]
+ "number": "0.2.2",
+ "tag": "a",
+ "comments": ["Tx and sig progress"]
  }

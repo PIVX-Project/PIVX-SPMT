@@ -124,7 +124,6 @@ class TabMNConf():
             ans = mBox.exec_()
             # we need to reconnect the device
             self.caller.hwdevice.dongle.close()
-            self.caller.hwdevice.initialized = False
             self.caller.hwdevice.initDevice()
             
             if ans == QMessageBox.Abort:

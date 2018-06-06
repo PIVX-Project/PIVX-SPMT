@@ -140,7 +140,10 @@ class TabRewards():
                     self.blockCount = self.caller.rpcClient.getBlockCount()
                     self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
                     for utxo in self.rewards:
-                        self.rawtransactions[utxo['tx_hash']] = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                        rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                        self.rawtransactions[utxo['tx_hash']] = rawtx
+                        if rawtx is None:
+                            print("Unable to get raw TX from RPC server\n")
                             
                 except Exception as e:
                     self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)

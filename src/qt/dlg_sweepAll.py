@@ -189,6 +189,7 @@ class SweepAll_dlg(QDialog):
         if not self.txFinished:
             try:
                 self.txFinished = True
+                self.close()
                 tx_hex = serialized_tx.hex()
                 printDbg("Raw signed transaction: " + tx_hex)
                 printDbg("Amount to send :" + amount_to_send)
@@ -222,9 +223,8 @@ class SweepAll_dlg(QDialog):
             except Exception as e:
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
+
                 
-            finally:
-                self.close()
                 
                 
                 
@@ -274,7 +274,7 @@ class Ui_SweepAllDlg(object):
         hBox = QHBoxLayout()
         self.totalLine = QLabel("<b>0 PIV</b>")
         hBox.addWidget(self.totalLine)
-        self.loadingLine = QLabel("<b style='color:red'>Preparing TX. Please wait...</b> Completed: ")
+        self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
         self.loadingLinePercent = QProgressBar()
         self.loadingLinePercent.setMaximumWidth(200)
         self.loadingLinePercent.setMaximumHeight(10)

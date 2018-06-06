@@ -14,7 +14,7 @@ class RpcClient:
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
         try:
             self.lock.acquire()
-            self.conn = AuthServiceProxy(rpc_url, timeout=5)     
+            self.conn = AuthServiceProxy(rpc_url, timeout=120)     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -199,17 +199,21 @@ class RpcClient:
     
     def getStatus(self):
         status = False
+        statusMess = "Unable to connect to a PIVX RPC server.\n" 
+        statusMess += "Either the local PIVX wallet is not open, or the remote RPC server is not responding."
         n = 0
         try:
             self.lock.acquire()
             n = self.conn.getblockcount()
             if n > 0:
                 status = True
+                statusMess = "Connected to PIVX RPC client"
                 
         except Exception as e:
             # If loading block index set lastBlock=1
             if str(e.args[0]) == "Loading block index..." or str(e.args[0]) == "Verifying blocks...":
                 printDbg(str(e.args[0]))
+                statusMess = "PIVX wallet is connected but still synchronizing / verifying blocks"
                 n = 1
             elif str(e.args[0]) != "Request-sent" and str(e.args[0]) != "10061":
                 err_msg = "Error while contacting RPC server"
@@ -218,18 +222,8 @@ class RpcClient:
         finally:
             self.lock.release()
                 
-        return status, n
-    
-    
-    
-    
-    def getStatusMess(self, status=None):
-        if status == None:
-            status = self.getStatus()    
-        if status: 
-            return "Connected to PIVX RPC client"
-        else:
-            return "Unable to connect to a PIVX RPC server, needed to broadcast messages to the network. Either the local PIVX wallet is not open, or the remote RPC server is not responding."
+        return status, statusMess, n
+     
     
     
     

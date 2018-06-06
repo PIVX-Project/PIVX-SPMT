@@ -348,18 +348,16 @@ class MainWindow(QWidget):
         if self.hwdevice is None:
             self.hwdevice = HWdevice()
         
-        device = self.hwdevice
-        statusCode = device.getStatusCode()
-        statusMess = device.getStatusMess(statusCode)
-        printDbg("code: %s - mess: %s" % (statusCode, statusMess))
+        statusCode, statusMess = self.hwdevice.getStatus()
+        printDbg("mess: %s" % statusMess)
         if statusCode != 2:
+            # If is not connected try again
             try:
                 if getattr(self.hwdevice, 'dongle', None) is not None:
                     self.hwdevice.dongle.close()
+                self.hwdevice = HWdevice()
                 self.hwdevice.initDevice()
-                device = self.hwdevice
-                statusCode = device.getStatusCode()
-                statusMess = device.getStatusMess(statusCode)
+                statusCode, statusMess = self.hwdevice.getStatus()
 
             except Exception as e:
                 err_msg = "error in checkHw"
@@ -367,6 +365,9 @@ class MainWindow(QWidget):
                     
         self.hwStatus = statusCode
         self.hwStatusMess = statusMess
+        
+        
+
         
         
   
@@ -407,28 +408,18 @@ class MainWindow(QWidget):
         
     def updateRPCstatus(self, ctrl):
         if self.rpcClient is None:
-            try:
-                self.rpcClient = RpcClient()
-            except Exception as e:
-                print(e)
-        status, lastBlock = self.rpcClient.getStatus()
-        statusMess = self.rpcClient.getStatusMess(status)
-        if not status and lastBlock==0:
-            try:
-                self.rpcClient = RpcClient()
-                status, lastBlock = self.rpcClient.getStatus()
-                statusMess = self.rpcClient.getStatusMess(status)
-            except Exception as e:
-                err_msg = "error in checkRpc"
-                printException(getCallerName(), getFunctionName(), err_msg, e)
-        
-        elif lastBlock == 1:
-            statusMess = "PIVX wallet is connected but still synchronizing / verifying blocks"
-        
+            self.rpcClient = RpcClient()
+ 
+        status, statusMess, lastBlock = self.rpcClient.getStatus()
+            
         self.rpcConnected = status
         self.rpcLastBlock = lastBlock
         self.rpcStatusMess = statusMess
         self.isBlockchainSynced = self.rpcClient.isBlockchainSynced()
+        
+        # If is not connected try again
+        if not status:
+            self.rpcClient = RpcClient()
     
     
     

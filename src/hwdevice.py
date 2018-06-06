@@ -26,7 +26,7 @@ def process_ledger_exceptions(func):
                 e.message += '\n\nMake sure the PIVX app is running on your Ledger device.'
             elif (e.sw == 0x6982):
                 e.message += '\n\nMake sure you have entered the PIN on your Ledger device.'
-            raise
+            printException(getCallerName(), getFunctionName(), e.message, e.args)
     return process_ledger_exceptions_int
 
 
@@ -54,27 +54,27 @@ class HWdevice(QObject):
         # Connect signal
         self.sig_progress.connect(self.updateSigProgress)
         
+        
     @process_ledger_exceptions
     def initDevice(self):
         try:
             self.lock.acquire()
+            self.status = 0
             if hasattr(self, 'dongle'):
                 self.dongle.close()
             self.dongle = getDongle(False)
             printOK('Ledger Nano S drivers found')
             self.chip = btchip(self.dongle)
             printDbg("Ledger Initialized")
-            self.initialized = True
             ver = self.chip.getFirmwareVersion()
             printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
-            
+            self.status = 2
             
         except Exception as e:
-            err_msg = 'error Initializing Ledger'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            self.initialized = False
             if hasattr(self, 'dongle'):
+                self.status = 1
                 self.dongle.close()
+            raise
                 
         finally:
             self.lock.release()
@@ -85,53 +85,12 @@ class HWdevice(QObject):
     # 0 - not connected
     # 1 - not in pivx app
     # 2 - fine
-    def getStatusCode(self):
-        try:
-            if self.initialized:
-                if not self.checkApp():
-                    statusCode = 1     
-                else:
-                    statusCode = 2
-            else:
-                statusCode = 0          
-        except Exception as e:
-            err_msg = 'error in getStatusCode'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            statusCode = 0
-        return statusCode
-    
-    
-    
-        
-    def getStatusMess(self, statusCode = None):
-        if statusCode == None or not statusCode in [0, 1, 2]:
-            statusCode = self.getStatusCode()
+    def getStatus(self):
         messages = {
             0: 'Unable to connect to the device.',
             1: 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
             2: 'Hardware device connected.'}
-        return messages[statusCode]
-    
-    
-        
-    
-    @process_ledger_exceptions
-    def checkApp(self):
-        printDbg("Checking app")
-        self.lock.acquire()
-        try:
-            firstAddress = self.chip.getWalletPublicKey(MPATH + "0'/0/0").get('address')[12:-2]
-
-            if firstAddress[0] == 'D':
-                printOK("found PIVX app on ledger device")
-                return True       
-        except Exception as e:
-            err_msg = 'error in checkApp'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            
-        finally:
-            self.lock.release()
-        return False 
+        return self.status, messages[self.status]
     
     
     
@@ -225,7 +184,7 @@ class HWdevice(QObject):
         self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
         self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
         self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-        messageText = self.messageText + "Completed: 0 %" 
+        messageText = self.messageText + "Signature Progress: 0 %" 
         self.mBox2.setText(messageText)
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
@@ -328,7 +287,7 @@ class HWdevice(QObject):
         self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
         self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
         self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-        messageText = self.messageText + "Completed: 0 %" 
+        messageText = self.messageText + "Signature Progress: 0 %" 
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
         self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
@@ -340,7 +299,6 @@ class HWdevice(QObject):
         
     
     
-    @process_ledger_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
         printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
         curr_path = MPATH + "%d'/0/%d" % (account, spath) 
@@ -364,7 +322,6 @@ class HWdevice(QObject):
     
     
     
-    @process_ledger_exceptions
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
         found = False
         spath = -1
@@ -401,7 +358,6 @@ class HWdevice(QObject):
             
             
     
-    @process_ledger_exceptions
     def scanForPubKey(self, account, spath):
         self.lock.acquire()
         printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
@@ -446,7 +402,6 @@ class HWdevice(QObject):
             ans = mBox.exec_()        
             # we need to reconnect the device
             self.dongle.close()
-            self.initialized = False
             self.initDevice()
             
             if ans == QMessageBox.Abort:
@@ -522,7 +477,6 @@ class HWdevice(QObject):
         
         
         
-    @process_ledger_exceptions
     def signTxSign(self, ctrl):
         self.lock.acquire()
         try:
@@ -566,6 +520,7 @@ class HWdevice(QObject):
         finally:
             self.lock.release()
     
+    
             
     def signTxFinish(self):
         self.mBox2.accept()
@@ -583,6 +538,6 @@ class HWdevice(QObject):
     
     
     def updateSigProgress(self, text):
-        messageText = self.messageText + "Completed: " + text + " %" 
+        messageText = self.messageText + "Signature Progress: <b style='color:red'>" + text + " %</b>" 
         self.mBox2.setText(messageText)
         QApplication.processEvents()
