@@ -68,7 +68,7 @@ class SweepAll_dlg(QDialog):
             self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
             
             total = sum([float(mnode['total_rewards']) for mnode in self.rewards])
-            self.ui.totalLine.setText("<b>%s</b>" % str(total))
+            self.ui.totalLine.setText("<b>%s</b>" % str(round(total,8)))
             
             # update fee
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
