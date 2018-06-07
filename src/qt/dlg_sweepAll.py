@@ -72,8 +72,7 @@ class SweepAll_dlg(QDialog):
             
             # update fee
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
-            feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()
-            suggestedFee = round(feePerKb * estimatedTxSize, 8)
+            suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.ui.feeLine.setValue(suggestedFee)
             
             # load last used destination from cache
@@ -109,7 +108,8 @@ class SweepAll_dlg(QDialog):
                     print("Unable to get raw TX from RPC server\n")
                     self.rewards = []
                     return
-                
+        # update fee
+        self.feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()        
     
     
     

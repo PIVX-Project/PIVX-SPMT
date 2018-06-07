@@ -91,8 +91,8 @@ class RpcClient:
     def getFeePerKb(self):
         try:
             self.lock.acquire()
-            # get transaction data from last 10 blocks
-            feePerKb = float(self.conn.getfeeinfo(10)['feeperkb'])
+            # get transaction data from last 120 blocks
+            feePerKb = float(self.conn.getfeeinfo(200)['feeperkb'])
             res = (feePerKb if feePerKb > MINIMUM_FEE else MINIMUM_FEE)
         except Exception as e:
             err_msg = 'error in getFeePerKb'

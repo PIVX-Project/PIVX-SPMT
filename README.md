@@ -131,7 +131,7 @@ Click on `Hide Collateral` to hide it again.
 <br><img src="doc/img/17.png" width="670"><br><br>
 
 Select those UTXOs you wish to spend.<br>
-The suggested fee is automatically adjusted based on the TX size and the average fee of the last 10 blocks.<br>
+The suggested fee is automatically adjusted based on the TX size and the average fee of the last 200 blocks.<br>
 Adjust it as preferred.<br>
 Then insert the PIVX `Destination Address` and click on `Send`
 <br><img src="doc/img/18.png" width="670"><br><br>

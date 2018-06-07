@@ -26,6 +26,7 @@ class TabRewards():
         self.rewards = None
         self.selectedRewards = None
         self.rawtransactions = {}
+        self.feePerKb = MINIMUM_FEE
         ##--- Initialize GUI
         self.ui = TabRewards_gui()
         self.caller.tabRewards = self.ui
@@ -85,6 +86,8 @@ class TabRewards():
                         self.ui.rewardsList.statusLabel.setText('<b style="color:purple">Unable to connect to API provider</b>')
                 self.ui.rewardsList.statusLabel.setVisible(True)
             
+    
+        
             
             
             
@@ -136,14 +139,18 @@ class TabRewards():
                 try:
                     if self.caller.apiClient.getStatus() != 200:
                         return
+                    
                     self.apiConnected = True
                     self.blockCount = self.caller.rpcClient.getBlockCount()
                     self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
+                    
                     for utxo in self.rewards:
                         rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
                         self.rawtransactions[utxo['tx_hash']] = rawtx
                         if rawtx is None:
                             print("Unable to get raw TX from RPC server\n")
+                            
+                    self.feePerKb = self.caller.rpcClient.getFeePerKb()
                             
                 except Exception as e:
                     self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
@@ -379,13 +386,12 @@ class TabRewards():
             
             for i in range(0, numOfInputs):
                 total += int(self.selectedRewards[i].get('value'))
-                                     
+                                    
             # update suggested fee and selected rewards
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
-            feePerKb = self.caller.rpcClient.getFeePerKb()
-            suggestedFee = round(feePerKb * estimatedTxSize, 8)
+            suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             printDbg("estimatedTxSize is %s kB" % str(estimatedTxSize))
-            printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(suggestedFee), str(feePerKb)))
+            printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(suggestedFee), str(self.feePerKb)))
             
             self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
             self.ui.feeLine.setValue(suggestedFee)
