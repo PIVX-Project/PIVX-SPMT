@@ -170,6 +170,15 @@ def readCacheFile():
     except Exception as e:
         printDbg(e.args[0])
         return DEFAULT_CACHE
+    
+    # Fix missing data in cache
+    newKeys = False
+    for key in DEFAULT_CACHE:
+        if key not in cache:
+            cache[key] = DEFAULT_CACHE[key]
+            newKeys = True   
+    if newKeys:
+        writeToFile(cache, cache_File)
         
     return cache
     
