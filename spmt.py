@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # Close Splashscreen
     splash.close()
     
-    ##-- Lunch RPC watchdog
+    ##-- Launch RPC watchdog
     ex.mainWindow.rpc_watchdogThread.start()
     
     # Execute App
