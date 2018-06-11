@@ -12,7 +12,7 @@ from constants import MPATH, MINIMUM_FEE, cache_File
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
 from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel,\
-    QApplication
+    QApplication, QBrush
 from PyQt5.QtWidgets import QMessageBox
 
 from qt.gui_tabRewards import TabRewards_gui
@@ -68,6 +68,12 @@ class TabRewards():
                         self.ui.rewardsList.box.item(row, i).setFont(QFont("Arial", 9, QFont.Bold))
                     self.ui.rewardsList.box.collateralRow = row
                 
+                # make immature rewards unselectable
+                if utxo.get('confirmations') < 101:
+                    for i in range(0,4):
+                        self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
+                        self.ui.rewardsList.box.item(row, i).setToolTip("Immature - 100 confirmations required")
+                    
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
                     

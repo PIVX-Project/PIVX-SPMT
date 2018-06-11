@@ -93,8 +93,9 @@ class SweepAll_dlg(QDialog):
             mnode['path'] = MPATH + "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
             # get UTXOs of current masternode
             mnode['utxos'] = self.main_tab.caller.apiClient.getAddressUtxos(addy)['unspent_outputs']
-            # remove collateral
-            mnode['utxos'] = [x for x in mnode['utxos'] if x['tx_hash'] != mn['collateral'].get('txid')]
+            # remove collateral and immature rewards
+            mnode['utxos'] = [x for x in mnode['utxos'] if (x['tx_hash'] != mn['collateral'].get('txid') and
+                                                            x['confirmations'] > 100) ]
             # compute total rewards
             total = sum([int(x['value']) for x in mnode['utxos']])
             mnode['total_rewards'] = str(round(total/1e8, 8))                
