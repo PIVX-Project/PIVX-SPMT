@@ -4,7 +4,8 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
-from PyQt5.Qt import QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView
+from PyQt5.Qt import QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView,\
+    QCheckBox
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
     QProgressBar
 from PyQt5.QtWidgets import QLineEdit, QComboBox
@@ -100,15 +101,10 @@ class TabRewards_gui(QWidget):
         self.selectedRewardsLine.setToolTip("PIVX to move away")
         hBox2.addWidget(self.selectedRewardsLine)    
         hBox2.addStretch(1)
-        self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
-        self.loadingLinePercent = QProgressBar()
-        self.loadingLinePercent.setMaximumWidth(200)
-        self.loadingLinePercent.setMaximumHeight(10)
-        self.loadingLinePercent.setRange(0, 100)
-        hBox2.addWidget(self.loadingLine)
-        hBox2.addWidget(self.loadingLinePercent)
-        self.loadingLine.hide()
-        self.loadingLinePercent.hide()
+        self.swiftxCheck = QCheckBox()
+        self.swiftxCheck.setToolTip("check for SwiftX instant transaction (flat fee rate of 0.01 PIV)")
+        hBox2.addWidget(QLabel("Use SwiftX"))
+        hBox2.addWidget(self.swiftxCheck)
         layout.addRow(hBox2)
         ##--- ROW 4
         hBox3 = QHBoxLayout()
@@ -126,6 +122,19 @@ class TabRewards_gui(QWidget):
         self.btn_sendRewards = QPushButton("Send")
         hBox3.addWidget(self.btn_sendRewards)
         layout.addRow(QLabel("Destination Address"), hBox3)
+        ##--- ROW 5
+        hBox4 = QHBoxLayout()
+        hBox4.addStretch(1)
+        self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
+        self.loadingLinePercent = QProgressBar()
+        self.loadingLinePercent.setMaximumWidth(200)
+        self.loadingLinePercent.setMaximumHeight(10)
+        self.loadingLinePercent.setRange(0, 100)
+        hBox4.addWidget(self.loadingLine)
+        hBox4.addWidget(self.loadingLinePercent)
+        self.loadingLine.hide()
+        self.loadingLinePercent.hide()
+        layout.addRow(hBox4)
         #--- Set Layout    
         self.rewardsForm.setLayout(layout)
         #--- ROW 5

@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
     QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
-    QApplication, QProgressBar
+    QApplication, QProgressBar, QCheckBox
 from PyQt5.Qt import QLabel
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
@@ -77,7 +77,9 @@ class SweepAll_dlg(QDialog):
             
             # load last used destination from cache
             self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
-
+            # load useSwiftX check from cache
+            if self.main_tab.caller.parent.cache.get("useSwiftX"):
+                self.ui.swiftxCheck.setChecked(True)
     
        
         
@@ -96,6 +98,7 @@ class SweepAll_dlg(QDialog):
             # remove collateral and immature rewards
             mnode['utxos'] = [x for x in mnode['utxos'] if (x['tx_hash'] != mn['collateral'].get('txid') and
                                                             x['confirmations'] > 100) ]
+            
             # compute total rewards
             total = sum([int(x['value']) for x in mnode['utxos']])
             mnode['total_rewards'] = str(round(total/1e8, 8))                
@@ -126,7 +129,10 @@ class SweepAll_dlg(QDialog):
     def onButtonSend(self):
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
-            self.currFee = self.ui.feeLine.value() * 1e8
+            if self.useSwiftX():
+                self.currFee = 0.01 * 1e8
+            else:
+                self.currFee = self.ui.feeLine.value() * 1e8
              
              # Check RPC & dongle  
             if not self.main_tab.caller.rpcConnected or self.main_tab.caller.hwStatus != 2:
@@ -142,10 +148,11 @@ class SweepAll_dlg(QDialog):
             self.ui.loadingLine.show()
             self.ui.loadingLinePercent.show()
             QApplication.processEvents()
-            # save destination address to cache
-            if self.dest_addr != self.main_tab.caller.parent.cache.get("lastAddress"):
-                self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
-                writeToFile(self.main_tab.caller.parent.cache, cache_File)
+            
+            # save last destination address and swiftxCheck to cache
+            self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
+            self.main_tab.caller.parent.cache["useSwiftX"] = self.useSwiftX()
+            writeToFile(self.main_tab.caller.parent.cache, cache_File)
                 
             # re-connect signals
             try:
@@ -165,7 +172,7 @@ class SweepAll_dlg(QDialog):
             self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
 
             self.txFinished = False
-            self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions)
+            self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
             
                 
         except Exception as e:
@@ -211,8 +218,8 @@ class SweepAll_dlg(QDialog):
                     mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     reply = mess1.exec_()
-                    if reply == QMessageBox.Yes:                   
-                        txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex)
+                    if reply == QMessageBox.Yes:
+                        txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
                         mess2_text = "<p>Transaction successfully sent.</p><p>(Note that the selected rewards will remain displayed in the app until the transaction is confirmed.)</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
@@ -235,6 +242,9 @@ class SweepAll_dlg(QDialog):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
         
+    
+    def useSwiftX(self):
+        return self.ui.swiftxCheck.isChecked()        
         
    
 
@@ -294,10 +304,15 @@ class Ui_SweepAllDlg(object):
         self.feeLine.setDecimals(8)
         self.feeLine.setPrefix("PIV  ")
         self.feeLine.setToolTip("Insert a small fee amount")
-        self.feeLine.setFixedWidth(150)
+        self.feeLine.setFixedWidth(120)
         self.feeLine.setSingleStep(0.001)
-        hBox.addWidget(self.feeLine)  
-        myForm.addRow(QLabel("Destination Address"), hBox)
+        hBox.addWidget(self.feeLine)
+        self.swiftxCheck = QCheckBox()
+        self.swiftxCheck.setToolTip("check for SwiftX instant transaction (flat fee rate of 0.01 PIV)")
+        hBox.addWidget(QLabel("Use SwiftX"))
+        hBox.addWidget(self.swiftxCheck)
+        myForm.addRow(QLabel("Destination Address"), hBox)       
+        myForm.addRow(hBox)
         layout.addLayout(myForm)
         hBox = QHBoxLayout()
         self.buttonCancel = QPushButton("Cancel")

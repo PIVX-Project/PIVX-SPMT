@@ -96,7 +96,7 @@ class HWdevice(QObject):
     
     
     @process_ledger_exceptions
-    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions):
+    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions, useSwiftX=False):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
@@ -183,7 +183,10 @@ class HWdevice(QObject):
         #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
         self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
         self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-        self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        if useSwiftX:
+            self.messageText += "<p>Fees (SwiftX flat rate):<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        else:
+            self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
         messageText = self.messageText + "Signature Progress: 0 %" 
         self.mBox2.setText(messageText)
         self.mBox2.setText(messageText)
@@ -198,7 +201,7 @@ class HWdevice(QObject):
         
         
     @process_ledger_exceptions
-    def prepare_transfer_tx_bulk(self, caller, mnodes, dest_address, tx_fee, rawtransactions):
+    def prepare_transfer_tx_bulk(self, caller, mnodes, dest_address, tx_fee, rawtransactions, useSwiftX=False):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
@@ -286,7 +289,10 @@ class HWdevice(QObject):
         #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
         self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
         self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-        self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        if useSwiftX:
+            self.messageText += "<p>Fees (SwiftX flat rate):<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+        else:
+            self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
         messageText = self.messageText + "Signature Progress: 0 %" 
         self.mBox2.setText(messageText)
         self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))

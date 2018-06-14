@@ -63,7 +63,6 @@ class MainWindow(QWidget):
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
         sys.stderr = WriteStream(self.queue2)  
-      
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')

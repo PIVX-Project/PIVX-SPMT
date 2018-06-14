@@ -1,5 +1,5 @@
 {
  "number": "0.2.2",
- "tag": "a",
- "comments": ["Tx and sig progress"]
+ "tag": "b",
+ "comments": ["SwiftX"]
  }

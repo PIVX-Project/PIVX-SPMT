@@ -273,10 +273,10 @@ class RpcClient:
     
 
 
-    def sendRawTransaction(self, tx_hex):
+    def sendRawTransaction(self, tx_hex, use_swiftx):
         try:
             self.lock.acquire()
-            tx_id = self.conn.sendrawtransaction(tx_hex)
+            tx_id = self.conn.sendrawtransaction(tx_hex, True, bool(use_swiftx))
         except Exception as e:
             err_msg = 'error in rpcClient.sendRawTransaction'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)

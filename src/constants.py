@@ -24,5 +24,6 @@ DEFAULT_CACHE = {
     "window_width": starting_width,
     "window_height": starting_height,
     "splitter_sizes": [342, 133],
-    "mnList_order": {}
+    "mnList_order": {},
+    "useSwiftX": False
     }
