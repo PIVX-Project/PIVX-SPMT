@@ -12,6 +12,7 @@ from PyQt5.Qt import QLabel
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
 from constants import MPATH, cache_File
+from hwdevice import DisconnectedException
 from utils import checkPivxAddr
 from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException
 import simplejson as json
@@ -173,7 +174,11 @@ class SweepAll_dlg(QDialog):
 
             self.txFinished = False
             self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
-            
+        
+        except DisconnectedException as e:
+            self.main_tab.caller.hwStatus = 0
+            self.main_tab.caller.updateHWleds()
+            self.onButtonCancel()
                 
         except Exception as e:
             err_msg = "Exception in onButtonSend"

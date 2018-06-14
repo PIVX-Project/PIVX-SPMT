@@ -122,12 +122,11 @@ class TabMNConf():
         
         while result is None:      
             ans = mBox.exec_()
+            if ans == QMessageBox.Abort:
+                return
             # we need to reconnect the device
             self.caller.hwdevice.dongle.close()
             self.caller.hwdevice.initDevice()
-            
-            if ans == QMessageBox.Abort:
-                return
             
             result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
     

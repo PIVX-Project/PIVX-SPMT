@@ -8,6 +8,7 @@ from threads import ThreadFuns
 from utils import checkPivxAddr
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE, cache_File
+from hwdevice import DisconnectedException
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
@@ -293,6 +294,11 @@ class TabRewards():
             try:
                 self.txFinished = False
                 self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
+            
+            except DisconnectedException as e:
+                self.caller.hwStatus = 0
+                self.caller.updateHWleds()
+                
             except Exception as e:
                 err_msg = "Error while preparing transaction. <br>"
                 err_msg += "Probably Blockchain wasn't synced when trying to fetch raw TXs.<br>" 
@@ -313,7 +319,7 @@ class TabRewards():
                         if self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected():
                             self.ui.rewardsList.box.selectRow(self.ui.rewardsList.box.collateralRow)
                     except Exception as e:
-                        err_msg = "Error while preparing transaction"
+                        err_msg = "Error toggling collateral"
                         printException(getCallerName(), getFunctionName(), err_msg, e.args)
                     
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)

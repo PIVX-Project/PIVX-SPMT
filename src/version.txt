@@ -1,5 +1,5 @@
 {
  "number": "0.2.2",
- "tag": "b",
- "comments": ["SwiftX"]
+ "tag": "c",
+ "comments": ["DisconnectedException"]
  }
