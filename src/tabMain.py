@@ -332,9 +332,9 @@ class TabMain():
                 
                 
     def updateAllMasternodes(self):
-        # update only after 1 min
+        # update only after 30 secs
         try:
-            if now()-self.all_masternodes['last_update'] > 60:
+            if now()-self.all_masternodes['last_update'] > 30:
                 # Check rpc connection   
                 if not self.caller.rpcConnected:
                     self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
