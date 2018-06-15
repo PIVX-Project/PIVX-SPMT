@@ -122,9 +122,6 @@ class App(QMainWindow):
     
     def onEditRPCServer(self):
         # Create Dialog
-        try:
-            ui = ConfigureRPCserver_dlg(self)
-            if ui.exec():
-                printDbg("Configuring RPC Server...")
-        except Exception as e:
-            print(e)
+        ui = ConfigureRPCserver_dlg(self)
+        if ui.exec():
+            printDbg("Configuring RPC Server...")

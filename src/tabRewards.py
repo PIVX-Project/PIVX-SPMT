@@ -96,46 +96,36 @@ class TabRewards():
                     else:
                         self.ui.rewardsList.statusLabel.setText('<b style="color:purple">Unable to connect to API provider</b>')
                 self.ui.rewardsList.statusLabel.setVisible(True)
-            
-    
+              
         
             
             
             
     def getSelection(self):
-        try:
-            returnData = []
-            items = self.ui.rewardsList.box.selectedItems()
-            # Save row indexes to a set to avoid repetition
-            rows = set()
-            for i in range(0, len(items)):
-                row = items[i].row()
-                rows.add(row)
-            rowList = list(rows)
+        items = self.ui.rewardsList.box.selectedItems()
+        # Save row indexes to a set to avoid repetition
+        rows = set()
+        for i in range(0, len(items)):
+            row = items[i].row()
+            rows.add(row)
+        rowList = list(rows)  
+        return [self.rewards[row] for row in rowList]
             
-            return [self.rewards[row] for row in rowList]
-                
-            return returnData 
-        except Exception as e:
-            print(e)
-                       
-            
+
+       
             
             
     def loadMnSelect(self):
-        try:
-            self.ui.mnSelect.clear()            
-            for x in self.caller.masternode_list:
-                    name = x['name']
-                    address = x['collateral'].get('address')
-                    txid = x['collateral'].get('txid')
-                    hwAcc = x['hwAcc']
-                    spath = x['collateral'].get('spath')
-                    path = MPATH + "%d'/0/%d" % (hwAcc, spath)
-                    self.ui.mnSelect.addItem(name, [address, txid, path])
-        except Exception as e:
-            print(e)        
-                        
+        self.ui.mnSelect.clear()            
+        for x in self.caller.masternode_list:
+                name = x['name']
+                address = x['collateral'].get('address')
+                txid = x['collateral'].get('txid')
+                hwAcc = x['hwAcc']
+                spath = x['collateral'].get('spath')
+                path = MPATH + "%d'/0/%d" % (hwAcc, spath)
+                self.ui.mnSelect.addItem(name, [address, txid, path])
+                     
            
     
     
@@ -176,6 +166,7 @@ class TabRewards():
     
     @pyqtSlot()
     def onCancel(self):
+        self.selectedRewards = None
         self.ui.selectedRewardsLine.setText("0.0")
         self.ui.mnSelect.setCurrentIndex(0)
         self.ui.feeLine.setValue(MINIMUM_FEE)
@@ -288,7 +279,7 @@ class TabRewards():
             except:
                 pass
             self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-            self.caller.hwdevice.sigTxabort.connect(self.AbortSend)
+            self.caller.hwdevice.sigTxabort.connect(self.onCancel)
             self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
 
             try:

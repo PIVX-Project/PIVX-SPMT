@@ -78,29 +78,25 @@ class Ui_ConfigureRPCserverDlg(object):
         
     @pyqtSlot()
     def onButtonSave(self, main_dlg):
-        try:
-            main_dlg.rpc_ip = ip_address(self.edt_rpcIp.text().strip()).compressed
-            main_dlg.rpc_port = int(self.edt_rpcPort.value())
-            main_dlg.rpc_user = self.edt_rpcUser.text()
-            main_dlg.rpc_password = self.edt_rpcPassword.text()
-            conf = {}
-            conf["rpc_ip"] = main_dlg.rpc_ip
-            conf["rpc_port"] = main_dlg.rpc_port
-            conf["rpc_user"] = main_dlg.rpc_user
-            conf["rpc_password"] = main_dlg.rpc_password
-            
-            # Update File
-            writeToFile(conf, rpc_File)
-            
-            # Update current RPC Server
-            main_dlg.main_wnd.mainWindow.rpcClient = None
-            main_dlg.main_wnd.mainWindow.rpcConnected = False
-            printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
-            self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
-            main_dlg.close()
-
-        except Exception as e:
-            print(e)
+        main_dlg.rpc_ip = ip_address(self.edt_rpcIp.text().strip()).compressed
+        main_dlg.rpc_port = int(self.edt_rpcPort.value())
+        main_dlg.rpc_user = self.edt_rpcUser.text()
+        main_dlg.rpc_password = self.edt_rpcPassword.text()
+        conf = {}
+        conf["rpc_ip"] = main_dlg.rpc_ip
+        conf["rpc_port"] = main_dlg.rpc_port
+        conf["rpc_user"] = main_dlg.rpc_user
+        conf["rpc_password"] = main_dlg.rpc_password
+        
+        # Update File
+        writeToFile(conf, rpc_File)
+        
+        # Update current RPC Server
+        main_dlg.main_wnd.mainWindow.rpcClient = None
+        main_dlg.main_wnd.mainWindow.rpcConnected = False
+        printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
+        self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
+        main_dlg.close()
         
        
         

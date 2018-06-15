@@ -24,7 +24,7 @@ def process_ledger_exceptions(func):
             return func(*args, **kwargs)
         except BTChipException as e:
             printDbg('Error while communicating with Ledger hardware wallet.')
-            e.message = ''
+            e.message = 'Error while communicating with Ledger hardware wallet.'
             if (e.sw in (0x6f01, 0x6d00, 0x6700, 0x6faa)):
                 e.message = 'Make sure the PIVX app is open on your Ledger device.'
                 e.message += '<br>If there is a program (such as Ledger Bitcoin Wallet) interfering with the USB communication, close it first.'

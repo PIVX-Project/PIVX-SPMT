@@ -67,30 +67,28 @@ class TabMNConf():
                 
     @pyqtSlot()            
     def findSpath_done(self):
-        try:
-            currAddr = self.ui.edt_address.text().strip()
-            currHwAcc = self.ui.edt_hwAccount.value()
-            spath = self.spath
-            starting_spath = self.curr_starting_spath
-            spath_count = self.curr_spath_count
+        currAddr = self.ui.edt_address.text().strip()
+        currHwAcc = self.ui.edt_hwAccount.value()
+        spath = self.spath
+        starting_spath = self.curr_starting_spath
+        spath_count = self.curr_spath_count
+        
+        if self.spath_found:
+            printOK("spath is %d" % spath)
+            mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
+            self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
+            self.ui.edt_spath.setValue(spath)
+            self.findPubKey()
             
-            if self.spath_found:
-                printOK("spath is %d" % spath)
-                mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
-                self.caller.myPopUp2(QMessageBox.Information, 'SPMT - spath search', mess)
-                self.ui.edt_spath.setValue(spath)
-                self.findPubKey()
-                
-            else:
-                mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
-                mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
-                mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
-                ans = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - spath search', mess)
-                if ans == QMessageBox.Yes:
-                    starting_spath += spath_count
-                    self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
-        except Exception as e:
-            print(e)
+        else:
+            mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
+            mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
+            mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
+            ans = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - spath search', mess)
+            if ans == QMessageBox.Yes:
+                starting_spath += spath_count
+                self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
+
     
     
     @pyqtSlot()

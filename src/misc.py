@@ -9,12 +9,9 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, DEFAULT_CACHE
 
 def append_to_logfile(text):
-    try:
-        logFile = open(log_File, 'a+')
-        logFile.write(text)
-        logFile.close()
-    except Exception as e:
-        print(e)
+    logFile = open(log_File, 'a+')
+    logFile.write(text)
+    logFile.close()
         
         
 

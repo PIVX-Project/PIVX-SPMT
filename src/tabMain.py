@@ -137,16 +137,14 @@ class TabMain():
         if not data:
             target = self.ui.sender()
             masternode_alias = target.alias
-            try: 
-                self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
-                self.caller.tabs.setCurrentIndex(1)
-                for masternode in self.caller.masternode_list:
-                    if masternode['name'] == masternode_alias:
-                        self.caller.mnode_to_change = masternode
-                        self.caller.tabMNConf.fillConfigForm(masternode)
-                        break
-            except Exception as e:
-                print(e)
+
+            self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
+            self.caller.tabs.setCurrentIndex(1)
+            for masternode in self.caller.masternode_list:
+                if masternode['name'] == masternode_alias:
+                    self.caller.mnode_to_change = masternode
+                    self.caller.tabMNConf.fillConfigForm(masternode)
+                    break
                 
                 
                 
@@ -333,16 +331,13 @@ class TabMain():
                 
     def updateAllMasternodes(self):
         # update only after 30 secs
-        try:
-            if now()-self.all_masternodes['last_update'] > 30:
-                # Check rpc connection   
-                if not self.caller.rpcConnected:
-                    self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
-                    printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
-                    return
-                else:
-                    self.all_masternodes = self.caller.rpcClient.getMasternodes()
+        if now()-self.all_masternodes['last_update'] > 30:
+            # Check rpc connection   
+            if not self.caller.rpcConnected:
+                self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+                printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+                return
+            else:
+                self.all_masternodes = self.caller.rpcClient.getMasternodes()
 
-        except Exception as e:
-            print(e)
             
