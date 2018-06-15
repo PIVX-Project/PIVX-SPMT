@@ -144,37 +144,41 @@ class SweepAll_dlg(QDialog):
             if not checkPivxAddr(self.dest_addr):
                 self.main_tab.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
                 return None
-            
-            printDbg("Preparing transaction. Please wait...")
-            self.ui.loadingLine.show()
-            self.ui.loadingLinePercent.show()
-            QApplication.processEvents()
-            
-            # save last destination address and swiftxCheck to cache
-            self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
-            self.main_tab.caller.parent.cache["useSwiftX"] = self.useSwiftX()
-            writeToFile(self.main_tab.caller.parent.cache, cache_File)
-                
-            # re-connect signals
-            try:
-                self.main_tab.caller.hwdevice.sigTxdone.disconnect()
-            except:
-                pass
-            try:
-                self.main_tab.caller.hwdevice.sigTxabort.disconnect()
-            except:
-                pass
-            try:
-                self.main_tab.caller.hwdevice.tx_progress.disconnect()
-            except:
-                pass
-            self.main_tab.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-            self.main_tab.caller.hwdevice.sigTxabort.connect(self.AbortSend)
-            self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
 
-            self.txFinished = False
-            self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
-        
+            # LET'S GO
+            if len(self.rawtransactions) > 0:
+                printDbg("Preparing transaction. Please wait...")
+                self.ui.loadingLine.show()
+                self.ui.loadingLinePercent.show()
+                QApplication.processEvents()
+                
+                # save last destination address and swiftxCheck to cache
+                self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
+                self.main_tab.caller.parent.cache["useSwiftX"] = self.useSwiftX()
+                writeToFile(self.main_tab.caller.parent.cache, cache_File)
+                    
+                # re-connect signals
+                try:
+                    self.main_tab.caller.hwdevice.sigTxdone.disconnect()
+                except:
+                    pass
+                try:
+                    self.main_tab.caller.hwdevice.sigTxabort.disconnect()
+                except:
+                    pass
+                try:
+                    self.main_tab.caller.hwdevice.tx_progress.disconnect()
+                except:
+                    pass
+                self.main_tab.caller.hwdevice.sigTxdone.connect(self.FinishSend)
+                self.main_tab.caller.hwdevice.sigTxabort.connect(self.AbortSend)
+                self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+    
+                self.txFinished = False
+                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
+            else:
+                self.main_tab.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "No UTXO to send") 
+                
         except DisconnectedException as e:
             self.main_tab.caller.hwStatus = 0
             self.main_tab.caller.updateHWleds()
