@@ -22,7 +22,6 @@ from qt.dlg_sweepAll import SweepAll_dlg
 class TabMain():
     def __init__(self, caller):
         self.caller = caller
-        self.runInThread = ThreadFuns.runInThread
         self.all_masternodes = {}
         self.all_masternodes['last_update'] = 0
         self.mnToStartList = []
@@ -39,8 +38,15 @@ class TabMain():
             self.ui.btn_remove[name].clicked.connect(lambda: self.onRemoveMN())
             self.ui.btn_edit[name].clicked.connect(lambda: self.onEditMN())
             self.ui.btn_start[name].clicked.connect(lambda: self.onStartMN())
-            self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())           
-           
+            self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())         
+            
+            
+            
+    def displayMNlistUpdated(self):
+        for masternode in self.caller.masternode_list:
+            printOK("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('address')))
+            self.displayMNStatus(masternode)
+            time.sleep(0.2)         
     
     
     
@@ -105,18 +111,14 @@ class TabMain():
             return
         try:
             printOK("Check-All pressed")
-            self.updateAllMasternodes()
-            for masternode in self.caller.masternode_list:
-                printOK("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('address')))
-                self.displayMNStatus(masternode)
-                time.sleep(0.2)    
-        
+            ThreadFuns.runInThread(self.updateAllMasternodes_thread, (), self.displayMNlistUpdated)
+                   
         except Exception as e:
             err_msg = "error in checkAllMN"
             printException(getCallerName(), getFunctionName(), err_msg, e)        
                      
         
-        
+    
         
         
     @pyqtSlot()
@@ -329,15 +331,9 @@ class TabMain():
       
                 
                 
-    def updateAllMasternodes(self):
+    def updateAllMasternodes_thread(self, ctrl):
         # update only after 30 secs
-        if now()-self.all_masternodes['last_update'] > 30:
-            # Check rpc connection   
-            if not self.caller.rpcConnected:
-                self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
-                printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
-                return
-            else:
-                self.all_masternodes = self.caller.rpcClient.getMasternodes()
+        if now()-self.all_masternodes['last_update'] > 30:   
+            self.all_masternodes = self.caller.rpcClient.getMasternodes()
 
             
