@@ -1,5 +1,5 @@
 {
  "number": "0.2.2",
- "tag": "c",
- "comments": ["DisconnectedException"]
+ "tag": "d",
+ "comments": ["Bug Fixes"]
  }
