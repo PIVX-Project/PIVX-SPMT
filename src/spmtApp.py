@@ -26,8 +26,9 @@ def service_shutdown(signum, frame):
 
 class App(QMainWindow):
  
-    def __init__(self, masternode_list, imgDir):
+    def __init__(self, masternode_list, imgDir, app):
         super().__init__()
+        self.app = app
         # Register the signal handlers
         signal.signal(signal.SIGTERM, service_shutdown)
         signal.signal(signal.SIGINT, service_shutdown)

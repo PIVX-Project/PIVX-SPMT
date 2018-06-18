@@ -32,6 +32,7 @@ if os_type == 'win32':
             break
     if not found:
         raise Exception('File vcruntime140.dll not found in the system path.')
+
 	
 # add bitcoin library data file
 add_files.append( (os.path.join(lib_path, 'bitcoin/english.txt'),'bitcoin') )
@@ -57,7 +58,7 @@ exe = EXE(pyz,
           name='SecurePivxMasternodeTool',
           debug=False,
           strip=False,
-          upx=True,
+          upx=False,
           console=False,
           icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
 

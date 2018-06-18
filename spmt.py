@@ -3,23 +3,29 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from PyQt5.QtWidgets import QApplication
-from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
-
-from spmtApp import App 
-from misc import readMNfile, updateSplash
-import time      
+      
     
 if __name__ == '__main__':
-    # Create App
-    app = QApplication(sys.argv)
     if getattr( sys, 'frozen', False ) :
         # running in a bundle
         imgDir = os.path.join(sys._MEIPASS, 'img')
+        
+        # if linux export qt plugins path
+        if sys.platform == 'linux':
+            os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt5', 'Qt', 'plugins')
 
     else:
         # running live
         imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
+        
+    from PyQt5.QtWidgets import QApplication
+    from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
+    from spmtApp import App 
+    from misc import readMNfile, updateSplash
+    import time
+    
+    # Create App
+    app = QApplication(sys.argv)
         
     ### -- style stuff        
     spmtLogo_file = os.path.join(imgDir, 'splashscreen.png')
@@ -57,7 +63,7 @@ if __name__ == '__main__':
     # Read Masternode List
     masternode_list = readMNfile()
     # Create QMainWindow Widget
-    ex = App(masternode_list, imgDir)
+    ex = App(masternode_list, imgDir, app)
     
     # Close Splashscreen
     splash.close()
