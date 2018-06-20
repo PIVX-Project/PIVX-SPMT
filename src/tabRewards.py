@@ -164,7 +164,7 @@ class TabRewards():
     
     
     
-    @pyqtSlot()
+    #@pyqtSlot()
     def onCancel(self):
         self.selectedRewards = None
         self.ui.selectedRewardsLine.setText("0.0")
