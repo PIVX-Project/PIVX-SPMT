@@ -22,6 +22,7 @@ from qt.guiHeader import GuiHeader
 from tabMain import TabMain
 from tabMNConf import TabMNConf
 from tabRewards import TabRewards
+from tabGovernance import TabGovernance
 from threads import ThreadFuns
 from watchdogThreads import RpcWatchdog
     
@@ -61,8 +62,8 @@ class MainWindow(QWidget):
         ###-- Create Queues and redirect stdout and stderr
         self.queue = Queue()
         self.queue2 = Queue()
-        sys.stdout = WriteStream(self.queue)
-        sys.stderr = WriteStream(self.queue2)  
+        #sys.stdout = WriteStream(self.queue)
+        #sys.stderr = WriteStream(self.queue2)  
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -93,11 +94,13 @@ class MainWindow(QWidget):
         self.t_main = TabMain(self)
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
+        self.t_governance = TabGovernance(self)
         
         ###-- Add tabs
         self.tabs.addTab(self.tabMain, "Masternode Control")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
-        self.tabs.addTab(self.tabRewards, "Transfer Rewards")              
+        self.tabs.addTab(self.tabRewards, "Transfer Rewards")
+        self.tabs.addTab(self.tabGovernance, "Governance")            
         ###-- Connect change action
         self.tabs.currentChanged.connect(lambda: self.onTabChange())                    
         ###-- Draw Tabs 

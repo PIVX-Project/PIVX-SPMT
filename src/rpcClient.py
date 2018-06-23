@@ -4,6 +4,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from misc import getCallerName, getFunctionName, printException, printDbg, readRPCfile, now
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 import threading
+from tabGovernance import Proposal
 
 class RpcClient:
         
@@ -88,6 +89,20 @@ class RpcClient:
         return h
     
     
+    def getBudgetVotes(self, proposal):
+        try:
+            self.lock.acquire()
+            votes = self.conn.getbudgetvotes(proposal)
+        except Exception as e:
+            err_msg = 'remote or local PIVX-cli running?'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            votes = {}
+        finally:
+            self.lock.release()
+            
+        return votes
+    
+    
     def getFeePerKb(self):
         try:
             self.lock.acquire()
@@ -122,6 +137,20 @@ class RpcClient:
             
         return mnStatus
                 
+                
+
+    def getMasternodeCount(self):
+        try:
+            self.lock.acquire()
+            ans = self.conn.getmasternodecount()
+        except Exception as e:
+            err_msg = "error in getMasternodeCount"
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            ans = None
+        finally:
+            self.lock.release()
+            
+        return ans
                 
                 
     def getMasternodes(self):
@@ -160,6 +189,28 @@ class RpcClient:
         mnList['masternodes'] = masternodes
                 
         return mnList
+    
+    
+    
+    def getProposals(self):
+        proposals = []
+        try:
+            self.lock.acquire()
+            data = self.conn.getbudgetinfo()
+        except Exception as e:
+            err_msg = "error getting proposals"
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            data = []
+        finally:
+            self.lock.release()
+            
+        for p in data:
+            new_proposal = Proposal(p.get('Name'), p.get('URL'), p.get('Hash'), p.get('FeeHash'), p.get('BlockStart'), 
+                                    p.get('BlockEnd'), p.get('TotalPaymentCount'), p.get('RemainingPaymentCount'), p.get('PaymentAddress'), 
+                                    p.get('Yeas'), p.get('Nays'), p.get('Abstains'), p.get('TotalPayment'), p.get('MonthlyPayment'))
+            proposals.append(new_proposal)
+            
+        return proposals
     
     
     
