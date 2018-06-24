@@ -16,26 +16,34 @@ class TabGovernance_gui(QWidget):
         self.caller = caller
         self.initLayout()
         self.loadIcons()
+        self.refreshProposals_btn.setIcon(self.refresh_icon)
+        self.budgetProjection_btn.setIcon(self.list_icon)
+        self.timeIconLabel.setPixmap(self.time_icon.scaledToHeight(20, Qt.SmoothTransformation))
+        self.questionLabel.setPixmap(self.question_icon.scaledToHeight(15, Qt.SmoothTransformation))
         
         
     def initLayout(self):
-        layout = QFormLayout()
+        layout = QVBoxLayout()
         #layout.setContentsMargins(10, 10, 10, 10)
         #layout.setSpacing(13)
-        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        #layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         
         ## -- ROW 1
         row = QHBoxLayout()
-        self.refreshProposals_btn = QPushButton("Refresh List")
+        self.refreshProposals_btn = QPushButton()
+        self.refreshProposals_btn.setToolTip("Refresh Proposal List")
         row.addWidget(self.refreshProposals_btn)
+        self.budgetProjection_btn = QPushButton()
+        self.budgetProjection_btn.setToolTip("Check Budget Projection...")
+        row.addWidget(self.budgetProjection_btn)
         self.selectMN_btn = QPushButton("Select Masternodes...")
         row.addWidget(self.selectMN_btn)
         self.selectedMNlabel = QLabel("<em>0 masternodes selected for voting</em")
         row.addWidget(self.selectedMNlabel)
         row.addStretch(1)
         self.mnCountLabel = QLabel()
-        row.addWidget(self.mnCountLabel) 
-        layout.addRow(row)
+        row.addWidget(self.mnCountLabel)
+        layout.addLayout(row)
         
         ## -- ROW 2
         self.proposalBox = QTableWidget()
@@ -43,27 +51,26 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setSelectionMode(QAbstractItemView.MultiSelection)
         self.proposalBox.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.proposalBox.setShowGrid(True)
-        self.proposalBox.setColumnCount(7)
+        self.proposalBox.setColumnCount(8)
         self.proposalBox.setRowCount(0)
         self.proposalBox.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.proposalBox.setSortingEnabled(True)
         #self.proposalBox.verticalHeader().hide
         self.setProposalBoxHeader()
         self.proposalBox.setColumnWidth(1, 50)
-        self.proposalBox.setColumnWidth(2, 110)
+        self.proposalBox.setColumnWidth(2, 50)
         self.proposalBox.setColumnWidth(3, 110)
-        self.proposalBox.setColumnWidth(4, 150)
+        self.proposalBox.setColumnWidth(4, 110)
         self.proposalBox.setColumnWidth(5, 150)
-        self.proposalBox.setColumnWidth(6, 50)
-        layout.addRow(self.proposalBox)
+        self.proposalBox.setColumnWidth(6, 150)
+        self.proposalBox.setColumnWidth(7, 50)
+        layout.addWidget(self.proposalBox)
         
         ## -- ROW 3
-        row = QHBoxLayout()
-        timeIcon = QPixmap(os.path.join(self.caller.imgDir, 'icon_clock.png'))
-        timeIconLabel = QLabel()
-        timeIconLabel.setPixmap(timeIcon.scaledToHeight(20, Qt.SmoothTransformation))
-        timeIconLabel.setToolTip("Check to add a randomized time-delay offset when voting on multiple proposals")
-        row.addWidget(timeIconLabel)
+        row = QHBoxLayout()      
+        self.timeIconLabel = QLabel()
+        self.timeIconLabel.setToolTip("Check to add a randomized time-delay offset when voting on multiple proposals")
+        row.addWidget(self.timeIconLabel)
         self.randomDelayCheck = QCheckBox()
         self.randomDelayCheck.setToolTip("Check to add a randomized time-delay offset when voting on multiple proposals")
         row.addWidget(self.randomDelayCheck)
@@ -87,7 +94,15 @@ class TabGovernance_gui(QWidget):
         row.addStretch(1)
         self.selectedPropLabel = QLabel("<em>0 proposals selected</em>")
         row.addWidget(self.selectedPropLabel)
-        layout.addRow(row)
+        self.questionLabel = QLabel()
+        message = "Refresh proposals.\n"
+        message += "GREEN: proposal passing\n"
+        message += "WHITE: missing votes in order to pass\n"
+        message += "RED: proposals not passing\n"
+        message += "YELLOW: passing expiring (last payment block)\n"
+        self.questionLabel.setToolTip(message)
+        row.addWidget(self.questionLabel)
+        layout.addLayout(row)
         
         ## -- ROW 4
         row = QHBoxLayout()
@@ -97,7 +112,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.voteAbstain_btn)
         self.voteNo_btn = QPushButton("Vote NO")
         row.addWidget(self.voteNo_btn)
-        layout.addRow(row)
+        layout.addLayout(row)
 
         self.setLayout(layout)
     
@@ -111,41 +126,51 @@ class TabGovernance_gui(QWidget):
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
+        item.setText("Hash")
+        item.setToolTip("Proposal Hash")
+        self.proposalBox.setHorizontalHeaderItem(1, item)
+        
+        item = QTableWidgetItem()
+        item.setTextAlignment(Qt.AlignCenter)
         item.setText("Link")
         item.setToolTip("Link to Proposal Thread")
-        self.proposalBox.setHorizontalHeaderItem(1, item)
+        self.proposalBox.setHorizontalHeaderItem(2, item)
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("PIV/month")
         item.setToolTip("Monthly PIV Payment requested")
-        self.proposalBox.setHorizontalHeaderItem(2, item)
+        self.proposalBox.setHorizontalHeaderItem(3, item)
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("Payments")
         item.setToolTip("Remaining Payment Count / Total Payment Count")
-        self.proposalBox.setHorizontalHeaderItem(3, item)
+        self.proposalBox.setHorizontalHeaderItem(4, item)
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("Network Votes")
         item.setToolTip("Network Votes: YEAS/ABSTAINS/NAYS")
-        self.proposalBox.setHorizontalHeaderItem(4, item)
+        self.proposalBox.setHorizontalHeaderItem(5, item)
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("My Votes")
         item.setToolTip("My Votes: YEAS/ABSTAINS/NAYS")
-        self.proposalBox.setHorizontalHeaderItem(5, item)
+        self.proposalBox.setHorizontalHeaderItem(6, item)
         
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("Details")
         item.setToolTip("Check Proposal Details")
-        self.proposalBox.setHorizontalHeaderItem(6, item)
+        self.proposalBox.setHorizontalHeaderItem(7, item)
         
         
     def loadIcons(self):
+        self.refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
+        self.time_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_clock.png'))
         self.link_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_link.png'))
         self.search_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_search.png'))
+        self.list_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_list.png'))
+        self.question_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_question.png'))

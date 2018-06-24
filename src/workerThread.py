@@ -32,5 +32,7 @@ class WorkerThread(QThread):
         self.ctrl_obj.finish = True
 
     def run(self):
-        self.worker_result = self.worker_fun(self.ctrl_obj, *self.worker_fun_args)
-        
+        try:
+            self.worker_result = self.worker_fun(self.ctrl_obj, *self.worker_fun_args)
+        except Exception as e:
+            print(e)

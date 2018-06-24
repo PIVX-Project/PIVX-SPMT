@@ -8,6 +8,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
     QTableWidgetItem, QLabel, QHBoxLayout, QPushButton
     
+from misc import writeToFile
+from constants import cache_File
+    
 class masternodeItem(QTableWidgetItem):
     def __init__(self, name, txid):
         super().__init__(name)
@@ -49,11 +52,12 @@ class SelectMNs_dlg(QDialog):
             
     def onOK(self):
         self.main_wnd.votingMasternodes = self.getSelection()
-        label = "<em><b>%d</b> masternodes selected for voting</em>" % len(self.main_wnd.votingMasternodes)
-        self.main_wnd.ui.selectedMNlabel.setText(label)
+        self.main_wnd.updateSelectedMNlabel()
+        # save voting masternodes to cache
+        self.main_wnd.caller.parent.cache['votingMasternodes'] = self.main_wnd.votingMasternodes
+        writeToFile(self.main_wnd.caller.parent.cache, cache_File)
         self.accept()
-        
-        
+    
         
 class Ui_SelectMNsDlg(object):
     def setupUi(self, SelectMNsDlg):
