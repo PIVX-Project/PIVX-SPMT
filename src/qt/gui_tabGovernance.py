@@ -99,7 +99,7 @@ class TabGovernance_gui(QWidget):
         message += "GREEN: proposal passing\n"
         message += "WHITE: missing votes in order to pass\n"
         message += "RED: proposals not passing\n"
-        message += "YELLOW: passing expiring (last payment block)\n"
+        message += "YELLOW: proposal expiring (last payment block)\n"
         self.questionLabel.setToolTip(message)
         row.addWidget(self.questionLabel)
         layout.addLayout(row)

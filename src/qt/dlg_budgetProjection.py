@@ -86,6 +86,7 @@ class Ui_BudgetProjectionDlg(object):
         ## header
         header = QGroupBox("Budget Projection Details")
         header_layout = QFormLayout()
+        header_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         ## row 1
         row = QHBoxLayout()
         self.availableBudget_label = QLabel("43200.0 PIV")
