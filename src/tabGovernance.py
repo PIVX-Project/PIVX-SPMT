@@ -285,5 +285,6 @@ class TabGovernance():
         if self.failedVotes > 0:
             message += '<p>Failed Votes: <b>%d</b>' % self.failedVotes
         self.caller.myPopUp2(QMessageBox.Information, 'Vote Finished', message)
+        self.ui.proposalBox.clearSelection()
                                         
                     
