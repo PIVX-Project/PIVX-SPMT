@@ -6,6 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit
 from PyQt5.Qt import QPushButton
 from PyQt5.QtCore import Qt
+from time import strftime, gmtime
 
 class ProposalDetails_dlg(QDialog):
     def __init__(self, main_wnd, proposal):
@@ -57,9 +58,15 @@ class Ui_proposalDetailsDlg(object):
         votes += "<span style='color: orange'>%d ABSTAINS</span> / " % PropDetailsDlg.data.Abstains
         votes += "<span style='color: red'>%d NAYS</span>" % PropDetailsDlg.data.Nays
         body.addRow(QLabel("<b>Votes: </b>"), QLabel(votes))
-        body.addRow(QLabel("<b>My Yeas: </b>"), QLabel(str(PropDetailsDlg.data.MyYeas)))
-        body.addRow(QLabel("<b>My Abstains: </b>"), QLabel(str(PropDetailsDlg.data.MyAbstains)))
-        body.addRow(QLabel("<b>My Nays: </b>"), QLabel(str(PropDetailsDlg.data.MyNays)))
+        my_yeas = ["%s <em style='color: green'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
+                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyYeas]
+        body.addRow(QLabel("<b>My Yeas: </b>"), QLabel(str(my_yeas)))
+        my_abstains = ["%s <em style='color: orange'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
+                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyAbstains]
+        body.addRow(QLabel("<b>My Abstains: </b>"), QLabel(str(my_abstains)))
+        my_nays = ["%s <em style='color: red'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
+                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyNays]
+        body.addRow(QLabel("<b>My Nays: </b>"), QLabel(str(my_nays)))
         layout.addLayout(body)
         self.okButton = QPushButton('OK')
         self.okButton.clicked.connect(self.accept)

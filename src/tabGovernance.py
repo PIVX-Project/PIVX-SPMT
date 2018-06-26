@@ -70,12 +70,12 @@ class TabGovernance():
         for prop in self.proposals:
             mnList = self.caller.masternode_list
             budgetVotes = self.caller.rpcClient.getBudgetVotes(prop.name)
-            budgetYeas = [x['mnId'] for x in budgetVotes if x['Vote'] == "YES"]
-            budgetAbstains = [x['mnId'] for x in budgetVotes if x['Vote'] == "ABSTAIN"]
-            budgetNays = [x['mnId'] for x in budgetVotes if x['Vote'] == "NO"]
-            prop.MyYeas = [mn['name'] for mn in mnList if mn['collateral'].get('txid') in budgetYeas]
-            prop.MyAbstains = [mn['name'] for mn in mnList if mn['collateral'].get('txid') in budgetAbstains]
-            prop.MyNays = [mn['name'] for mn in mnList if mn['collateral'].get('txid') in budgetNays]
+            budgetYeas = [[x['mnId'], x['nTime']] for x in budgetVotes if x['Vote'] == "YES"]
+            budgetAbstains = [[x['mnId'], x['nTime']] for x in budgetVotes if x['Vote'] == "ABSTAIN"]
+            budgetNays = [[x['mnId'], x['nTime']] for x in budgetVotes if x['Vote'] == "NO"]
+            prop.MyYeas = [[mn['name'], vote] for mn in mnList for vote in budgetYeas if mn['collateral'].get('txid') == vote[0]]
+            prop.MyAbstains = [[mn['name'], vote] for mn in mnList for vote in budgetAbstains if mn['collateral'].get('txid') == vote[0]]
+            prop.MyNays = [[mn['name'], vote] for mn in mnList for vote in budgetNays if mn['collateral'].get('txid') == vote[0]]
         
     def displayProposals(self):
         if len(self.proposals) == 0:
