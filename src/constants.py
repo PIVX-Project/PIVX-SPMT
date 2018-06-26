@@ -26,5 +26,8 @@ DEFAULT_CACHE = {
     "splitter_sizes": [342, 133],
     "mnList_order": {},
     "useSwiftX": False,
-    "votingMasternodes": []
+    "votingMasternodes": [],
+    "votingDelayCheck": False,
+    "votingDelayNeg": 0,
+    "votingDelayPos": 300
     }

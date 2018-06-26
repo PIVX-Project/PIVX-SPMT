@@ -20,6 +20,7 @@ class TabGovernance_gui(QWidget):
         self.budgetProjection_btn.setIcon(self.list_icon)
         self.timeIconLabel.setPixmap(self.time_icon.scaledToHeight(20, Qt.SmoothTransformation))
         self.questionLabel.setPixmap(self.question_icon.scaledToHeight(15, Qt.SmoothTransformation))
+        self.loadCacheData()
         
         
     def initLayout(self):
@@ -59,28 +60,37 @@ class TabGovernance_gui(QWidget):
         self.setProposalBoxHeader()
         self.proposalBox.setColumnWidth(1, 50)
         self.proposalBox.setColumnWidth(2, 50)
-        self.proposalBox.setColumnWidth(3, 110)
-        self.proposalBox.setColumnWidth(4, 110)
+        self.proposalBox.setColumnWidth(3, 100)
+        self.proposalBox.setColumnWidth(4, 100)
         self.proposalBox.setColumnWidth(5, 150)
-        self.proposalBox.setColumnWidth(6, 150)
+        self.proposalBox.setColumnWidth(6, 120)
         self.proposalBox.setColumnWidth(7, 50)
         layout.addWidget(self.proposalBox)
         
         ## -- ROW 3
         row = QHBoxLayout()      
         self.timeIconLabel = QLabel()
-        self.timeIconLabel.setToolTip("Check to add a randomized time-delay offset when voting on multiple proposals")
+        self.timeIconLabel.setToolTip("Check to add a randomized time offset (positive or negative) to enhance privacy")
         row.addWidget(self.timeIconLabel)
         self.randomDelayCheck = QCheckBox()
-        self.randomDelayCheck.setToolTip("Check to add a randomized time-delay offset when voting on multiple proposals")
+        self.randomDelayCheck.setToolTip("Check to add a randomized time offset when voting (max +5/-5 hrs)")
         row.addWidget(self.randomDelayCheck)
-        self.randomDelaySecs_edt = QSpinBox()
-        self.randomDelaySecs_edt.setSuffix(" secs")
-        self.randomDelaySecs_edt.setToolTip("Maximum delay (in seconds) added to each vote")
-        self.randomDelaySecs_edt.setFixedWidth(80)
-        self.randomDelaySecs_edt.setMaximum(18000)
-        self.randomDelaySecs_edt.setValue(300)
-        row.addWidget(self.randomDelaySecs_edt)
+        self.randomDelayNeg_edt = QSpinBox()
+        self.randomDelayNeg_edt.setPrefix('- ')
+        self.randomDelayNeg_edt.setSuffix(" secs")
+        self.randomDelayNeg_edt.setToolTip("Maximum random time (in seconds) subtracted from each vote timestamp")
+        self.randomDelayNeg_edt.setFixedWidth(100)
+        self.randomDelayNeg_edt.setMaximum(18000)
+        self.randomDelayNeg_edt.setValue(0)
+        row.addWidget(self.randomDelayNeg_edt)
+        self.randomDelayPos_edt = QSpinBox()
+        self.randomDelayPos_edt.setPrefix("+ ")
+        self.randomDelayPos_edt.setSuffix(" secs")
+        self.randomDelayPos_edt.setToolTip("Maximum random time (in seconds) added to each vote timestamp")
+        self.randomDelayPos_edt.setFixedWidth(100)
+        self.randomDelayPos_edt.setMaximum(18000)
+        self.randomDelayPos_edt.setValue(300)
+        row.addWidget(self.randomDelayPos_edt)
         row.addStretch(1)
         self.loadingLine = QLabel("<b style='color:red'>Vote Signatures.</b> Completed: ")
         self.loadingLinePercent = QProgressBar()
@@ -98,7 +108,7 @@ class TabGovernance_gui(QWidget):
         message = "Refresh proposals.\n"
         message += "GREEN: proposal passing\n"
         message += "WHITE: missing votes in order to pass\n"
-        message += "RED: proposals not passing\n"
+        message += "RED: proposal not passing\n"
         message += "YELLOW: proposal expiring (last payment block)\n"
         self.questionLabel.setToolTip(message)
         row.addWidget(self.questionLabel)
@@ -115,6 +125,16 @@ class TabGovernance_gui(QWidget):
         layout.addLayout(row)
 
         self.setLayout(layout)
+    
+    
+    
+    def loadCacheData(self):
+        if self.caller.parent.cache.get("votingDelayCheck"):
+            negative_delay = self.caller.parent.cache.get("votingDelayNeg")
+            positive_delay = self.caller.parent.cache.get("votingDelayPos")
+            self.randomDelayCheck.setChecked(True)
+            self.randomDelayNeg_edt.setValue(negative_delay)
+            self.randomDelayPos_edt.setValue(positive_delay)
     
     
     def setProposalBoxHeader(self):

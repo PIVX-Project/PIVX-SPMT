@@ -12,10 +12,12 @@ from qt.gui_tabGovernance import TabGovernance_gui
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
 from qt.dlg_budgetProjection import BudgetProjection_dlg
-from misc import printException, getCallerName, getFunctionName, printDbg, printOK
+from misc import printException, getCallerName, getFunctionName, printDbg, printOK, writeToFile
 from threads import ThreadFuns
 import time
+import random
 from utils import ecdsa_sign
+from constants import cache_File
 
 
 class Proposal():
@@ -213,12 +215,15 @@ class TabGovernance():
         # vote_code in ["yes", "abstain", "no"]
         self.successVotes = 0
         self.failedVotes = 0
+        
+        # save delay check data to cache
+        self.caller.parent.cache["votingDelayCheck"] = self.ui.randomDelayCheck.isChecked()
+        self.caller.parent.cache["votingDelayNeg"] = self.ui.randomDelayNeg_edt.value()
+        self.caller.parent.cache["votingDelayPos"] = self.ui.randomDelayPos_edt.value()
+        writeToFile(self.caller.parent.cache, cache_File)
+        
         for prop in self.selectedProposals:
-            for mn in self.votingMasternodes:
-                mess = "Processing '%s' vote on behalf of masternode [%s]" % (self.vote_codes[vote_code], mn[1])
-                mess += " for the proposal {%s}" % prop.name
-                printDbg(mess)
-                
+            for mn in self.votingMasternodes:               
                 vote_sig = ''
                 serialize_for_sig = ''
                 sig_time = int(time.time())
@@ -230,7 +235,23 @@ class TabGovernance():
                         raise Exception("currNode not found for current voting masternode %s" % mn[1])
                     mnPrivKey = currNode['mnPrivKey']
                     
-                    serialize_for_sig = mn[0][:64] + '-' + str(currNode['collateral'].get('txidn')) + prop.Hash + str(vote_code) + str(sig_time)                  
+                    # Add random delay offset
+                    if self.ui.randomDelayCheck.isChecked():
+                        minuns_max = int(self.ui.randomDelayNeg_edt.value())
+                        plus_max = int(self.ui.randomDelayPos_edt.value())
+                        delay_secs = random.randint(-minuns_max, plus_max)
+                        sig_time +=  delay_secs
+                        
+                    # Print Debug line to console
+                    mess = "Processing '%s' vote on behalf of masternode [%s]" % (self.vote_codes[vote_code], mn[1])
+                    mess += " for the proposal {%s}" % prop.name
+                    if self.ui.randomDelayCheck.isChecked():
+                        mess += " with offset of %d seconds" % delay_secs
+                    printDbg(mess)
+                    
+                    # Serialize vote
+                    serialize_for_sig = mn[0][:64] + '-' + str(currNode['collateral'].get('txidn'))
+                    serialize_for_sig += prop.Hash + str(vote_code) + str(sig_time)                  
                     
                     # Sign vote
                     vote_sig = ecdsa_sign(serialize_for_sig, mnPrivKey)
