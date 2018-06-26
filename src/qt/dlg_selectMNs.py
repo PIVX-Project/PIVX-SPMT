@@ -24,9 +24,10 @@ class SelectMNs_dlg(QDialog):
         self.initUI()
         self.loadMasternodes()
         ## connect buttons
-        self.ui.selectAll_btn.clicked.connect(lambda: self.ui.mnList.selectAll())
+        self.ui.selectAll_btn.clicked.connect(lambda: self.selectAll())
         self.ui.deselectAll_btn.clicked.connect(lambda: self.ui.mnList.clearSelection())
         self.ui.ok_btn.clicked.connect(lambda: self.onOK())
+    
         
     def getSelection(self):
         items = self.ui.mnList.selectedItems()
@@ -57,6 +58,11 @@ class SelectMNs_dlg(QDialog):
         self.main_wnd.caller.parent.cache['votingMasternodes'] = self.main_wnd.votingMasternodes
         writeToFile(self.main_wnd.caller.parent.cache, cache_File)
         self.accept()
+        
+        
+    def selectAll(self):
+        self.ui.mnList.selectAll()
+        self.ui.mnList.setFocus()
     
         
 class Ui_SelectMNsDlg(object):
