@@ -58,7 +58,7 @@ class TabRewards_gui(QWidget):
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
         self.rewardsList.box.setMinimumHeight(140)
-        self.rewardsList.box.setMaximumHeight(140)
+        #self.rewardsList.box.setMaximumHeight(140)
         self.rewardsList.box.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.rewardsList.box.setSelectionMode(QAbstractItemView.MultiSelection)
         self.rewardsList.box.setSelectionBehavior(QAbstractItemView.SelectRows)
