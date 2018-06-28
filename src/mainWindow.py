@@ -136,10 +136,6 @@ class MainWindow(QWidget):
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
-        # update last logs
-        logFile = open(log_File, 'a+')
-        logFile.write(text)
-        logFile.close()
             
             
             
@@ -298,6 +294,10 @@ class MainWindow(QWidget):
                 self.masternode_list.sort(key=self.parent.extract_order)
             self.t_rewards.loadMnSelect()
             self.t_rewards.selectedRewards = None
+            
+        # reload proposal list
+        if self.tabs.currentWidget() == self.tabGovernance:
+            self.t_governance.onRefreshProposals()
             
         
         
