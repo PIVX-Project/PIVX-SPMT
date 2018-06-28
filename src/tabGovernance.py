@@ -76,8 +76,15 @@ class TabGovernance():
             prop.MyYeas = [[mn['name'], vote] for mn in mnList for vote in budgetYeas if mn['collateral'].get('txid') == vote[0]]
             prop.MyAbstains = [[mn['name'], vote] for mn in mnList for vote in budgetAbstains if mn['collateral'].get('txid') == vote[0]]
             prop.MyNays = [[mn['name'], vote] for mn in mnList for vote in budgetNays if mn['collateral'].get('txid') == vote[0]]
+    
+    
+    def countMyVotes_thread(self, ctrl):
+        self.countMyVotes()
+    
+    
         
     def displayProposals(self):
+        self.ui.refreshingLabel.hide()
         if len(self.proposals) == 0:
             return
         
@@ -162,6 +169,7 @@ class TabGovernance():
             
     @pyqtSlot()
     def onRefreshProposals(self):
+        self.ui.refreshingLabel.show()
         self.ui.proposalBox.setRowCount(0)
         self.proposals = []
         self.selectedProposals = []
@@ -171,6 +179,12 @@ class TabGovernance():
         
     @pyqtSlot(str)
     def onVote(self, vote_code):
+        if len(self.selectedProposals) == 0:
+            printDbg("NO PROPOSAL SELECTED. Select proposals from the list.")
+            return
+        if len(self.votingMasternodes) == 0:
+            printDbg("NO MASTERNODE SELECTED FOR VOTING. Click on 'Select Masternodes...'")
+            return
         ThreadFuns.runInThread(self.vote_thread, ([vote_code]), self.vote_thread_end)
     
     
@@ -212,7 +226,9 @@ class TabGovernance():
     
     @pyqtSlot(object, str)
     def vote_thread(self, ctrl, vote_code):
-        # vote_code in ["yes", "abstain", "no"]
+        # vote_code index for ["yes", "abstain", "no"]
+        if not isinstance(vote_code, int) or vote_code not in range(3):
+            raise Exception("Wrong vote_code %s" % str(vote_code))
         self.successVotes = 0
         self.failedVotes = 0
         
@@ -285,6 +301,11 @@ class TabGovernance():
         if self.failedVotes > 0:
             message += '<p>Failed Votes: <b>%d</b>' % self.failedVotes
         self.caller.myPopUp2(QMessageBox.Information, 'Vote Finished', message)
-        self.ui.proposalBox.clearSelection()
+        # refresh proposals
+        self.ui.proposalBox.setRowCount(0)
+        self.ui.proposalBox.setSortingEnabled(False)
+        self.ui.refreshingLabel.show()
+        self.ui.selectedPropLabel.setText("<em><b>0</b> proposals selected")
+        ThreadFuns.runInThread(self.countMyVotes_thread, (), self.displayProposals)
                                         
                     

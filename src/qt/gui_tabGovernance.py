@@ -31,9 +31,6 @@ class TabGovernance_gui(QWidget):
         
         ## -- ROW 1
         row = QHBoxLayout()
-        self.refreshProposals_btn = QPushButton()
-        self.refreshProposals_btn.setToolTip("Refresh Proposal List")
-        row.addWidget(self.refreshProposals_btn)
         self.budgetProjection_btn = QPushButton()
         self.budgetProjection_btn.setToolTip("Check Budget Projection...")
         row.addWidget(self.budgetProjection_btn)
@@ -41,9 +38,15 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.selectMN_btn)
         self.selectedMNlabel = QLabel("<em>0 masternodes selected for voting</em")
         row.addWidget(self.selectedMNlabel)
+        self.refreshingLabel = QLabel("<em><b style='color:red'>Refreshing proposals...</b></em>")
+        self.refreshingLabel.hide()
+        row.addWidget(self.refreshingLabel)
         row.addStretch(1)
         self.mnCountLabel = QLabel()
         row.addWidget(self.mnCountLabel)
+        self.refreshProposals_btn = QPushButton()
+        self.refreshProposals_btn.setToolTip("Refresh Proposal List")
+        row.addWidget(self.refreshProposals_btn)
         layout.addLayout(row)
         
         ## -- ROW 2
@@ -117,10 +120,13 @@ class TabGovernance_gui(QWidget):
         ## -- ROW 4
         row = QHBoxLayout()
         self.voteYes_btn = QPushButton("Vote YES")
+        self.voteYes_btn.setToolTip("Vote YES on selected proposals")
         row.addWidget(self.voteYes_btn)
         self.voteAbstain_btn = QPushButton("Vote ABSTAIN")
+        self.voteAbstain_btn.setToolTip("Vote ABSTAIN on selected proposals [currently disabled]")
         row.addWidget(self.voteAbstain_btn)
         self.voteNo_btn = QPushButton("Vote NO")
+        self.voteNo_btn.setToolTip("Vote NO on selected proposals")
         row.addWidget(self.voteNo_btn)
         layout.addLayout(row)
 
