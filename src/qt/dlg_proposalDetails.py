@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os.path
+from PyQt5.QtGui import QPalette
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit,\
     QScrollArea, QFrame
@@ -19,15 +20,28 @@ class ProposalDetails_dlg(QDialog):
     def setupUI(self):
         Ui_proposalDetailsDlg.setupUi(self, self)
         
+        
+    def selectable_line(self, item):
+        line = QLineEdit(item)
+        line.setMinimumWidth(420)
+        line.setMinimumWidth(420)
+        line.setReadOnly(True)
+        line.setFrame(QFrame.NoFrame)
+        return line
+        
     
     def scroll(self, item):
         if isinstance(item, list):
             item = item if len(item) > 0 else ""
         scroll = QScrollArea()
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll.setMaximumHeight(40)
-        scroll.setWidget(QLabel(str(item)))
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setMaximumHeight(50)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setBackgroundRole(3)
+        label = QLabel(str(item))
+        label.setContentsMargins(5, 5, 5, 5)
+        scroll.setWidget(label)
         return scroll
 
         
@@ -50,21 +64,15 @@ class Ui_proposalDetailsDlg(object):
         body.addRow(QLabel("<b>URL: </b>"), link_label)
         body.addRow(QLabel("<b>TotalPayment: </b>"), QLabel(str(PropDetailsDlg.data.ToalPayment)))
         body.addRow(QLabel("<b>MonthlyPayment: </b>"), QLabel(str(PropDetailsDlg.data.MonthlyPayment)))
-        hashLabel = QLineEdit(PropDetailsDlg.data.Hash)
-        hashLabel.setMinimumWidth(420)
-        hashLabel.setReadOnly(True)
+        hashLabel = self.selectable_line(PropDetailsDlg.data.Hash)
         body.addRow(QLabel("<b>Hash: </b>"), hashLabel)
-        feeHashLabel = QLineEdit(PropDetailsDlg.data.FeeHash)
-        feeHashLabel.setMinimumWidth(420)
-        feeHashLabel.setReadOnly(True)
+        feeHashLabel = self.selectable_line(PropDetailsDlg.data.FeeHash)
         body.addRow(QLabel("<b>FeeHash: </b>"), feeHashLabel)
         body.addRow(QLabel("<b>BlockStart: </b>"), QLabel(str(PropDetailsDlg.data.BlockStart)))
         body.addRow(QLabel("<b>BlockEnd: </b>"), QLabel(str(PropDetailsDlg.data.BlockEnd)))
         body.addRow(QLabel("<b>TotalPayCount: </b>"), QLabel(str(PropDetailsDlg.data.TotalPayCount)))
         body.addRow(QLabel("<b>RemainingPayCount: </b>"), QLabel(str(PropDetailsDlg.data.RemainingPayCount)))
-        addyLabel = QLineEdit(PropDetailsDlg.data.PaymentAddress)
-        addyLabel.setMinimumWidth(420)
-        addyLabel.setReadOnly(True)
+        addyLabel = self.selectable_line(PropDetailsDlg.data.PaymentAddress)
         body.addRow(QLabel("<b>PaymentAddress: </b>"), addyLabel)
         votes = "<span style='color: green'>%d YEAS</span> / " % PropDetailsDlg.data.Yeas
         votes += "<span style='color: orange'>%d ABSTAINS</span> / " % PropDetailsDlg.data.Abstains
