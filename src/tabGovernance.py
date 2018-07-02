@@ -6,9 +6,9 @@ from PyQt5.Qt import QFont, QDesktopServices, QUrl
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
-    QMessageBox
+    QMessageBox, QScrollArea, QLabel
 
-from qt.gui_tabGovernance import TabGovernance_gui
+from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
 from qt.dlg_budgetProjection import BudgetProjection_dlg
@@ -185,7 +185,26 @@ class TabGovernance():
         if len(self.votingMasternodes) == 0:
             printDbg("NO MASTERNODE SELECTED FOR VOTING. Click on 'Select Masternodes...'")
             return
-        ThreadFuns.runInThread(self.vote_thread, ([vote_code]), self.vote_thread_end)
+        
+        reply = self.summaryDlg(vote_code)
+        
+        if reply == 1:
+            ThreadFuns.runInThread(self.vote_thread, ([vote_code]), self.vote_thread_end)
+    
+    
+    def summaryDlg(self, vote_code):
+        message = "Voting <b>%s</b> on the following proposal(s):<br><br>" % str(self.vote_codes[vote_code]).upper()
+        for prop in self.selectedProposals:
+            message += "&nbsp; - <b>%s</b><br>&nbsp; &nbsp; (<em>%s</em>)<br><br>" % (prop.name, prop.Hash)
+        message += "<br>with following masternode(s):<br><br>"
+        
+        for mn in self.votingMasternodes:
+            message += "&nbsp; - <b>%s</b><br>" % mn[1]
+            
+        dlg = ScrollMessageBox(self.caller, message)
+        
+        return dlg.exec_() 
+    #self.caller.myPopUp(QMessageBox.Question, 'Confirm VOTE', message, QMessageBox.Yes)
     
     
     @pyqtSlot(object) 

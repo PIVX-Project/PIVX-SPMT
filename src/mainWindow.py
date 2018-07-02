@@ -427,9 +427,3 @@ class MainWindow(QWidget):
             self.rpcClient = RpcClient()
     
     
-    
-    
-    
-    
-    
-    

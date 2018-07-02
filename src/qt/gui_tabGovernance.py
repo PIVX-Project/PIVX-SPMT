@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
     QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar,\
-    QFormLayout, QSpinBox
+    QFormLayout, QSpinBox, QMessageBox, QScrollArea, QDialog
 from PyQt5.Qt import QPixmap, QIcon
 
 
@@ -200,3 +200,31 @@ class TabGovernance_gui(QWidget):
         self.search_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_search.png'))
         self.list_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_list.png'))
         self.question_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_question.png'))
+        
+        
+        
+        
+class ScrollMessageBox(QDialog):
+    def __init__(self, main_wnd, message):
+        QDialog.__init__(self, parent=main_wnd)
+        self.setWindowTitle("Confirm Votes")
+        scroll = QScrollArea()
+        scroll.setMinimumHeight(280)
+        scroll.setMaximumHeight(280)
+        scroll.setMinimumWidth(500)
+        scroll.setWidget(QLabel(message))
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        lay = QVBoxLayout()
+        lay.addWidget(scroll)
+        row = QHBoxLayout()
+        self.yes_btn = QPushButton("Yes")
+        self.no_btn = QPushButton("No")
+        self.yes_btn.clicked.connect(lambda: self.accept())
+        self.no_btn.clicked.connect(lambda: self.reject())
+        row.addWidget(self.yes_btn)
+        row.addWidget(self.no_btn)
+        lay.addLayout(row)
+        self.setLayout(lay)
+        
+        

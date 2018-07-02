@@ -13,6 +13,7 @@ OP_HASH160 = b'\xA9'
 OP_QEUALVERIFY = b'\x88'
 OP_CHECKSIG = b'\xAC'
 OP_EQUAL = b'\x87'
+OP_RETURN = b'\x6a'
 # Prefixes - Check P2SH
 P2PKH_PREFIXES = ['D']
 P2SH_PREFIXES = ['7']
@@ -67,6 +68,19 @@ def compose_tx_locking_script(dest_address):
               OP_EQUAL
     else:
         raise Exception('Invalid dest address prefix: ' + dest_address[0])
+    return scr
+
+
+
+def compose_tx_locking_script_OR(message):
+    """
+    Create a Locking script (ScriptPubKey) that will be assigned to a transaction output.
+    :param message: data for the OP_RETURN
+    :return: sequence of opcodes and its arguments, defining logic of the locking script
+    """
+
+    scr = OP_RETURN + int.to_bytes(len(data), 1, byteorder='little') + message.encode()
+              
     return scr
 
 
