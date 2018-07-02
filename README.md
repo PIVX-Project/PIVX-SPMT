@@ -241,12 +241,12 @@ Each column can be ordered in both ascending and descending order.</p>
 <img src="doc/img/28.png" width="670"><br>
 
 <p>In the main list, each row has the "Network Votes" cell's background highlighted to reflect its status:</p>
-
-- <em style='color:green'>GREEN</em>: Proposal currently passing (number of net yes votes is higher than 10% of the total masternodes count)
-- <em style='color:red'>RED</em>: Proposal currently not passing (number of net yes votes is negative - i.e. there are more 'no' votes than 'yes' votes)
-- <em style='color:YELLOW'>YELLOW</em>: Proposal expiring (number of remaining payments is zero)
-- <em>WHITE (no background)</em>: Proposal currently not passing (number of 'yes' net votes is positive but less than 10% of the total masternodes count)
-
+<ul>
+<li> <em style='color:green'>GREEN</em>: Proposal currently passing (number of net yes votes is higher than 10% of the total masternodes count)</li>
+<li> <em style='color:red'>RED</em>: Proposal currently not passing (number of net yes votes is negative - i.e. there are more 'no' votes than 'yes' votes)</li>
+<li> <em style='color:YELLOW'>YELLOW</em>: Proposal expiring (number of remaining payments is zero)</li>
+<li> <em>WHITE (no background)</em>: Proposal currently not passing (number of 'yes' net votes is positive but less than 10% of the total masternodes count)</li>
+</ul>
 
 To follow the discussion thread of a particular proposal on the PIVX forum click on the `Link` button.<br>
 
@@ -293,10 +293,11 @@ A summary is presented. Click `Yes` to confirm or `No` to cancel.<br>
 
 <p>The offset can be either positive or negative resulting in a vote slip with a timestamp either delayed or anticipated.<br>
 To enable the feature, click the checkbox near the little clock icon in the bottom left corner of the Governance Tab.<br>
-Set the seconds for the lower bound <em><b>LB</b></em> and the upper bound <em><b>UB</b></em>.<br>
-For each vote a number of seconds <em><b>T</b></em>, randomly chosen in <em><b>(-LB, UB)</b></em>, is added to the current timestamp (i.e. to have only delayed votes, set <em><b>LB</b></em> to 0 seconds)</p>
+Set the seconds for the lower bound <em><b>LB</b></em> and the upper bound <em><b>UB</b></em>.</p>
 
 <img src="doc/img/37.png" width="670"><br>
+
+<p>When voting, with this option enabled, a number of seconds <em><b>T</b></em>, is randomly chosen in <em><b>(-LB, UB)</b></em> for each vote and added to the current timestamp (i.e. to have only delayed votes, set <em><b>LB</b></em> to 0 seconds)</p>
 
 <p>The random time <em><b>T</b></em> used for each vote is printed in the console log.</p>
 
