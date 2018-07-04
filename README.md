@@ -40,11 +40,24 @@ python3 spmt.py
 ```
 To make binary versions from source, [PyInstaller](http://www.pyinstaller.org/) can be used with the `SecurePivxMasternode.spec` file provided.
 
+<br>
+
 
 ## <a name="setup"></a>Setup
 
 <p><b>NOTE:</b> :warning: make sure to have the latest firmware installed on your Nano S device.</p>
 
+<p>Running a masternode usually requires setting up two PIVX full nodes, one -the actual masternode- that runs 24/7 and holds no funds, and another one -the control wallet- that holds the collateral and is used only to send a message (signed with the key of the collateral) to activate the remote node.</p>
+
+<p>SPMT allows the user to store the collateral in a Ledger Nano hardware wallet and connects to the PIVX network (at the moment via an empty PIVX wallet that acts as RPC server) to send the "start" message to the remote node.</p>
+
+The setup of the remote (VPS) is performed in the usual way, described in the *knowledge-base* guide:<br>
+[Masternode Setup Guide](https://pivx.org/knowledge-base/masternode-setup-guide/)
+
+For a self-hosted masternode setup with SPMT check the following guide:<br>
+[Self-hosted MN from scratch (by TheEconomist)](https://forum.pivx.org/t/setting-up-a-self-hosted-mn-from-scratch-automatic-backup-crash-notification-spmt-tool/4229)
+
+<br>
 
 #### <a name="setup1"></a>Setting up the RPC server
 
@@ -113,7 +126,9 @@ If the user already knows the correct `spath_id` (address number) he can, instea
 Click `Lookup` to find the collateral TxHash or click `Edit` to fill it manually, and then `OK`.<br>
 Click `Save` to save the configuration and go back to main view.<br>
 
-<img src="doc/img/06.png" width="670"><br><br>
+<img src="doc/img/06.png" width="670"><br>
+
+<br>
 
 
 ## <a name="features"></a>Features
@@ -155,7 +170,7 @@ Double check it and then click `Yes`.<br>
 
 ### <a name="features3"></a>Spending masternode rewards
 
-Select the `Transfer Rewards Tab` to go to the rewards panel (ore use the shortcut, money icon, to simultaniously change tab and select the node).<br>
+Select the `Transfer Rewards Tab` to go to the rewards panel (or use the shortcut, money icon, to simultaneously change tab and select the node).<br>
 
 <img src="doc/img/15.png" width="670"><br>
 
@@ -274,7 +289,7 @@ Click `Select Masternodes...` to select the masternode(s) you'd like to vote wit
 <img src="doc/img/33.png" width="670"><br>
 
 <p>Then select all proposals you'd like to vote on, clicking on the corresponding row in the table.<br>
-The toal number of proposals selected is shown in the bottom right corner</p>
+The total number of proposals selected is shown in the bottom right corner</p>
 
 <img src="doc/img/34.png" width="670"><br>
 
