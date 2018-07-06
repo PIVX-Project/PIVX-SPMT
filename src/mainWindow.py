@@ -295,13 +295,13 @@ class MainWindow(QWidget):
             self.t_rewards.loadMnSelect()
             self.t_rewards.selectedRewards = None
             
-        # reload proposal list
+        # reload proposal and voting masternode list
         if self.tabs.currentWidget() == self.tabGovernance:
             self.t_governance.onRefreshProposals()
+            self.t_governance.updateSelectedMNlabel()
             
         
-        
-        
+
     @pyqtSlot()
     def onToggleConsole(self):
         if self.btn_consoleToggle.text() == 'Hide':

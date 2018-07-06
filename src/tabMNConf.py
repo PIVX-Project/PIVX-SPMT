@@ -6,7 +6,7 @@ from threads import ThreadFuns
 from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from misc import printDbg, printOK, writeToFile
-from constants import masternodes_File
+from constants import masternodes_File, cache_File
 from pivx_hashlib import generate_privkey
 
 from PyQt5.QtCore import pyqtSlot
@@ -284,6 +284,7 @@ class TabMNConf():
             printDbg("saving MN configuration for %s" % new_masternode['name'])
             writeToFile(self.caller.masternode_list, masternodes_File)
             printDbg("saved")
+           
             # Insert item in list of Main tab and connect buttons
             name = new_masternode['name']
             namelist = [x['name'] for x in self.caller.masternode_list]
@@ -295,6 +296,12 @@ class TabMNConf():
             self.caller.tabMain.btn_edit[name].clicked.connect(lambda: self.caller.t_main.onEditMN())
             self.caller.tabMain.btn_start[name].clicked.connect(lambda: self.caller.t_main.onStartMN())
             self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())   
+            
+            # Clear voting masternodes configuration and update cache
+            self.caller.t_governance.votingMasternodes = []
+            self.caller.parent.cache['votingMasternodes'] = []
+            writeToFile(self.caller.parent.cache, cache_File)   
+            
             # go back
             self.onCancelMNConfig()
             
