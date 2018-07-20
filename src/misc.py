@@ -99,6 +99,10 @@ def loadMNConfFile(fileName):
             for line in f:
                 confline = line.strip()
                 
+                # skip blank lines
+                if len(confline) == 0:
+                    continue
+                
                 # skip comments
                 if confline[0] == '#':
                     continue
@@ -131,8 +135,10 @@ def loadMNConfFile(fileName):
         return hot_masternodes
                 
     except Exception as e:
-        print(e)
-        
+        errorMsg = "error loading MN file"
+        printException(getCallerName(), getFunctionName(), errorMsg, e.args)
+      
+      
     
     
     

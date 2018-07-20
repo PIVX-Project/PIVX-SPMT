@@ -54,8 +54,8 @@ class TabMain():
     def displayMNStatus(self, currMN):
         statusData = None
         for mn in self.all_masternodes.get('masternodes'):
-            if mn.get('addr') == currMN['collateral'].get('address'):
-                
+            #if mn.get('addr') == currMN['collateral'].get('address'):
+            if mn.get('txhash') == currMN['collateral'].get('txid') and mn.get('outidx') == currMN['collateral'].get('txidn'):
                 statusData = mn
                 if statusData is not None:   
                     try:

@@ -201,13 +201,27 @@ class MainWindow(QWidget):
             for new_masternode in hot_masternodes:
                 name = new_masternode['name']
                 self.tabMain.insert_mn_list(name, new_masternode['ip'], new_masternode['port'], None, isHardware=False)
-                self.tabMain.btn_remove[name].clicked.connect(lambda: self.caller.t_main.onRemoveMN())
-            # update files
-            printDbg("saving MN configuration file")
-            writeToFile(self.masternode_list, masternodes_File)
-            printDbg("saved")
-            # Clear voting masternodes configuration and update cache
-            self.t_governance.clear() 
+                self.tabMain.btn_remove[name].clicked.connect(lambda: self.t_main.onRemoveMN())
+            
+            # print number of nodes added
+            new_nodes = len(hot_masternodes)
+            final_message = ""
+            if new_nodes == 0:
+                final_message = "No External Masternode "
+            elif new_nodes == 1:
+                final_message = "1 External Masternode "
+            else:
+                final_message = "%d External Masternodes " % new_nodes
+            final_message += "added to the list."
+            printDbg(final_message)
+            
+            if new_nodes > 0:
+                # update files
+                printDbg("saving MN configuration file")
+                writeToFile(self.masternode_list, masternodes_File)
+                printDbg("saved")
+                # Clear voting masternodes configuration and update cache
+                self.t_governance.clear() 
                 
         
         
