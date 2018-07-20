@@ -67,7 +67,7 @@ class TabMain_gui(QWidget):
         
         for masternode in self.caller.masternode_list:
             name = masternode['name']
-            self.insert_mn_list(name, masternode['ip'], masternode['port'])  
+            self.insert_mn_list(name, masternode['ip'], masternode['port'], isHardware=masternode['isHardware'])  
         
         vBox = QVBoxLayout()
         vBox.addWidget(self.myList)
@@ -79,10 +79,13 @@ class TabMain_gui(QWidget):
     
           
      
-    def insert_mn_list(self, name, ip, port, row=None):   
+    def insert_mn_list(self, name, ip, port, row=None, isHardware=True):   
         mnRow = QWidget()
         mnRow.alias = name
-        mnRow.setToolTip("Drag rows to re-order.")
+        if isHardware:
+            mnRow.setToolTip("Drag rows to re-order.")
+        else:
+            mnRow.setToolTip("EXTERNAL MASTERNODE - Drag rows to re-order.")
         mnRowLayout = QHBoxLayout()
         ##--- Led
         self.mnLed[name] = QLabel()
@@ -90,7 +93,10 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.mnLed[name])
         ##--- Label & Balance    
         self.mnLabel[name] = QLabel()
-        self.mnLabel[name].setText("%s [<i>%s</i>]" % (name, ip))
+        if isHardware:
+            self.mnLabel[name].setText("%s [<i>%s</i>]" % (name, ip))
+        else:
+            self.mnLabel[name].setText("<span style='color: orange'>%s</span> [<i>%s</i>]" % (name, ip))
         mnRowLayout.addWidget(self.mnLabel[name])
         self.mnBalance[name] = QLabel()
         mnRowLayout.addWidget(self.mnBalance[name])
@@ -118,18 +124,27 @@ class TabMain_gui(QWidget):
         self.btn_rewards[name].setToolTip('Transfer rewards from "%s"' % name)           
         self.btn_rewards[name].setIcon(self.rewards_icon)
         self.btn_rewards[name].alias = name
+        if not isHardware:
+            self.btn_rewards[name].setDisabled(True)
+            self.btn_rewards[name].setToolTip("EXTERNAL MN: unable to move rewards with SPMT")         
         mnRowLayout.addWidget(self.btn_rewards[name])
         ##--- Start button
         self.btn_start[name] = QPushButton()
         self.btn_start[name].setToolTip('Start masternode "%s"' % name)          
         self.btn_start[name].setIcon(self.startMN_icon)
         self.btn_start[name].alias = name
+        if not isHardware:
+            self.btn_start[name].setDisabled(True)
+            self.btn_start[name].setToolTip("EXTERNAL MN: unable to start with SPMT")            
         mnRowLayout.addWidget(self.btn_start[name])
         ##--- Edit button
         self.btn_edit[name] = QPushButton()
         self.btn_edit[name].setToolTip('Edit masternode "%s"' % name)   
         self.btn_edit[name].setIcon(self.editMN_icon)
         self.btn_edit[name].alias = name
+        if not isHardware:
+            self.btn_edit[name].setDisabled(True)
+            self.btn_edit[name].setToolTip("EXTERNAL MN: to edit, delete entry and load new 'masternode.conf'")              
         mnRowLayout.addWidget(self.btn_edit[name])
         ##--- Remove button
         self.btn_remove[name] = QPushButton()

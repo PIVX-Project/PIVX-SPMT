@@ -65,7 +65,13 @@ class TabGovernance():
         self.ui.voteAbstain_btn.clicked.connect(lambda: self.onVote(0))
         self.ui.voteNo_btn.clicked.connect(lambda: self.onVote(2))
         
-            
+    
+    def clear(self):
+        # Clear voting masternodes configuration and update cache
+        self.votingMasternodes = []
+        self.caller.parent.cache['votingMasternodes'] = []
+        writeToFile(self.caller.parent.cache, cache_File)
+                
     def countMyVotes(self):
         for prop in self.proposals:
             mnList = self.caller.masternode_list
@@ -308,7 +314,7 @@ class TabGovernance():
                         self.failedVotes += 1
                     
                 except Exception as e:
-                    err_msg = "Exception in vote_thread"
+                    err_msg = "Exception in vote_thread - check MN privKey"
                     printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
 

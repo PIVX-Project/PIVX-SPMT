@@ -207,7 +207,8 @@ class TabMain():
             reply = self.caller.myPopUp(QMessageBox.Question, 'Confirm START', 
                                                  "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
             if reply == QMessageBox.Yes:
-                for mn_conf in self.caller.masternode_list:
+                mnList = [x for x in self.caller.masternode_list if x['isHardware']]
+                for mn_conf in mnList:
                     self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'], 
                                                                 mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'])
                     # connect signal

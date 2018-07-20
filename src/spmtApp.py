@@ -4,9 +4,9 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import signal
-from misc import getSPMTVersion, printDbg, readCacheFile, writeToFile
+from misc import getSPMTVersion, printDbg, readCacheFile, writeToFile, printOK
 from constants import starting_height, starting_width, user_dir, cache_File
-from PyQt5.Qt import QMainWindow, QIcon, QAction
+from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
 from mainWindow import MainWindow
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
 
@@ -47,16 +47,20 @@ class App(QMainWindow):
         # Set title and geometry
         self.setWindowTitle(self.title)
         self.resize(self.cache.get("window_width"), self.cache.get("window_height"))
-        # Set Icon
-        spmtIcon_file = os.path.join(imgDir, 'spmtLogo_shield.png')
-        self.spmtIcon = QIcon(spmtIcon_file)
+        # Set Icons
+        self.spmtIcon = QIcon(os.path.join(imgDir, 'spmtLogo_shield.png'))
+        self.pivx_icon = QIcon(os.path.join(imgDir, 'icon_pivx.png'))
+        self.script_icon = QIcon(os.path.join(imgDir, 'icon_script.png'))
         self.setWindowIcon(self.spmtIcon)
         # Add RPC server menu
         mainMenu = self.menuBar()
         confMenu = mainMenu.addMenu('Setup')
-        self.rpcConfMenu = QAction(self.spmtIcon, 'Local RPC Server...', self)
+        self.rpcConfMenu = QAction(self.pivx_icon, 'Local RPC Server...', self)
         self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
         confMenu.addAction(self.rpcConfMenu)
+        self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
+        self.loadMNConfAction.triggered.connect(self.loadMNConf)
+        confMenu.addAction(self.loadMNConfAction)
         
         # Sort masternode list (by alias if no previous order set)
         if self.cache.get('mnList_order') != {}:
@@ -119,6 +123,14 @@ class App(QMainWindow):
         print("Bye Bye.")
         return QMainWindow.closeEvent(self, *args, **kwargs)
     
+    
+    
+    def loadMNConf(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self, 'Open masternode.conf', 'masternode.conf', 'Text Files (*.conf)', options=options)
+            
+        if fileName:
+            self.mainWindow.loadMNConf(fileName)     
     
     
     def onEditRPCServer(self):

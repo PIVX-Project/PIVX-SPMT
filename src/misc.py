@@ -6,7 +6,7 @@ from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, DEFAULT_CACHE
+from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, DEFAULT_CACHE, DEFAULT_MN_CONF
 
 def append_to_logfile(text):
     try:
@@ -63,7 +63,7 @@ def getSPMTVersion():
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
     with open(version_file) as data_file:
         data = json.load(data_file)       
-    data_file.close()
+
     return data
 
 
@@ -91,7 +91,51 @@ def ipport(ip, port):
             raise Exception("invalid IP version number")
 
 
-
+def loadMNConfFile(fileName):
+    
+    hot_masternodes = []
+    try:
+        with open(fileName) as f:
+            for line in f:
+                confline = line.strip()
+                
+                # skip comments
+                if confline[0] == '#':
+                    continue
+                
+                configs = confline.split(' ')
+                # check number of keys
+                if len(configs) != 5:
+                    printDbg("wrong number of parameters in masternode.conf")
+                    return None
+                
+                new_mn = {}
+                new_mn['name'] = configs[0]
+                
+                ipaddr = configs[1].split(':')
+                if len(ipaddr) != 2:
+                    printDbg("wrong ip:address in masternode.conf")
+                    return None
+                
+                new_mn['ip'] = ipaddr[0]
+                new_mn['port'] = int(ipaddr[1])
+                new_mn['mnPrivKey'] = configs[2]
+                new_mn['isHardware'] = False
+                collateral = {}
+                collateral['txid'] = configs[3]
+                collateral['txidn'] = int(configs[4])
+                new_mn['collateral'] = collateral
+                
+                hot_masternodes.append(new_mn)
+        
+        return hot_masternodes
+                
+    except Exception as e:
+        print(e)
+        
+    
+    
+    
 def now():
     return int(time.time())
 
@@ -162,7 +206,7 @@ def readCacheFile():
         if os.path.exists(cache_file):
             with open(cache_file) as data_file:
                 cache = json.load(data_file)
-            data_file.close()
+
         else:
             writeToFile(DEFAULT_CACHE, cache_File)
             raise Exception("No cache file found. Creating new.")
@@ -191,7 +235,7 @@ def readMNfile():
         if os.path.exists(mn_file):
             with open(mn_file) as data_file:
                 mnList = json.load(data_file)    
-            data_file.close()
+   
         else:
             # save default config (empty list) and return it
             writeToFile([], masternodes_File)
@@ -201,6 +245,16 @@ def readMNfile():
         printDbg(e.args[0])
         return []
     
+    # Fix missing data
+    newKeys = False
+    for key in DEFAULT_MN_CONF:
+        for node in mnList:
+            if key not in node:
+                node[key] = DEFAULT_MN_CONF[key]
+                newKeys = True   
+    if newKeys:
+        writeToFile(mnList, masternodes_File)
+        
     return mnList
 
 
@@ -212,7 +266,7 @@ def readRPCfile():
         if os.path.exists(config_file):
             with open(config_file) as data_file:
                 rpc_config = json.load(data_file)
-            data_file.close()
+
         else:
             # save default config and return it
             config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
@@ -267,7 +321,7 @@ def writeToFile(data, filename):
         datafile_name = os.path.join(user_dir, filename)
         with open(datafile_name, 'w+') as data_file:
             json.dump(data, data_file)        
-        data_file.close()
+
     except Exception as e:
         errorMsg = "error writing file %s" % filename
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)

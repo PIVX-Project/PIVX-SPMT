@@ -298,9 +298,7 @@ class TabMNConf():
             self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())   
             
             # Clear voting masternodes configuration and update cache
-            self.caller.t_governance.votingMasternodes = []
-            self.caller.parent.cache['votingMasternodes'] = []
-            writeToFile(self.caller.parent.cache, cache_File)   
+            self.caller.t_governance.clear()  
             
             # go back
             self.onCancelMNConfig()

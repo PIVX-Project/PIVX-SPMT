@@ -19,6 +19,16 @@ log_File = os.path.join(user_dir, 'lastLogs.html')
 masternodes_File = 'masternodes.json'
 rpc_File = 'rpcServer.json'
 cache_File = 'cache.json'
+DEFAULT_MN_CONF = {
+    "name": "",
+    "ip": "",
+    "port": 51472,
+    "mnPrivKey": "",
+    "isTestnet": 0,
+    "isHardware": True,
+    "hwAcc": 0,
+    "collateral": {}
+    }
 DEFAULT_CACHE = {
     "lastAddress": "",
     "window_width": starting_width,

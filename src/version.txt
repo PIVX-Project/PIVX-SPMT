@@ -1,5 +1,5 @@
 {
- "number": "0.3.0",
+ "number": "0.3.1",
  "tag": "a",
- "comments": ["Governance Tab"]
+ "comments": ["Load masternode.conf"]
  }

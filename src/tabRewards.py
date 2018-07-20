@@ -118,6 +118,7 @@ class TabRewards():
     def loadMnSelect(self):
         self.ui.mnSelect.clear()            
         for x in self.caller.masternode_list:
+            if x['isHardware']:
                 name = x['name']
                 address = x['collateral'].get('address')
                 txid = x['collateral'].get('txid')

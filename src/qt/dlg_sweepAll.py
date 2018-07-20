@@ -88,7 +88,8 @@ class SweepAll_dlg(QDialog):
         self.rewards = []
         collaterals = []
         self.rawtransactions = {}
-        for mn in self.main_tab.caller.masternode_list:
+        mnlist = [x for x in self.main_tab.caller.masternode_list if x['isHardware']]
+        for mn in mnlist:
             mnode = {}
             addy = mn['collateral'].get('address')
             mnode['name'] = mn['name']

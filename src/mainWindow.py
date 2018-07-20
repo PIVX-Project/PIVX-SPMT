@@ -4,8 +4,8 @@ import sys
 import os.path
 from time import strftime, gmtime
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
-    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion
-from constants import starting_height, log_File
+    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
+from constants import starting_height, log_File, masternodes_File
 
 from PyQt5.QtCore import pyqtSlot, Qt, QThread
 from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
@@ -187,6 +187,28 @@ class MainWindow(QWidget):
         self.ledGrayV_icon = QPixmap(os.path.join(self.imgDir, 'icon_grayLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
         self.ledGreenV_icon = QPixmap(os.path.join(self.imgDir, 'icon_greenLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
        
+    
+    
+    def loadMNConf(self, fileName):
+        hot_masternodes = loadMNConfFile(fileName)
+        if hot_masternodes == None:
+            messText = "Unable to load data from file '%s'" % fileName
+            self.myPopUp2(QMessageBox.Warning, "SPMT - warning", messText)
+        else:
+            # Add masternodes to list
+            self.masternode_list = self.masternode_list + hot_masternodes
+            # Show new list
+            for new_masternode in hot_masternodes:
+                name = new_masternode['name']
+                self.tabMain.insert_mn_list(name, new_masternode['ip'], new_masternode['port'], None, isHardware=False)
+                self.tabMain.btn_remove[name].clicked.connect(lambda: self.caller.t_main.onRemoveMN())
+            # update files
+            printDbg("saving MN configuration file")
+            writeToFile(self.masternode_list, masternodes_File)
+            printDbg("saved")
+            # Clear voting masternodes configuration and update cache
+            self.t_governance.clear() 
+                
         
         
         
