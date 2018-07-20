@@ -1,5 +1,5 @@
 {
  "number": "0.3.1",
- "tag": "a",
+ "tag": "c",
  "comments": ["Load masternode.conf"]
  }

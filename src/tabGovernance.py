@@ -153,6 +153,10 @@ class TabGovernance():
             self.ui.proposalBox.setItem(row, 6, item(my_votes))
             self.ui.proposalBox.setCellWidget(row, 7, itemButton(prop, 1))
             
+            # hide row if toggleExpiring_btn set
+            if prop.RemainingPayCount == 0 and self.ui.toggleExpiring_btn.text() == "Show Expiring":
+                self.ui.proposalBox.hideRow(row)
+            
         # Sort by Monthly Price descending
         self.ui.proposalBox.setSortingEnabled(True)
         self.ui.proposalBox.sortByColumn(3, Qt.DescendingOrder)
