@@ -47,6 +47,9 @@ class TabGovernance_gui(QWidget):
         self.refreshProposals_btn = QPushButton()
         self.refreshProposals_btn.setToolTip("Refresh Proposal List")
         row.addWidget(self.refreshProposals_btn)
+        self.toggleExpiring_btn = QPushButton("Hide Expiring")
+        self.toggleExpiring_btn.setToolTip("Hide expiring proposals (yellow background) from list")
+        row.addWidget(self.toggleExpiring_btn)
         layout.addLayout(row)
         
         ## -- ROW 2

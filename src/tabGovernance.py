@@ -58,6 +58,7 @@ class TabGovernance():
         # Connect GUI buttons
         self.vote_codes = ["abstains", "yes", "no"]
         self.ui.refreshProposals_btn.clicked.connect(lambda: self.onRefreshProposals())
+        self.ui.toggleExpiring_btn.clicked.connect(lambda: self.onToggleExpiring())
         self.ui.selectMN_btn.clicked.connect(lambda:  SelectMNs_dlg(self).exec_())
         self.ui.budgetProjection_btn.clicked.connect(lambda:  BudgetProjection_dlg(self).exec_())
         self.ui.proposalBox.itemClicked.connect(lambda: self.updateSelection())
@@ -181,6 +182,27 @@ class TabGovernance():
         self.selectedProposals = []
         self.ui.proposalBox.setSortingEnabled(False)
         ThreadFuns.runInThread(self.loadProposals_thread, (), self.displayProposals)
+        
+        
+    @pyqtSlot()
+    def onToggleExpiring(self):
+        if self.ui.toggleExpiring_btn.text() == "Hide Expiring":
+            # Hide expiring proposals
+            for row in range(0, self.ui.proposalBox.rowCount()):
+                if self.ui.proposalBox.item(row,5).background() == Qt.yellow:
+                    self.ui.proposalBox.hideRow(row)
+            # Update button
+            self.ui.toggleExpiring_btn.setToolTip("Show expiring proposals (yellow background) in list")
+            self.ui.toggleExpiring_btn.setText("Show Expiring")
+
+        else:
+            # Show expiring proposals
+            for row in range(0, self.ui.proposalBox.rowCount()):
+                if self.ui.proposalBox.item(row,5).background() == Qt.yellow:
+                    self.ui.proposalBox.showRow(row)       
+            # Update button
+            self.ui.toggleExpiring_btn.setToolTip("Hide expiring proposals (yellow background) from list")
+            self.ui.toggleExpiring_btn.setText("Hide Expiring")
         
         
     @pyqtSlot(str)
