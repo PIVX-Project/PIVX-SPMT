@@ -247,6 +247,19 @@ class TabMNConf():
                 mess_text += "<b>mnPrivKey = </b>%s<br>" % self.ui.edt_mnPrivKey.text()
                 self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
                 return
+            
+            # check for duplicate name
+            mn_alias = self.ui.edt_name.text().strip()
+            # if we are changing a masternode don't check old alias
+            old_alias = None
+            if not self.caller.mnode_to_change is None:
+                old_alias = self.caller.mnode_to_change['name']
+            if self.caller.isMasternodeInList(mn_alias) and old_alias != mn_alias:
+                mess_text = 'Attention! The name <b>%s</b> is already in use for another masternode.<br>' % mn_alias
+                mess_text += 'Choose a different name (alias) for the masternode'
+                self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
+                return
+            
             # remove previous element
             if not self.caller.mnode_to_change is None:
                 # remove from memory list
@@ -259,7 +272,7 @@ class TabMNConf():
 
             # create new item
             new_masternode = {}
-            new_masternode['name'] = self.ui.edt_name.text().strip()
+            new_masternode['name'] = mn_alias
             masternodeIp = self.ui.edt_masternodeIp.text().strip()
             if not masternodeIp.endswith('.onion'):    
                 masternodeIp = ip_address(masternodeIp).compressed

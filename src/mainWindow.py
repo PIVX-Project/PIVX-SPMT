@@ -176,7 +176,11 @@ class MainWindow(QWidget):
         self.console.setLayout(layout) 
     
 
+    
+    def isMasternodeInList(self, mn_alias):
+        return (mn_alias in [x['name'] for x in self.masternode_list])    
         
+    
         
     def loadIcons(self):
         # Load Icons        
@@ -195,16 +199,24 @@ class MainWindow(QWidget):
             messText = "Unable to load data from file '%s'" % fileName
             self.myPopUp2(QMessageBox.Warning, "SPMT - warning", messText)
         else:
-            # Add masternodes to list
-            self.masternode_list = self.masternode_list + hot_masternodes
+            # Append new masternodes to list
+            new_masternodes = []
+            skip_masternodes = []
+            for x in hot_masternodes:
+                if not self.isMasternodeInList(x['name']):
+                    self.masternode_list.append(x)
+                    new_masternodes.append(x)
+                else:
+                    skip_masternodes.append(x)
+
             # Show new list
-            for new_masternode in hot_masternodes:
+            for new_masternode in new_masternodes:
                 name = new_masternode['name']
                 self.tabMain.insert_mn_list(name, new_masternode['ip'], new_masternode['port'], None, isHardware=False)
                 self.tabMain.btn_remove[name].clicked.connect(lambda: self.t_main.onRemoveMN())
             
             # print number of nodes added
-            new_nodes = len(hot_masternodes)
+            new_nodes = len(new_masternodes)
             final_message = ""
             if new_nodes == 0:
                 final_message = "No External Masternode "
@@ -212,7 +224,12 @@ class MainWindow(QWidget):
                 final_message = "1 External Masternode "
             else:
                 final_message = "%d External Masternodes " % new_nodes
-            final_message += "added to the list."
+            final_message += "added to the list. "
+            if new_nodes > 0:
+                final_message +=  str([x['name'] for x in new_masternodes]) + ".  "
+            if len(skip_masternodes) > 0:
+                final_message += "Following entries skipped due to duplicate names:"
+                final_message += str([x['name'] for x in skip_masternodes]) + ".  "
             printDbg(final_message)
             
             if new_nodes > 0:
@@ -222,8 +239,7 @@ class MainWindow(QWidget):
                 printDbg("saved")
                 # Clear voting masternodes configuration and update cache
                 self.t_governance.clear() 
-                
-        
+
         
         
     def myPopUp(self, messType, messTitle, messText, defaultButton=QMessageBox.No):
