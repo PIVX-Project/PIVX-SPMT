@@ -182,6 +182,9 @@ class TabMain():
             except Exception as e:
                 err_msg = "Error writing masternode file"
                 printException(getCallerName(), getFunctionName(), err_msg, e)
+                
+            # Clear voting masternodes configuration and update cache
+            self.caller.t_governance.clear()
             
     
     
