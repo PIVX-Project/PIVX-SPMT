@@ -9,6 +9,7 @@
   - [Setting up the RPC server](#setup1)
   - [Connections](#setup2)
   - [Setting up a Masternode configuration](#setup3)
+  - [Import external masternode file](#setup4)
 * [Features](#features)
   - [Getting masternode status](#features1)
   - [Starting masternode](#features2)
@@ -129,6 +130,21 @@ Click `Save` to save the configuration and go back to main view.<br>
 <img src="doc/img/06.png" width="670"><br>
 
 <br>
+
+
+#### <a name="setup4"></a>Import external masternode file
+
+Starting from version  `v0.3.1` it is possible to "import" external masternodes (with collateral traditionally held on PIVX core wallets, instead of hardware devices), loading the data from an external file formatted as the common `masternode.conf` of the controller wallets.<br>
+<br>
+To access the feature simply click on `Import "masternode.conf" file` from the `Setup` menu and select the file.
+
+<img src="doc/img/40.png" width="670"><br>
+
+These "external masternodes" will appear in orange in the list inside the SPMT.<br>
+<br>
+They can't be started and the spending of rewards is disabled for them. But their status can be checked and they can be used for voting in the governace Tab.<br>
+
+<img src="doc/img/41.png" width="670"><br>
 
 
 ## <a name="features"></a>Features
