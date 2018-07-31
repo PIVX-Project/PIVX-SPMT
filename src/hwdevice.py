@@ -57,7 +57,7 @@ class HWdevice(QObject):
     # signal: tx_progress percent - emitted by perepare_transfer_tx_bulk
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
-    sig_progress = pyqtSignal(str)
+    sig_progress = pyqtSignal(int)
     
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -117,6 +117,8 @@ class HWdevice(QObject):
         self.amount = 0
         self.lock.acquire()
         try:
+            num_of_sigs = len(utxos_to_spend)
+            curr_utxo_checked = 0
             for idx, utxo in enumerate(utxos_to_spend):
                 
                 self.amount += int(utxo['value'])
@@ -134,10 +136,6 @@ class HWdevice(QObject):
                 
                 
                 trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
-                
-                # completion percent emitted
-                completion = int(45*idx / len(utxos_to_spend))
-                self.tx_progress.emit(completion)
                 
                 self.trusted_inputs.append(trusted_input)
                
@@ -161,7 +159,8 @@ class HWdevice(QObject):
                 })
                 
                 # completion percent emitted
-                completion = int(95*idx / len(utxos_to_spend))
+                curr_utxo_checked += 1
+                completion = int(95*curr_utxo_checked / num_of_sigs)
                 self.tx_progress.emit(completion)
     
             self.amount -= int(tx_fee)
@@ -527,19 +526,22 @@ class HWdevice(QObject):
                 # signature percent emitted
                 curr_input_signed += 1
                 completion = int(100*curr_input_signed / len(self.arg_inputs))
-                self.sig_progress.emit(str(completion))
+                self.sig_progress.emit(completion)
                 
             self.new_transaction.lockTime = bytearray([0, 0, 0, 0])
             self.tx_raw = bytearray(self.new_transaction.serialize())
-            self.sig_progress.emit("100")
+            self.sig_progress.emit(100)
+            
+        except TypeError as te:
+            printDbg(str(te))
+            self.tx_raw = None
             
         except Exception as e:
             if e.sw != 0x6985:
                 self.status = 0
-                printException(getCallerName(), getFunctionName(), e.message, e.args)
-                
+                printException(getCallerName(), getFunctionName(), e.message, e.args)            
             self.tx_raw = None
-    
+            
         finally:
             self.lock.release()
             if self.status == 0:
@@ -563,7 +565,7 @@ class HWdevice(QObject):
                     
     
     
-    def updateSigProgress(self, text):
-        messageText = self.messageText + "Signature Progress: <b style='color:red'>" + text + " %</b>" 
+    def updateSigProgress(self, percent):
+        messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>" 
         self.mBox2.setText(messageText)
         QApplication.processEvents()

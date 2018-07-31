@@ -407,10 +407,13 @@ class MainWindow(QWidget):
         self.hwStatus = statusCode
         self.hwStatusMess = statusMess
         
-        
+        # if all is good connect the signals
+        if statusCode == 2:
+            self.hwdevice.sigTxdone.connect(self.t_rewards.FinishSend)
+            self.hwdevice.sigTxabort.connect(self.t_rewards.onCancel)
+            self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
+            
 
-        
-        
   
         
     def updateLastBlockLabel(self):

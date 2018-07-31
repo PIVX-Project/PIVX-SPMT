@@ -264,24 +264,7 @@ class TabRewards():
             if self.useSwiftX():
                 self.currFee = 0.01 * 1e8
             else:
-                self.currFee = self.ui.feeLine.value() * 1e8
-            
-            # re-connect signal
-            try:
-                self.caller.hwdevice.sigTxdone.disconnect()
-            except:
-                pass
-            try:
-                self.caller.hwdevice.sigTxabort.disconnect()
-            except:
-                pass
-            try:
-                self.caller.hwdevice.tx_progress.disconnect()
-            except:
-                pass
-            self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-            self.caller.hwdevice.sigTxabort.connect(self.onCancel)
-            self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+                self.currFee = self.ui.feeLine.value() * 1e8            
 
             try:
                 self.txFinished = False
@@ -387,7 +370,7 @@ class TabRewards():
     # Activated by signal tx_progress from hwdevice
     #@pyqtSlot(str)
     def updateProgressPercent(self, percent):
-        self.ui.loadingLinePercent.setValue(percent)
+        self.ui.loadingLinePercent.setValue(int(percent))
         QApplication.processEvents()
         
  
