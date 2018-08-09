@@ -13,6 +13,7 @@ class RpcClient:
         self.lock = threading.Lock()
         self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_passwd = readRPCfile()
         rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
+
         try:
             self.lock.acquire()
             self.conn = AuthServiceProxy(rpc_url, timeout=120)     

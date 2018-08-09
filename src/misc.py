@@ -3,10 +3,12 @@
 import sys
 import os.path
 from ipaddress import ip_address
+from urllib.parse import urlsplit
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, DEFAULT_CACHE, DEFAULT_MN_CONF
+from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, \
+    DEFAULT_CACHE, DEFAULT_MN_CONF, DEFAULT_RPC_CONF
 
 def append_to_logfile(text):
     try:
@@ -272,16 +274,24 @@ def readRPCfile():
         if os.path.exists(config_file):
             with open(config_file) as data_file:
                 rpc_config = json.load(data_file)
+                
+            # Check for malformed data
+            urlstring = "http://%s:%s@%s:%d" % (
+                rpc_config.get('rpc_user'), rpc_config.get('rpc_password'), 
+                rpc_config.get('rpc_ip'), int(rpc_config.get('rpc_port')))         
+            if not checkRPCstring(urlstring):
+                # save default config and return it
+                resetRPCfile()          
+                rpc_config = DEFAULT_RPC_CONF
 
         else:
+            printDbg("No rpcServer.json found.")
             # save default config and return it
-            config = {"rpc_ip": "127.0.0.1", "rpc_port": 45458, "rpc_user": "myUsername", "rpc_password": "myPassword"}
-            writeToFile(config, rpc_File)
-            raise Exception("No rpcServer.json found. Creating new.")
+            resetRPCfile()
+            rpc_config = DEFAULT_RPC_CONF
         
     except Exception as e:
         printDbg(e.args[0])
-        return "127.0.0.1", 45458, "myUsername", "myPassword"
     
     rpc_ip = rpc_config.get('rpc_ip')
     rpc_port = int(rpc_config.get('rpc_port'))
@@ -289,6 +299,21 @@ def readRPCfile():
     rpc_password = rpc_config.get('rpc_password')
         
     return rpc_ip, rpc_port, rpc_user, rpc_password
+
+
+def resetRPCfile():
+    printDbg("Creating default rpcServer.json")
+    writeToFile(DEFAULT_RPC_CONF, rpc_File)
+    
+    
+    
+def checkRPCstring(urlstring, action_msg="Resetting default credentials"):
+    if urlsplit(urlstring).netloc != urlstring[7:]:
+        error_msg = "Unable to parse URL: %s [urllib parsed: %s]" % (urlstring[7:], urlsplit(urlstring).netloc)
+        printException(getCallerName(), getFunctionName(), action_msg, [error_msg])
+        return False
+    else:
+        return True
 
 
 

@@ -4,12 +4,12 @@ import sys
 import os.path
 from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox
+from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox, QMessageBox
 from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
 
-from misc import writeToFile, readRPCfile, printDbg
+from misc import writeToFile, readRPCfile, printDbg, checkRPCstring
 from constants import rpc_File
 
 
@@ -87,15 +87,21 @@ class Ui_ConfigureRPCserverDlg(object):
         conf["rpc_port"] = main_dlg.rpc_port
         conf["rpc_user"] = main_dlg.rpc_user
         conf["rpc_password"] = main_dlg.rpc_password
-        
-        # Update File
-        writeToFile(conf, rpc_File)
-        
-        # Update current RPC Server
-        main_dlg.main_wnd.mainWindow.rpcClient = None
-        main_dlg.main_wnd.mainWindow.rpcConnected = False
-        printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
-        self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
+                
+        urlstring = "http://%s:%s@%s:%d" % (
+            conf["rpc_user"], conf["rpc_password"], conf["rpc_ip"], conf["rpc_port"])
+
+        if checkRPCstring(urlstring, action_msg="Restoring previous configuration"):
+            # Update datafile
+            writeToFile(conf, rpc_File)             
+            # Update current RPC Server
+            main_dlg.main_wnd.mainWindow.rpcClient = None
+            main_dlg.main_wnd.mainWindow.rpcConnected = False
+            printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
+            self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
+        else:
+            printDbg("Restored RPC credentials. ")    
+            
         main_dlg.close()
         
        
