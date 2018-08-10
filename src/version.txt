@@ -1,5 +1,5 @@
 {
  "number": "0.3.1",
- "tag": "d",
- "comments": ["Load masternode.conf"]
+ "tag": "e",
+ "comments": ["SwiftX fee-display bug fix"]
  }

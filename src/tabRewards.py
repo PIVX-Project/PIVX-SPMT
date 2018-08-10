@@ -30,13 +30,20 @@ class TabRewards():
         ##--- Initialize GUI
         self.ui = TabRewards_gui()
         self.caller.tabRewards = self.ui
-        self.ui.feeLine.setValue(MINIMUM_FEE)
+        self.suggestedFee = MINIMUM_FEE
+        # load last used destination from cache
+        self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress")) 
+        # load useSwiftX check from cache
+        if self.caller.parent.cache.get("useSwiftX"):
+            self.ui.swiftxCheck.setChecked(True)
+        self.updateFee()
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
         self.ui.btn_toggleCollateral.clicked.connect(lambda: self.onToggleCollateral())
         self.ui.rewardsList.box.itemClicked.connect(lambda: self.updateSelection())
         self.ui.btn_selectAllRewards.clicked.connect(lambda: self.onSelectAllRewards())
         self.ui.btn_deselectAllRewards.clicked.connect(lambda: self.onDeselectAllRewards())
+        self.ui.swiftxCheck.clicked.connect(lambda: self.updateFee())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
 
@@ -75,12 +82,6 @@ class TabRewards():
                     
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
-            
-            # load last used destination from cache
-            self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress")) 
-            # load useSwiftX check from cache
-            if self.caller.parent.cache.get("useSwiftX"):
-                self.ui.swiftxCheck.setChecked(True)
                    
             if len(self.rewards) > 1:  # (collateral is a reward)
                 self.ui.rewardsList.box.resizeColumnsToContents()
@@ -170,7 +171,8 @@ class TabRewards():
         self.selectedRewards = None
         self.ui.selectedRewardsLine.setText("0.0")
         self.ui.mnSelect.setCurrentIndex(0)
-        self.ui.feeLine.setValue(MINIMUM_FEE)
+        self.suggestedFee = MINIMUM_FEE
+        self.updateFee()
         self.ui.btn_toggleCollateral.setText("Show Collateral")
         self.ui.collateralHidden = True
         self.onChangeSelectedMN()
@@ -203,6 +205,7 @@ class TabRewards():
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
         self.updateSelection() 
+
 
             
     @pyqtSlot()
@@ -261,10 +264,7 @@ class TabRewards():
             self.caller.parent.cache["useSwiftX"] = self.useSwiftX()
             writeToFile(self.caller.parent.cache, cache_File)            
             
-            if self.useSwiftX():
-                self.currFee = 0.01 * 1e8
-            else:
-                self.currFee = self.ui.feeLine.value() * 1e8            
+            self.currFee = self.ui.feeLine.value() * 1e8            
 
             try:
                 self.txFinished = False
@@ -366,6 +366,17 @@ class TabRewards():
         self.ui.loadingLinePercent.hide()
         
         
+        
+    @pyqtSlot()
+    def updateFee(self):
+        if self.useSwiftX():
+            self.ui.feeLine.setValue(0.01)
+            self.ui.feeLine.setEnabled(False)
+        else:
+            self.ui.feeLine.setValue(self.suggestedFee)
+            self.ui.feeLine.setEnabled(True)
+        
+        
              
     # Activated by signal tx_progress from hwdevice
     #@pyqtSlot(str)
@@ -380,22 +391,21 @@ class TabRewards():
         self.selectedRewards = self.getSelection()
         numOfInputs = len(self.selectedRewards)
         if numOfInputs:
-            
             for i in range(0, numOfInputs):
                 total += int(self.selectedRewards[i].get('value'))
                                     
             # update suggested fee and selected rewards
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
-            suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
+            self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             printDbg("estimatedTxSize is %s kB" % str(estimatedTxSize))
-            printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(suggestedFee), str(self.feePerKb)))
+            printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(self.suggestedFee), str(self.feePerKb)))
             
             self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
-            self.ui.feeLine.setValue(suggestedFee)
             
         else:
             self.ui.selectedRewardsLine.setText("")
-            self.ui.feeLine.setValue(MINIMUM_FEE)
+        
+        self.updateFee()
             
             
             

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
 from PyQt5.Qt import QLabel
 from PyQt5.QtCore import pyqtSlot
 from threads import ThreadFuns
-from constants import MPATH, cache_File
+from constants import MPATH, cache_File, MINIMUM_FEE
 from hwdevice import DisconnectedException
 from utils import checkPivxAddr
 from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException
@@ -22,7 +22,16 @@ class SweepAll_dlg(QDialog):
         QDialog.__init__(self, parent=main_tab.ui)
         self.main_tab = main_tab
         self.setWindowTitle('Sweep All Rewards')
+        ##--- Initialize GUI
         self.setupUI()
+        self.suggestedFee = MINIMUM_FEE
+        # load last used destination from cache
+        self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
+        # load useSwiftX check from cache
+        if self.main_tab.caller.parent.cache.get("useSwiftX"):
+            self.ui.swiftxCheck.setChecked(True)
+        self.updateFee()
+        # Connect GUI buttons
         self.connectButtons()
         
         
@@ -34,6 +43,7 @@ class SweepAll_dlg(QDialog):
     def connectButtons(self):
         self.ui.buttonSend.clicked.connect(lambda: self.onButtonSend())
         self.ui.buttonCancel.clicked.connect(lambda: self.onButtonCancel())
+        self.ui.swiftxCheck.clicked.connect(lambda: self.updateFee())
     
     
         
@@ -73,14 +83,10 @@ class SweepAll_dlg(QDialog):
             
             # update fee
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
-            suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
-            self.ui.feeLine.setValue(suggestedFee)
+            self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
+            self.updateFee()
             
-            # load last used destination from cache
-            self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
-            # load useSwiftX check from cache
-            if self.main_tab.caller.parent.cache.get("useSwiftX"):
-                self.ui.swiftxCheck.setChecked(True)
+            
     
        
         
@@ -131,10 +137,7 @@ class SweepAll_dlg(QDialog):
     def onButtonSend(self):
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
-            if self.useSwiftX():
-                self.currFee = 0.01 * 1e8
-            else:
-                self.currFee = self.ui.feeLine.value() * 1e8
+            self.currFee = self.ui.feeLine.value() * 1e8
              
              # Check RPC & dongle  
             if not self.main_tab.caller.rpcConnected or self.main_tab.caller.hwStatus != 2:
@@ -242,7 +245,16 @@ class SweepAll_dlg(QDialog):
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-                
+    
+    
+    @pyqtSlot()
+    def updateFee(self):
+        if self.useSwiftX():
+            self.ui.feeLine.setValue(0.01)
+            self.ui.feeLine.setEnabled(False)
+        else:
+            self.ui.feeLine.setValue(self.suggestedFee)
+            self.ui.feeLine.setEnabled(True)            
                 
                 
                 
