@@ -5,7 +5,7 @@ import os.path
 from threads import ThreadFuns
 from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, printOK, writeToFile
+from misc import printDbg, printOK, writeToFile, is_hex
 from constants import masternodes_File, cache_File
 from pivx_hashlib import generate_privkey
 
@@ -248,6 +248,13 @@ class TabMNConf():
                 self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
                 return
             
+            if not is_hex(self.ui.edt_txid.text()):
+                mess_text = 'Attention! txid format is not valid.<br>'
+                mess_text += "<b>txId = </b>%s<br>" % self.ui.edt_txid.text()
+                mess_text += 'transaction id must be in hex format.<br>'
+                self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
+                return
+            
             # check for duplicate name
             mn_alias = self.ui.edt_name.text().strip()
             # if we are changing a masternode don't check old alias
@@ -279,8 +286,9 @@ class TabMNConf():
             new_masternode['ip'] = masternodeIp
             new_masternode['port'] = self.ui.edt_masternodePort.value()
             new_masternode['mnPrivKey'] = self.ui.edt_mnPrivKey.text().strip()
-            new_masternode['hwAcc'] = self.ui.edt_hwAccount.value()
             new_masternode['isTestnet'] = 0 if not self.isTestnet() else 1
+            new_masternode['isHardware'] = True
+            new_masternode['hwAcc'] = self.ui.edt_hwAccount.value()
 
             coll = {}
             coll['address'] = self.ui.edt_address.text().strip()

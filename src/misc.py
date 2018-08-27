@@ -91,6 +91,14 @@ def ipport(ip, port):
             return "[" + ip + "]:" + port
         else:
             raise Exception("invalid IP version number")
+        
+        
+def is_hex(s):
+    try:
+        int(s, 16)
+        return True
+    except ValueError:
+        return False
 
 
 def loadMNConfFile(fileName):
