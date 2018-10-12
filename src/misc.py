@@ -316,12 +316,15 @@ def resetRPCfile():
     
     
 def checkRPCstring(urlstring, action_msg="Resetting default credentials"):
-    if urlsplit(urlstring).netloc != urlstring[7:]:
-        error_msg = "Unable to parse URL: %s [urllib parsed: %s]" % (urlstring[7:], urlsplit(urlstring).netloc)
+    try:
+        if urlsplit(urlstring).netloc != urlstring[7:]:
+            raise
+        return True
+    
+    except:
+        error_msg = "Unable to parse URL"
         printException(getCallerName(), getFunctionName(), action_msg, [error_msg])
         return False
-    else:
-        return True
 
 
 
