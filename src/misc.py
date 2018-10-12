@@ -224,11 +224,12 @@ def readCacheFile():
                 cache = json.load(data_file)
 
         else:
-            writeToFile(DEFAULT_CACHE, cache_File)
-            raise Exception("No cache file found. Creating new.")
+            resetCacheFile()
         
     except Exception as e:
-        printDbg(e.args[0])
+        if e.args is not None:
+            printDbg(e.args[0])
+        resetCacheFile()
         return DEFAULT_CACHE
     
     # Fix missing data in cache
@@ -254,11 +255,12 @@ def readMNfile():
    
         else:
             # save default config (empty list) and return it
-            writeToFile([], masternodes_File)
-            raise Exception("No masternodes file found. Creating new.")
+            resetMNfile()
         
     except Exception as e:
-        printDbg(e.args[0])
+        if e.args is not None:
+            printDbg(e.args[0])
+        resetMNfile()
         return []
     
     # Fix missing data
@@ -287,19 +289,20 @@ def readRPCfile():
             urlstring = "http://%s:%s@%s:%d" % (
                 rpc_config.get('rpc_user'), rpc_config.get('rpc_password'), 
                 rpc_config.get('rpc_ip'), int(rpc_config.get('rpc_port')))         
-            if not checkRPCstring(urlstring):
+            if not checkRPCstring(urlstring, action_msg="unable to read RPC configuration"):
                 # save default config and return it
-                resetRPCfile()          
-                rpc_config = DEFAULT_RPC_CONF
+                raise
 
         else:
             printDbg("No rpcServer.json found.")
             # save default config and return it
-            resetRPCfile()
-            rpc_config = DEFAULT_RPC_CONF
+            raise
         
     except Exception as e:
-        printDbg(e.args[0])
+        if e.args is not None:
+            printDbg(e.args[0])
+        resetRPCfile()          
+        rpc_config = DEFAULT_RPC_CONF
     
     rpc_ip = rpc_config.get('rpc_ip')
     rpc_port = int(rpc_config.get('rpc_port'))
@@ -312,6 +315,14 @@ def readRPCfile():
 def resetRPCfile():
     printDbg("Creating default rpcServer.json")
     writeToFile(DEFAULT_RPC_CONF, rpc_File)
+    
+def resetMNfile():
+    printDbg("Creating empty masternodes.json")
+    writeToFile([], masternodes_File)
+    
+def resetCacheFile():
+    printDbg("No cache file found. Creating new.")
+    writeToFile(DEFAULT_CACHE, cache_File)
     
     
     
