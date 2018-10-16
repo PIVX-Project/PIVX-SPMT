@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
 from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, \
-    DEFAULT_CACHE, DEFAULT_MN_CONF, DEFAULT_RPC_CONF
+    DEFAULT_CACHE, DEFAULT_MN_CONF
 
 def append_to_logfile(text):
     try:
@@ -276,7 +276,7 @@ def readMNfile():
     return mnList
 
 
-
+'''
 def readRPCfile():
     try:
         import simplejson as json
@@ -310,7 +310,7 @@ def readRPCfile():
     rpc_password = rpc_config.get('rpc_password')
         
     return rpc_ip, rpc_port, rpc_user, rpc_password
-
+'''
 
 def resetRPCfile():
     printDbg("Creating default rpcServer.json")

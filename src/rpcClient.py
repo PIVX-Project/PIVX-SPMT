@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from misc import getCallerName, getFunctionName, printException, printDbg, readRPCfile, now
+from misc import getCallerName, getFunctionName, printException, printDbg, now
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 import threading
 from tabGovernance import Proposal
+from PyQt5.QtCore import pyqtSlot, QSettings
 
 class RpcClient:
         
-    def __init__(self):
+    def __init__(self, rpc_protocol, rpc_host, rpc_user, rpc_password):
         # Lock for threads
         self.lock = threading.Lock()
-        self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_passwd = readRPCfile()
-        rpc_url = "http://%s:%s@%s:%d" % (self.rpc_user, self.rpc_passwd, self.rpc_ip, self.rpc_port)
+
+        rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
 
         try:
             self.lock.acquire()

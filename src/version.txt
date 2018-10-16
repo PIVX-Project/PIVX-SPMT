@@ -1,5 +1,5 @@
 {
- "number": "0.3.2",
- "tag": "b",
- "comments": [" fix checkRPCstring"]
+ "number": "0.3.99",
+ "tag": "a",
+ "comments": ["removed rpcServer.json"]
  }

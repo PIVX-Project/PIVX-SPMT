@@ -6,11 +6,11 @@ from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox, QMessageBox
 from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QSettings
 from threads import ThreadFuns
 
-from misc import writeToFile, readRPCfile, printDbg, checkRPCstring
-from constants import rpc_File
+from misc import printDbg, checkRPCstring
+from constants import DefaultRPCConf
 
 
 class ConfigureRPCserver_dlg(QDialog):
@@ -18,7 +18,7 @@ class ConfigureRPCserver_dlg(QDialog):
         QDialog.__init__(self, parent=main_wnd)
         self.main_wnd = main_wnd
         self.setWindowTitle('RPC Server Configuration')
-        self.loadRPCfile()
+        self.loadSettings()
         self.initUI()
         
         
@@ -27,8 +27,21 @@ class ConfigureRPCserver_dlg(QDialog):
         self.ui.setupUi(self)
         
         
-    def loadRPCfile(self):
-        self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_password = readRPCfile()     
+    def loadSettings(self):
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        defaultconf = DefaultRPCConf()
+        self.rpc_ip = settings.value('local_RPC_ip', defaultconf.ip, type=str)
+        self.rpc_port = settings.value('local_RPC_port', defaultconf.port, type=int)
+        self.rpc_user = settings.value('local_RPC_user', defaultconf.user, type=str)
+        self.rpc_password = settings.value('local_RPC_pass', defaultconf.password, type=str)
+        
+        
+    def updateSettings(self):
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        settings.setValue('local_RPC_ip', self.rpc_ip)
+        settings.setValue('local_RPC_port', self.rpc_port)
+        settings.setValue('local_RPC_user', self.rpc_user)
+        settings.setValue('local_RPC_pass', self.rpc_password)
         
    
 
@@ -82,22 +95,17 @@ class Ui_ConfigureRPCserverDlg(object):
         main_dlg.rpc_port = int(self.edt_rpcPort.value())
         main_dlg.rpc_user = self.edt_rpcUser.text()
         main_dlg.rpc_password = self.edt_rpcPassword.text()
-        conf = {}
-        conf["rpc_ip"] = main_dlg.rpc_ip
-        conf["rpc_port"] = main_dlg.rpc_port
-        conf["rpc_user"] = main_dlg.rpc_user
-        conf["rpc_password"] = main_dlg.rpc_password
                 
         urlstring = "http://%s:%s@%s:%d" % (
-            conf["rpc_user"], conf["rpc_password"], conf["rpc_ip"], conf["rpc_port"])
+            main_dlg.rpc_user, main_dlg.rpc_password, main_dlg.rpc_ip, main_dlg.rpc_port)
 
         if checkRPCstring(urlstring, action_msg="Restoring previous configuration"):
-            # Update datafile
-            writeToFile(conf, rpc_File)             
+            # Update settings
+            main_dlg.updateSettings()             
             # Update current RPC Server
             main_dlg.main_wnd.mainWindow.rpcClient = None
             main_dlg.main_wnd.mainWindow.rpcConnected = False
-            printDbg("Trying to connect to RPC server [%s]:%s" % (conf["rpc_ip"], str(conf["rpc_port"])))
+            printDbg("Trying to connect to RPC server [%s]:%d" % (main_dlg.rpc_ip, main_dlg.rpc_port))
             self.runInThread = ThreadFuns.runInThread(main_dlg.main_wnd.mainWindow.updateRPCstatus, (), main_dlg.main_wnd.mainWindow.updateRPCled)
         else:
             printDbg("Restored RPC credentials. ")    

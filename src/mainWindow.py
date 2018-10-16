@@ -5,9 +5,9 @@ import os.path
 from time import strftime, gmtime
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
-from constants import starting_height, log_File, masternodes_File
+from constants import starting_height, log_File, masternodes_File, DefaultRPCConf
 
-from PyQt5.QtCore import pyqtSlot, Qt, QThread
+from PyQt5.QtCore import pyqtSlot, Qt, QThread, QSettings
 from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QFileDialog
 from PyQt5.QtWidgets import QMessageBox, QTextEdit
@@ -139,7 +139,22 @@ class MainWindow(QWidget):
             
             
             
-            
+    def getRPCserver(self):
+        # if local wallet get QSettings
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        defaultconf = DefaultRPCConf()
+        rpc_protocol = 'http'
+        rpc_ip = settings.value('local_RPC_ip', defaultconf.ip, type=str)
+        rpc_port = settings.value('local_RPC_port', defaultconf.port, type=int)
+        rpc_host = '%s:%d' % (rpc_ip, rpc_port)
+        rpc_user = settings.value('local_RPC_user', defaultconf.user, type=str)
+        rpc_password = settings.value('local_RPC_pass', defaultconf.password, type=str)
+        
+        return rpc_protocol, rpc_host, rpc_user, rpc_password
+        
+        
+        
+                
     def initConsole(self):
         self.console = QGroupBox()
         self.console.setTitle("Console Log")
@@ -467,8 +482,10 @@ class MainWindow(QWidget):
     
         
     def updateRPCstatus(self, ctrl):
+        rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
+        
         if self.rpcClient is None:
-            self.rpcClient = RpcClient()
+            self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
  
         status, statusMess, lastBlock = self.rpcClient.getStatus()
             
@@ -479,6 +496,6 @@ class MainWindow(QWidget):
         
         # If is not connected try again
         if not status:
-            self.rpcClient = RpcClient()
+            self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
     
     

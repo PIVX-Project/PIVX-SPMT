@@ -17,14 +17,8 @@ home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
 masternodes_File = 'masternodes.json'
-rpc_File = 'rpcServer.json'
+
 cache_File = 'cache.json'
-DEFAULT_RPC_CONF = {
-    "rpc_ip": "127.0.0.1",
-    "rpc_port": 51473,
-    "rpc_user": "myUsername",
-    "rpc_password": "myPassword"
-    }
 DEFAULT_MN_CONF = {
     "name": "",
     "ip": "",
@@ -47,3 +41,10 @@ DEFAULT_CACHE = {
     "votingDelayNeg": 0,
     "votingDelayPos": 300
     }
+
+class DefaultRPCConf():
+    def __init__(self):
+        self.ip = '127.0.0.1'
+        self.port = 51473
+        self.user = 'myUsername'
+        self.password = 'myPassword'
