@@ -18,7 +18,6 @@ user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
 masternodes_File = 'masternodes.json'
 
-cache_File = 'cache.json'
 DEFAULT_MN_CONF = {
     "name": "",
     "ip": "",
@@ -29,18 +28,22 @@ DEFAULT_MN_CONF = {
     "hwAcc": 0,
     "collateral": {}
     }
-DEFAULT_CACHE = {
-    "lastAddress": "",
-    "window_width": starting_width,
-    "window_height": starting_height,
-    "splitter_sizes": [342, 133],
-    "mnList_order": {},
-    "useSwiftX": False,
-    "votingMasternodes": [],
-    "votingDelayCheck": False,
-    "votingDelayNeg": 0,
-    "votingDelayPos": 300
-    }
+
+class DefaultCache():
+    def __init__(self):
+        self.lastAddress = ""
+        self.winWidth = starting_width
+        self.winHeight = starting_height
+        self.useSwiftX = False
+        self.consoleHidden = False
+        self.splitterX = 342
+        self.splitterY = 133
+        self.mnOrder = {}
+        self.votingMNs = []
+        self.vdCheck = False
+        self.vdNeg = 0
+        self.vdPos = 300
+        
 
 class DefaultRPCConf():
     def __init__(self):
@@ -48,3 +51,4 @@ class DefaultRPCConf():
         self.port = 51473
         self.user = 'myUsername'
         self.password = 'myPassword'
+        

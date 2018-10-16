@@ -4,7 +4,7 @@ import sys
 import os.path
 from PyQt5.Qt import QFont, QDesktopServices, QUrl
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot, QSettings
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
     QMessageBox, QScrollArea, QLabel
 
@@ -17,7 +17,7 @@ from threads import ThreadFuns
 import time
 import random
 from utils import ecdsa_sign
-from constants import cache_File
+from constants import DefaultCache
 
 
 class Proposal():
@@ -68,10 +68,14 @@ class TabGovernance():
         
     
     def clear(self):
-        # Clear voting masternodes configuration and update cache
+        # Clear voting masternodes
         self.votingMasternodes = []
         self.caller.parent.cache['votingMasternodes'] = []
-        writeToFile(self.caller.parent.cache, cache_File)
+        # update cache
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        defaultcache = DefaultCache()
+        settings.setValue('cache_votingMNs', json.dumps(defaultcache.votingMNs))
+        
                 
     def countMyVotes(self):
         for prop in self.proposals:
@@ -287,7 +291,11 @@ class TabGovernance():
         self.caller.parent.cache["votingDelayCheck"] = self.ui.randomDelayCheck.isChecked()
         self.caller.parent.cache["votingDelayNeg"] = self.ui.randomDelayNeg_edt.value()
         self.caller.parent.cache["votingDelayPos"] = self.ui.randomDelayPos_edt.value()
-        writeToFile(self.caller.parent.cache, cache_File)
+        # persist to settings
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        settings.setValue('cache_vdCheck', self.caller.parent.cache["votingDelayCheck"])
+        settings.setValue('cache_vdNeg', self.caller.parent.cache["votingDelayNeg"])
+        settings.setValue('cache_vdPos', self.caller.parent.cache["votingDelayPos"])
         
         for prop in self.selectedProposals:
             for mn in self.votingMasternodes:               

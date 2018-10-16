@@ -6,7 +6,7 @@ from threads import ThreadFuns
 from ipaddress import ip_address
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from misc import printDbg, printOK, writeToFile, is_hex
-from constants import masternodes_File, cache_File
+from constants import masternodes_File
 from pivx_hashlib import generate_privkey
 
 from PyQt5.QtCore import pyqtSlot

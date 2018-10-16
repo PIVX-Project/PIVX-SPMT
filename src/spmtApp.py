@@ -4,9 +4,14 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import signal
-from misc import getSPMTVersion, printDbg, readCacheFile, writeToFile, printOK
-from constants import starting_height, starting_width, user_dir, cache_File
+import simplejson as json
+
+from misc import getSPMTVersion, printDbg, writeToFile, printOK
+from constants import user_dir, DefaultCache
+
 from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
+from PyQt5.QtCore import QSettings
+
 from mainWindow import MainWindow
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
 
@@ -38,10 +43,11 @@ class App(QMainWindow):
         # Create the userdir if it doesn't exist
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
-        # Read cache
-        self.cache = readCacheFile()
+        # Read cached app data
+        self.cache = self.readCache()
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
+        
  
     def initUI(self, masternode_list, imgDir):
         # Set title and geometry
@@ -76,6 +82,8 @@ class App(QMainWindow):
         self.show()
         self.activateWindow()
         
+        
+        
     def extract_name(self, json):
         try:
             return json['name'].lower()
@@ -104,22 +112,23 @@ class App(QMainWindow):
             self.mainWindow.hwdevice.dongle.close()
             print("Dongle closed")
             
-        # Save window/splitter size to cache file
-        self.cache["window_width"] = self.width()
-        self.cache["window_height"] = self.height()
-        self.cache["splitter_sizes"] = self.mainWindow.splitter.sizes()
-        self.cache["console_hidden"] = (self.mainWindow.btn_consoleToggle.text() == 'Show')
+        # Persist window/splitter size to cache settings
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        settings.setValue('cache_winWidth', self.width())
+        settings.setValue('cache_winHeight', self.height())
+        settings.setValue('cache_splitterX', self.mainWindow.splitter.sizes()[0])
+        settings.setValue('cache_splitterY', self.mainWindow.splitter.sizes()[1])
+        settings.setValue('cache_consoleHidden', (self.mainWindow.btn_consoleToggle.text() == 'Show'))
         
-        # Save mnList order to cache file
+        # Persist mnList order to cache settings
         mnOrder = {}
         mnList = self.mainWindow.tabMain.myList
         for i in range(mnList.count()):
             mnName = mnList.itemWidget(mnList.item(i)).alias
             mnOrder[mnName] = i
-        self.cache['mnList_order'] = mnOrder
+        settings.setValue('cache_mnOrder', json.dumps(mnOrder))
         
-        # Write cache file
-        writeToFile(self.cache, cache_File)
+        # Adios
         print("Bye Bye.")
         return QMainWindow.closeEvent(self, *args, **kwargs)
     
@@ -138,3 +147,24 @@ class App(QMainWindow):
         ui = ConfigureRPCserver_dlg(self)
         if ui.exec():
             printDbg("Configuring RPC Server...")
+            
+            
+    def readCache(self):
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        defaultcache = DefaultCache()
+        cache = {}     
+        cache["lastAddress"] = settings.value('cache_lastAddress', defaultcache.lastAddress, type=str)
+        cache["window_width"] = settings.value('cache_winWidth', defaultcache.winWidth, type=int)
+        cache["window_height"] = settings.value('cache_winHeight', defaultcache.winHeight, type=int)
+        cache["splitter_x"] = settings.value('cache_splitterX', defaultcache.splitterX, type=int)
+        cache["splitter_y"] = settings.value('cache_splitterY', defaultcache.splitterY, type=int)
+        cache["mnList_order"] = json.loads(settings.value('cache_mnOrder', json.dumps(defaultcache.mnOrder), type=str))
+        cache["console_hidden"] = settings.value('cache_consoleHidden', defaultcache.consoleHidden, type=bool)
+        cache["useSwiftX"] = settings.value('cache_useSwiftX', defaultcache.useSwiftX, type=bool)
+        cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(defaultcache.votingMNs), type=str))
+        cache["votingDelayCheck"] = settings.value('cache_vdCheck', defaultcache.vdCheck, type=bool)
+        cache["votingDelayNeg"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
+        cache["votingDelayPos"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
+        return cache
+        
+        

@@ -7,10 +7,10 @@ from misc import printDbg, printException, getCallerName, getFunctionName, write
 from threads import ThreadFuns
 from utils import checkPivxAddr
 from apiClient import ApiClient
-from constants import MPATH, MINIMUM_FEE, cache_File
+from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
 
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel, QApplication
 from PyQt5.QtWidgets import QMessageBox
@@ -262,7 +262,11 @@ class TabRewards():
             # save last destination address and swiftxCheck to cache
             self.caller.parent.cache["lastAddress"] = self.dest_addr
             self.caller.parent.cache["useSwiftX"] = self.useSwiftX()
-            writeToFile(self.caller.parent.cache, cache_File)            
+            # persist to settings
+            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+            settings.setValue('cache_lastAddress', self.caller.parent.cache["lastAddress"])
+            settings.setValue('cache_useSwiftX', self.caller.parent.cache["useSwiftX"])
+                             
             
             self.currFee = self.ui.feeLine.value() * 1e8            
 

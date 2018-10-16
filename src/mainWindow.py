@@ -110,7 +110,7 @@ class MainWindow(QWidget):
         self.splitter.addWidget(self.console)
         self.splitter.setStretchFactor(0,0)
         self.splitter.setStretchFactor(1,1)
-        self.splitter.setSizes(self.parent.cache.get("splitter_sizes"))
+        self.splitter.setSizes([self.parent.cache.get("splitter_x"), self.parent.cache.get("splitter_y")])
         self.layout.addWidget(self.splitter)
         
         ###-- Set Layout

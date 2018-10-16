@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "a",
- "comments": ["removed rpcServer.json"]
+ "tag": "b",
+ "comments": ["removed cache.json"]
  }

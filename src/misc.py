@@ -7,8 +7,7 @@ from urllib.parse import urlsplit
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
 from PyQt5.QtCore import QObject, pyqtSignal
-from constants import user_dir, log_File, masternodes_File, rpc_File, cache_File, \
-    DEFAULT_CACHE, DEFAULT_MN_CONF
+from constants import user_dir, log_File, masternodes_File, DEFAULT_MN_CONF
 
 def append_to_logfile(text):
     try:
@@ -213,35 +212,6 @@ def printOK(what):
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
-
-
-def readCacheFile():
-    try:
-        import simplejson as json
-        cache_file = os.path.join(user_dir, cache_File)
-        if os.path.exists(cache_file):
-            with open(cache_file) as data_file:
-                cache = json.load(data_file)
-
-        else:
-            resetCacheFile()
-        
-    except Exception as e:
-        if e.args is not None:
-            printDbg(e.args[0])
-        resetCacheFile()
-        return DEFAULT_CACHE
-    
-    # Fix missing data in cache
-    newKeys = False
-    for key in DEFAULT_CACHE:
-        if key not in cache:
-            cache[key] = DEFAULT_CACHE[key]
-            newKeys = True   
-    if newKeys:
-        writeToFile(cache, cache_File)
-        
-    return cache
     
  
  
@@ -312,17 +282,9 @@ def readRPCfile():
     return rpc_ip, rpc_port, rpc_user, rpc_password
 '''
 
-def resetRPCfile():
-    printDbg("Creating default rpcServer.json")
-    writeToFile(DEFAULT_RPC_CONF, rpc_File)
-    
 def resetMNfile():
     printDbg("Creating empty masternodes.json")
     writeToFile([], masternodes_File)
-    
-def resetCacheFile():
-    printDbg("No cache file found. Creating new.")
-    writeToFile(DEFAULT_CACHE, cache_File)
     
     
     

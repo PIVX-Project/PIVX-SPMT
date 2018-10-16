@@ -9,9 +9,9 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
     QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
     QApplication, QProgressBar, QCheckBox
 from PyQt5.Qt import QLabel
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QSettings
 from threads import ThreadFuns
-from constants import MPATH, cache_File, MINIMUM_FEE
+from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
 from utils import checkPivxAddr
 from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException
@@ -159,7 +159,10 @@ class SweepAll_dlg(QDialog):
                 # save last destination address and swiftxCheck to cache
                 self.main_tab.caller.parent.cache["lastAddress"] = self.dest_addr
                 self.main_tab.caller.parent.cache["useSwiftX"] = self.useSwiftX()
-                writeToFile(self.main_tab.caller.parent.cache, cache_File)
+                # persist to settings
+                settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+                settings.setValue('cache_lastAddress', self.main_tab.caller.parent.cache["lastAddress"])
+                settings.setValue('cache_useSwiftX', self.main_tab.caller.parent.cache["useSwiftX"])
                     
                 # re-connect signals
                 try:
