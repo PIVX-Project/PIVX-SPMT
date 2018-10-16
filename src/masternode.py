@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import bitcoin 
-from PyQt5.Qt import QObject
 from base64 import b64decode
-from utils import ecdsa_sign
-import time
-from pivx_hashlib import wif_to_privkey
 import binascii
-from constants import MPATH
-from misc import printOK, printDbg, printException, getCallerName, getFunctionName
-from utils import num_to_varint, ipmap, serialize_input_str
-from misc import ipport
+import bitcoin
+import time
+
+from PyQt5.Qt import QObject
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
+
+from constants import MPATH
+from misc import printOK, printDbg, printException, getCallerName, getFunctionName, ipport
+from pivx_hashlib import wif_to_privkey
+from utils import ecdsa_sign, num_to_varint, ipmap, serialize_input_str
 
 
 class Masternode(QObject):

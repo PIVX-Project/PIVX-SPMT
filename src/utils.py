@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import base64
-from misc import getCallerName, getFunctionName, printException
-from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, encode_sig, decode_sig, dbl_sha256
-from pivx_hashlib import wif_to_privkey
-from pivx_b58 import b58decode
-from bitcoin import bin_dbl_sha256
+from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, \
+    encode_sig, decode_sig, dbl_sha256, bin_dbl_sha256
 from ipaddress import ip_address
+
+from misc import getCallerName, getFunctionName, printException
+from pivx_b58 import b58decode
+from pivx_hashlib import wif_to_privkey
+
+
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
 OP_HASH160 = b'\xA9'

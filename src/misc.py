@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
+import os
 from ipaddress import ip_address
-from urllib.parse import urlsplit
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import time
+from urllib.parse import urlsplit
+
 from PyQt5.QtCore import QObject, pyqtSignal
+
 from constants import user_dir, log_File, masternodes_File, DEFAULT_MN_CONF
+
 
 def append_to_logfile(text):
     try:

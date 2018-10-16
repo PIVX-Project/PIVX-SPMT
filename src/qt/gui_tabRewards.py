@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
-from PyQt5.Qt import QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView,\
-    QCheckBox
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
-    QProgressBar
-from PyQt5.QtWidgets import QLineEdit, QComboBox
+    QProgressBar, QLineEdit, QComboBox, QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, \
+    QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
+    
 
 class TabRewards_gui(QWidget):
     def __init__(self, *args, **kwargs):

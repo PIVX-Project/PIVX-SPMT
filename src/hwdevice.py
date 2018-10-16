@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from bitcoin import bin_hash160
 from btchip.btchip import btchip, getDongle, BTChipException
 from btchip.btchipUtils import compress_public_key, bitcoinTransaction, bitcoinInput, bitcoinOutput
-from bitcoin import bin_hash160
+import threading
 from time import sleep
-from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString
-from constants import MPATH
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from PyQt5.QtCore import Qt, pyqtSignal
+
 from PyQt5.Qt import QObject
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QApplication
+
+from constants import MPATH
+from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString
+from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
-from pivx_hashlib import pubkey_to_address, single_sha256
-import threading
+
 
 class DisconnectedException(Exception):
     pass

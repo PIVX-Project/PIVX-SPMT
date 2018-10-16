@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import requests
 from random import choice
+import requests
+
 from misc import getCallerName, getFunctionName, printException, printDbg
 
 api_keys = ["b62b40b5091e", "f1d66708a077", "ed85c85c0126", "ccc60d06f737"]

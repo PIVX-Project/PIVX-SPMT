@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
+import os
 
 MPATH = "44'/77'/"
 WIF_PREFIX = 212 # 212 = d4

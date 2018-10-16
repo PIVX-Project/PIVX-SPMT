@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
+import random
+import time
+
 from PyQt5.Qt import QFont, QDesktopServices, QUrl
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt, pyqtSlot, QSettings
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
     QMessageBox, QScrollArea, QLabel
 
+from constants import DefaultCache
+from misc import printException, getCallerName, getFunctionName, \
+    printDbg, printOK, writeToFile
 from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
 from qt.dlg_budgetProjection import BudgetProjection_dlg
-from misc import printException, getCallerName, getFunctionName, printDbg, printOK, writeToFile
 from threads import ThreadFuns
-import time
-import random
 from utils import ecdsa_sign
-from constants import DefaultCache
+
 
 
 class Proposal():

@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-import hashlib
 import bitcoin
+import hashlib
+
 from constants import WIF_PREFIX, MAGIC_BYTE, TESTNET_WIF_PREFIX, TESTNET_MAGIC_BYTE
 from pivx_b58 import b58encode, b58decode
 

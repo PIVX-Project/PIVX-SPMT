@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-from threads import ThreadFuns
 from ipaddress import ip_address
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, printOK, writeToFile, is_hex
-from constants import masternodes_File
-from pivx_hashlib import generate_privkey
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
+from constants import masternodes_File
+from misc import printDbg, printOK, writeToFile, is_hex
+from pivx_hashlib import generate_privkey
 from qt.gui_tabMNConf import TabMNConf_gui
 from qt.dlg_findCollTx import FindCollTx_dlg
+from threads import ThreadFuns
+
 
 class TabMNConf():
     def __init__(self, caller, masternode_alias=None):

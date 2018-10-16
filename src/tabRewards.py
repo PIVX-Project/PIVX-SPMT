@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile
-from threads import ThreadFuns
-from utils import checkPivxAddr
+import simplejson as json
+
+from PyQt5.Qt import QApplication
+from PyQt5.QtCore import Qt, pyqtSlot, QSettings
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
+
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-
-from PyQt5.QtCore import Qt, pyqtSlot, QSettings
-from PyQt5.QtGui import QFont
-from PyQt5.Qt import QTableWidgetItem, QHeaderView, QItemSelectionModel, QApplication
-from PyQt5.QtWidgets import QMessageBox
-
+from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile
 from qt.gui_tabRewards import TabRewards_gui
-import simplejson as json
+from threads import ThreadFuns
+from utils import checkPivxAddr
 
 
 class TabRewards():

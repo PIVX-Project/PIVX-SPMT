@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget,\
-    QAbstractItemView, QHeaderView, QTableWidgetItem, QPushButton, QLabel,\
-    QGroupBox, QHBoxLayout, QFormLayout
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QAbstractItemView, QHeaderView, \
+    QTableWidgetItem, QPushButton, QLabel, QGroupBox, QHBoxLayout, QFormLayout
 
-from misc import printException
-    
-from misc import sec_to_time
+from misc import printException, sec_to_time
 from threads import ThreadFuns
 
 class BudgetProjection_dlg(QDialog):

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
 from ipaddress import ip_address
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
 from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox, QMessageBox
 from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
 from PyQt5.QtCore import pyqtSlot, QSettings
-from threads import ThreadFuns
 
-from misc import printDbg, checkRPCstring
 from constants import DefaultRPCConf
+from misc import printDbg, checkRPCstring
+from threads import ThreadFuns
 
 
 class ConfigureRPCserver_dlg(QDialog):

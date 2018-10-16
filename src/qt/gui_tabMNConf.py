@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox,\
-    QFrame
-from PyQt5.QtWidgets import QLineEdit
+    QFrame, QLineEdit
+    
 
 class TabMNConf_gui(QWidget):
     def __init__(self, masternode_alias=None, *args, **kwargs):

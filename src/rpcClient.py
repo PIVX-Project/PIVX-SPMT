@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from misc import getCallerName, getFunctionName, printException, printDbg, now
-from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 import threading
-from tabGovernance import Proposal
+
 from PyQt5.QtCore import pyqtSlot, QSettings
+
+from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
+from misc import getCallerName, getFunctionName, printException, printDbg, now
+from tabGovernance import Proposal
+
 
 class RpcClient:
         

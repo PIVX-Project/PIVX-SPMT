@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+import os
+
 from PyQt5.QtCore import Qt
-from PyQt5.Qt import QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
-from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
+
 
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):

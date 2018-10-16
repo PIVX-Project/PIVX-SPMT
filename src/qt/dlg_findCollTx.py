@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit 
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QSpacerItem, QSizePolicy, QTableWidget, QAbstractScrollArea, QAbstractItemView, QTableWidgetItem
-from PyQt5.Qt import QHBoxLayout, QHeaderView
-from threads import ThreadFuns
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, \
+    QSizePolicy, QTableWidget, QAbstractScrollArea, QAbstractItemView, QTableWidgetItem, QHeaderView, QSpacerItem
+
 from misc import printDbg
+from threads import ThreadFuns
+
 
 class FindCollTx_dlg(QDialog):
     def __init__(self, mainTab):

@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+import os
 import signal
 import simplejson as json
-
-from misc import getSPMTVersion, printDbg, writeToFile, printOK
-from constants import user_dir, DefaultCache
+import sys
 
 from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
 from PyQt5.QtCore import QSettings
 
+from misc import getSPMTVersion, printDbg, writeToFile, printOK
 from mainWindow import MainWindow
+from constants import user_dir, DefaultCache
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
+
 
 class ServiceExit(Exception):
     """

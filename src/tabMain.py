@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile, now
-from constants import masternodes_File
-from masternode import Masternode
-from apiClient import ApiClient
-from threads import ThreadFuns
 import simplejson as json
 import time
 
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.Qt import QApplication
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
+from apiClient import ApiClient
+from constants import masternodes_File
+from masternode import Masternode
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile, now
 from qt.gui_tabMain import TabMain_gui
 from qt.dlg_mnStatus import MnStatus_dlg
 from qt.dlg_sweepAll import SweepAll_dlg
+from threads import ThreadFuns
+
 
 class TabMain():
     def __init__(self, caller):

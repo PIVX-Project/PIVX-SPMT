@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel
-from PyQt5.Qt import QPushButton
-from PyQt5.QtCore import Qt
 import time
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QPushButton
+
 from misc import sec_to_time
 
 class MnStatus_dlg(QDialog):

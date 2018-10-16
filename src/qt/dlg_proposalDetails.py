@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-from PyQt5.QtGui import QPalette
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit,\
-    QScrollArea, QFrame
-from PyQt5.Qt import QPushButton
-from PyQt5.QtCore import Qt
 from time import strftime, gmtime
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette
+from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit,\
+    QScrollArea, QFrame, QPushButton
+
 
 class ProposalDetails_dlg(QDialog):
     def __init__(self, main_wnd, proposal):

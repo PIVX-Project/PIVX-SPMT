@@ -1,31 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
+import os
+from queue import Queue
 from time import strftime, gmtime
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
-    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
-from constants import starting_height, log_File, masternodes_File, DefaultRPCConf
+import sys
 
 from PyQt5.QtCore import pyqtSlot, Qt, QThread, QSettings
-from PyQt5.Qt import QTabWidget, QLabel, QIcon, QSplitter
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QFileDialog
-from PyQt5.QtWidgets import QMessageBox, QTextEdit
-from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor
+from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
+    QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
 
-from queue import Queue
-
-from rpcClient import RpcClient
 from apiClient import ApiClient
+from constants import starting_height, log_File, masternodes_File, DefaultRPCConf
 from hwdevice import HWdevice
-from qt.guiHeader import GuiHeader
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
+    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
+from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf
 from tabRewards import TabRewards
-from tabGovernance import TabGovernance
+from qt.guiHeader import GuiHeader
+from rpcClient import RpcClient
 from threads import ThreadFuns
 from watchdogThreads import RpcWatchdog
-    
 
 
 class MainWindow(QWidget):

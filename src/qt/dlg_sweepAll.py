@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+import simplejson as json
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot, QSettings
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
-    QAbstractScrollArea, QHeaderView, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
+    QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
     QApplication, QProgressBar, QCheckBox
-from PyQt5.Qt import QLabel
-from PyQt5.QtCore import pyqtSlot, QSettings
-from threads import ThreadFuns
+
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from utils import checkPivxAddr
 from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException
-import simplejson as json
+from threads import ThreadFuns
+from utils import checkPivxAddr
+
 
 class SweepAll_dlg(QDialog):
     def __init__(self, main_tab):

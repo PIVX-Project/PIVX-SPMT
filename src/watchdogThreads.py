@@ -1,7 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 from time import sleep
-from PyQt5.Qt import QApplication, QObject
-from misc import printOK
 from threading import Event
+
+from PyQt5.Qt import QApplication, QObject
+
+from misc import printOK
+
 
 class CtrlObject(object):
     pass
