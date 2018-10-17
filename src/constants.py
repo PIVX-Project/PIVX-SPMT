@@ -15,6 +15,7 @@ APPDATA_DIRNAME = ".SecurePivxMasternodeTool"
 home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
+database_file = os.path.join(user_dir, 'data.db')
 masternodes_File = 'masternodes.json'
 
 DEFAULT_MN_CONF = {

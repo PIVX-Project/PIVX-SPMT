@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "c",
- "comments": ["clean import headers"]
+ "tag": "d",
+ "comments": ["introduce sqlite3"]
  }
