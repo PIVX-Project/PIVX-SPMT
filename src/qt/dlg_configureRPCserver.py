@@ -7,7 +7,7 @@ from PyQt5.Qt import QPushButton, QGroupBox, QLineEdit, QHBoxLayout, QFormLayout
 from PyQt5.QtCore import pyqtSlot, QSettings
 
 from constants import DefaultRPCConf
-from misc import printDbg, checkRPCstring
+from misc import printDbg, checkRPCstring, saveLocalRPCSettings
 from threads import ThreadFuns
 
 
@@ -35,11 +35,7 @@ class ConfigureRPCserver_dlg(QDialog):
         
         
     def updateSettings(self):
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        settings.setValue('local_RPC_ip', self.rpc_ip)
-        settings.setValue('local_RPC_port', self.rpc_port)
-        settings.setValue('local_RPC_user', self.rpc_user)
-        settings.setValue('local_RPC_pass', self.rpc_password)
+        saveLocalRPCSettings(self.rpc_ip, self.rpc_port, self.rpc_user, self.rpc_password)
         
    
 

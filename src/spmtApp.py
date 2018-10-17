@@ -8,7 +8,7 @@ import sys
 from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
 from PyQt5.QtCore import QSettings
 
-from misc import getSPMTVersion, printDbg, writeToFile, printOK
+from misc import getSPMTVersion, printDbg, readMNfile, writeToFile, printOK, clean_v4_migration
 from mainWindow import MainWindow
 from constants import user_dir, DefaultCache
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
@@ -30,7 +30,7 @@ def service_shutdown(signum, frame):
 
 class App(QMainWindow):
  
-    def __init__(self, masternode_list, imgDir, app):
+    def __init__(self, imgDir, app):
         super().__init__()
         self.app = app
         # Register the signal handlers
@@ -42,8 +42,12 @@ class App(QMainWindow):
         # Create the userdir if it doesn't exist
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
+        # Clean v4 migration (read data from old files and delete them)
+        clean_v4_migration()
         # Read cached app data
         self.cache = self.readCache()
+        # Read Masternode List
+        masternode_list = readMNfile()
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
         
@@ -151,7 +155,7 @@ class App(QMainWindow):
     def readCache(self):
         settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
         defaultcache = DefaultCache()
-        cache = {}     
+        cache = {}
         cache["lastAddress"] = settings.value('cache_lastAddress', defaultcache.lastAddress, type=str)
         cache["window_width"] = settings.value('cache_winWidth', defaultcache.winWidth, type=int)
         cache["window_height"] = settings.value('cache_winHeight', defaultcache.winHeight, type=int)
@@ -163,7 +167,7 @@ class App(QMainWindow):
         cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(defaultcache.votingMNs), type=str))
         cache["votingDelayCheck"] = settings.value('cache_vdCheck', defaultcache.vdCheck, type=bool)
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
-        cache["votingDelayPos"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
+        cache["votingDelayPos"] = settings.value('cache_vdPos', defaultcache.vdPos, type=int)
         return cache
         
         

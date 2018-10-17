@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
       
     
@@ -20,9 +21,9 @@ if __name__ == '__main__':
         
     from PyQt5.QtWidgets import QApplication
     from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
+    
+    from misc import updateSplash
     from spmtApp import App 
-    from misc import readMNfile, updateSplash
-    import time
     
     # Create App
     app = QApplication(sys.argv)
@@ -60,10 +61,8 @@ if __name__ == '__main__':
            
     ### --------------       
     
-    # Read Masternode List
-    masternode_list = readMNfile()
     # Create QMainWindow Widget
-    ex = App(masternode_list, imgDir, app)
+    ex = App(imgDir, app)
     
     # Close Splashscreen
     splash.close()

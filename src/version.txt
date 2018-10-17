@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "d",
- "comments": ["introduce sqlite3"]
+ "tag": "e",
+ "comments": ["clean_v4_migration"]
  }
