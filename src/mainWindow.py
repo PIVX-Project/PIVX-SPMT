@@ -49,12 +49,13 @@ class MainWindow(QWidget):
         self.layout = QVBoxLayout()
         self.header = GuiHeader(self)
         self.initConsole()
-        self.layout.addWidget(self.header)       
+        self.layout.addWidget(self.header)
+
         ###-- Create RPC Whatchdog
         self.rpc_watchdogThread = QThread()
         self.myRpcWd = RpcWatchdog(self)
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
-        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)       
+        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
         
         ###-- Create Queues and redirect stdout and stderr
         self.queue = Queue()
@@ -107,18 +108,18 @@ class MainWindow(QWidget):
         self.splitter.addWidget(self.console)
         self.splitter.setStretchFactor(0,0)
         self.splitter.setStretchFactor(1,1)
-        self.splitter.setSizes([self.parent.cache.get("splitter_x"), self.parent.cache.get("splitter_y")])
         self.layout.addWidget(self.splitter)
         
         ###-- Set Layout
         self.setLayout(self.layout)
+        ###-- Init Settings
+        self.initSettings()
+        ###-- Connect buttons/signals
+        self.connButtons()
+        
         ###-- Let's go
         self.mnode_to_change = None
         printOK("Hello! Welcome to " + parent.title)
-        
-        ###-- Hide console if it was previously hidden
-        if self.parent.cache.get("console_hidden"):
-            self.onToggleConsole()
             
         ##-- Check version
         self.onCheckVersion()
@@ -133,20 +134,35 @@ class MainWindow(QWidget):
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
+        
+        
+        
+    def connButtons(self):
+        self.header.button_checkRpc.clicked.connect(lambda: self.onCheckRpc())
+        self.header.button_checkHw.clicked.connect(lambda: self.onCheckHw())
+        self.header.rpcClientsBox.currentIndexChanged.connect(self.onChangeSelectedRPC)
             
             
             
     def getRPCserver(self):
         # if local wallet get QSettings
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        defaultconf = DefaultRPCConf()
-        rpc_protocol = 'http'
-        rpc_ip = settings.value('local_RPC_ip', defaultconf.ip, type=str)
-        rpc_port = settings.value('local_RPC_port', defaultconf.port, type=int)
-        rpc_host = '%s:%d' % (rpc_ip, rpc_port)
-        rpc_user = settings.value('local_RPC_user', defaultconf.user, type=str)
-        rpc_password = settings.value('local_RPC_pass', defaultconf.password, type=str)
+        if self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex()) == -1:
+            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+            defaultconf = DefaultRPCConf()
+            rpc_protocol = 'http'
+            rpc_ip = settings.value('local_RPC_ip', defaultconf.ip, type=str)
+            rpc_port = settings.value('local_RPC_port', defaultconf.port, type=int)
+            rpc_host = '%s:%d' % (rpc_ip, rpc_port)
+            rpc_user = settings.value('local_RPC_user', defaultconf.user, type=str)
+            rpc_password = settings.value('local_RPC_pass', defaultconf.password, type=str)
         
+        # else get Variant data
+        else:
+            rpc_protocol = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[0]
+            rpc_host = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[1]
+            rpc_user = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[2]
+            rpc_password = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[3]
+            
         return rpc_protocol, rpc_host, rpc_user, rpc_password
         
         
@@ -186,7 +202,16 @@ class MainWindow(QWidget):
         self.consoleArea.setPalette(palette)
         layout.addWidget(self.consoleArea)
         self.console.setLayout(layout) 
+        
+        
     
+    def initSettings(self):
+        self.splitter.setSizes([self.parent.cache.get("splitter_x"), self.parent.cache.get("splitter_y")])
+        ###-- Hide console if it was previously hidden
+        if self.parent.cache.get("console_hidden"):
+            self.onToggleConsole()
+        # Select RPC server
+        self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
 
     
     def isMasternodeInList(self, mn_alias):
@@ -281,7 +306,6 @@ class MainWindow(QWidget):
     
     @pyqtSlot()
     def onCheckRpc(self):
-        printDbg("Checking RPC server...")      
         self.runInThread(self.updateRPCstatus, (), self.showRPCstatus) 
         
         
@@ -309,6 +333,18 @@ class MainWindow(QWidget):
     def updateVersion(self):
         if self.versionMess is not None:
             self.versionLabel.setText(self.versionMess)
+            
+            
+            
+    @pyqtSlot(int)
+    def onChangeSelectedRPC(self, i):
+        # persist setting
+        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+        settings.setValue('cache_RPCindex', i)
+        # close connection and try to open new one
+        self.rpcClient = None
+        self.runInThread(self.updateRPCstatus, (), self.showRPCstatus)
+
         
         
         
@@ -378,10 +414,7 @@ class MainWindow(QWidget):
             self.console.setMaximumHeight(starting_height)
             self.btn_consoleToggle.setText('Hide')
             self.consoleArea.show()  
-            
-            
-    
-    
+
     
     
     def showHWstatus(self):
@@ -450,12 +483,8 @@ class MainWindow(QWidget):
             text = "Loading block index..."
         elif self.rpcLastBlock > 0 and self.rpcConnected:
             text = str(self.rpcLastBlock)
-            text += " ("       
             if not self.isBlockchainSynced:
-                text += "Synchronizing"
-            else:
-                text += "Synced"
-            text += ")"
+                text += " (Synchronizing)"
                 
         self.header.lastBlockLabel.setText(text)
         
@@ -463,14 +492,20 @@ class MainWindow(QWidget):
         
 
                   
-    def updateRPCled(self):
+    def updateRPCled(self, fDebug=True):
         if self.rpcConnected:
             self.header.rpcLed.setPixmap(self.ledPurpleH_icon)
+            if fDebug:
+                printDbg("Connected to RPC server.")
         else:
             if self.rpcLastBlock == 1:
                 self.header.rpcLed.setPixmap(self.ledHalfPurpleH_icon)
+                if fDebug:
+                    printDbg("Connected to RPC server - Still syncing...")
             else:
                 self.header.rpcLed.setPixmap(self.ledGrayH_icon)
+                if fDebug:
+                    printDbg("Connection to RPC server failed.")
             
         self.header.rpcLed.setToolTip(self.rpcStatusMess)
         self.updateLastBlockLabel()
@@ -478,12 +513,16 @@ class MainWindow(QWidget):
 
     
         
-    def updateRPCstatus(self, ctrl):
+    def updateRPCstatus(self, ctrl, fDebug=True):
         rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         
         if self.rpcClient is None:
+            rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
             self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
  
+        if fDebug:
+            printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
+        
         status, statusMess, lastBlock = self.rpcClient.getStatus()
             
         self.rpcConnected = status
@@ -493,6 +532,7 @@ class MainWindow(QWidget):
         
         # If is not connected try again
         if not status:
+            del self.rpcClient
             self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
     
     

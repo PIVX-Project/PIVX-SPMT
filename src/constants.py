@@ -43,6 +43,7 @@ class DefaultCache():
         self.vdCheck = False
         self.vdNeg = 0
         self.vdPos = 300
+        self.RPCindex = 1
         
 
 class DefaultRPCConf():
@@ -51,4 +52,10 @@ class DefaultRPCConf():
         self.port = 51473
         self.user = 'myUsername'
         self.password = 'myPassword'
+        
+        
+trusted_RPC_Servers = [
+    ["https", "amsterdam.randomzebra.party:8080", "spmtUser_ams", "WUss6sr8956S5Paex254"],
+    ["https", "losangeles.randomzebra.party:8080", "spmtUser_la", "8X88u7TuefPm7mQaJY52"],
+    ["https", "singapore.randomzebra.party:8080", "spmtUser_sing", "ZyD936tm9dvqmMP8A777"]]
         

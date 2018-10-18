@@ -168,6 +168,7 @@ class App(QMainWindow):
         cache["votingDelayCheck"] = settings.value('cache_vdCheck', defaultcache.vdCheck, type=bool)
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
         cache["votingDelayPos"] = settings.value('cache_vdPos', defaultcache.vdPos, type=int)
+        cache['selectedRPC_index'] = settings.value('cache_RPCindex', defaultcache.RPCindex, type=int)
         return cache
         
         

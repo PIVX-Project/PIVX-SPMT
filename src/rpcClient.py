@@ -20,7 +20,7 @@ class RpcClient:
 
         try:
             self.lock.acquire()
-            self.conn = AuthServiceProxy(rpc_url, timeout=120)     
+            self.conn = AuthServiceProxy(rpc_url, timeout=30)     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -307,7 +307,7 @@ class RpcClient:
             n = self.conn.getblockcount()
             if n > 0:
                 status = True
-                statusMess = "Connected to PIVX RPC client"
+                statusMess = "Connected to PIVX Blockchain"
                 
         except Exception as e:
             # If loading block index set lastBlock=1
@@ -315,9 +315,13 @@ class RpcClient:
                 printDbg(str(e.args[0]))
                 statusMess = "PIVX wallet is connected but still synchronizing / verifying blocks"
                 n = 1
+            elif str(e.args[0]) == "Remote end closed connection without response":
+                # try again
+                statusMess = "Remote end closed connection without response"                
             elif str(e.args[0]) != "Request-sent" and str(e.args[0]) != "10061":
                 err_msg = "Error while contacting RPC server"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
+
                 
         finally:
             self.lock.release()

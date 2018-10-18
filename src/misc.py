@@ -237,7 +237,7 @@ def printException_msg(
     msg += '<span style="color:white">function</span> : %s<br>' % function_name
     msg += '<span style="color:red">'
     if errargs:
-        msg += 'err: %s<br>' % str(errargs[0])
+        msg += 'err: %s<br>' % str(errargs)
         
     msg += '===> %s</span><br>' % err_msg 
     return msg
@@ -352,16 +352,19 @@ def splitString(text, n):
 
 def updateSplash(label, i):
     if i==10:
-        progressText = "Loading masternode configuration data..."
+        progressText = "Loading configuration data..."
         label.setText(progressText)
-    elif i==30:
-        progressText = "Creating the user interface..."
+    elif i==40:
+        progressText = "Opening database..."
         label.setText(progressText)
-    elif i==59:
+    elif i==50:
+        progressText = "Creating user interface..."
+        label.setText(progressText)
+    elif i==70:
         progressText = "Releasing the watchdogs..."
         label.setText(progressText)
-    elif i==89:
-        progressText = "Enjoy the UPF!"
+    elif i==90:
+        progressText = "SPMT ready"
         label.setText(progressText)   
     elif i==99:
         time.sleep(0.1)

@@ -6,11 +6,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
 
+from constants import trusted_RPC_Servers
 
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        myFont = QFont("Times", italic=True)
+        italicFont = QFont("Times", italic=True)
+        smallFont = QFont("Times", 7)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         # --- 1) Check Box
@@ -21,22 +23,23 @@ class GuiHeader(QWidget):
         self.centralBox.addWidget(label1, 0, 0)
         self.rpcClientsBox = QComboBox()
         self.rpcClientsBox.setToolTip("Select RPC server.\nLocal must be configured.")
-        rpcClients = ["Local Wallet"]
-        self.rpcClientsBox.addItems(rpcClients)
+        self.rpcClientsBox.addItem("Local Wallet", -1)
+        self.rpcClientsBox.setItemData(0, italicFont, Qt.FontRole)
+        for trusted_server in trusted_RPC_Servers:
+            url = trusted_server[0] + "://" + trusted_server[1][:-5]
+            self.rpcClientsBox.addItem(url, trusted_server)
         self.centralBox.addWidget(self.rpcClientsBox, 0, 1)
-        self.button_checkRpc = QPushButton("Connect")
+        self.button_checkRpc = QPushButton("Connect/Update")
         self.button_checkRpc.setToolTip("try to connect to RPC server")
-        self.button_checkRpc.clicked.connect(caller.onCheckRpc)
         self.centralBox.addWidget(self.button_checkRpc, 0, 2)
         self.rpcLed = QLabel()
         self.rpcLed.setToolTip("%s" % caller.rpcStatusMess)
         self.rpcLed.setPixmap(caller.ledGrayH_icon)
         self.centralBox.addWidget(self.rpcLed, 0, 3)
-        label2 = QLabel("Current block:")
-        self.centralBox.addWidget(label2, 0, 4)
         self.lastBlockLabel = QLabel()
-        self.lastBlockLabel.setFont(myFont)
-        self.centralBox.addWidget(self.lastBlockLabel, 0, 5)
+        self.lastBlockLabel.setFont(smallFont)
+        self.lastBlockLabel.setToolTip("last pinged Block number")
+        self.centralBox.addWidget(self.lastBlockLabel, 0, 4)
         # -- 1b) Select & Check hardware
         label3 = QLabel("Hardware Device")
         self.centralBox.addWidget(label3, 1, 0)
@@ -46,8 +49,7 @@ class GuiHeader(QWidget):
         self.hwDevices.addItems(hwDevices)
         self.centralBox.addWidget(self.hwDevices, 1, 1) 
         self.button_checkHw = QPushButton("Connect")
-        self.button_checkHw.setToolTip("try to connect to hardware device")
-        self.button_checkHw.clicked.connect(caller.onCheckHw) 
+        self.button_checkHw.setToolTip("try to connect to hardware device") 
         self.centralBox.addWidget(self.button_checkHw, 1, 2)
         self.hwLed = QLabel()
         self.hwLed.setToolTip("Status: %s" % caller.hwStatusMess)
@@ -61,3 +63,4 @@ class GuiHeader(QWidget):
         spmtLogo.setPixmap(QPixmap(spmtLogo_file).scaledToHeight(87, Qt.SmoothTransformation))
         layout.addWidget(spmtLogo)
         self.setLayout(layout)
+        

@@ -12,7 +12,7 @@ class CtrlObject(object):
     pass
 
 class RpcWatchdog(QObject):
-    def __init__(self, control_tab, timer_off=3, timer_on=7, *args, **kwargs):
+    def __init__(self, control_tab, timer_off=10, timer_on=120, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.shutdown_flag = Event()
         self.control_tab = control_tab
@@ -24,9 +24,10 @@ class RpcWatchdog(QObject):
      
     def run(self):    
         while not self.shutdown_flag.is_set():
-            self.control_tab.updateRPCstatus(self.ctrl_obj)
+            # update status without printing on debug
+            self.control_tab.updateRPCstatus(self.ctrl_obj, False)
             QApplication.processEvents()
-            self.control_tab.updateRPCled()
+            self.control_tab.updateRPCled(False)
             
             if not self.control_tab.rpcConnected:
                 sleep(self.timer_off)
