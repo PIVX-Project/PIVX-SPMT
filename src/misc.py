@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 import os
 from ipaddress import ip_address
+import simplejson as json
 import time
 from urllib.parse import urlsplit
 
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 
-from constants import user_dir, log_File, masternodes_File, DEFAULT_MN_CONF
+from constants import user_dir, log_File, masternodes_File, DEFAULT_MN_CONF, DefaultCache
 
 
 def append_to_logfile(text):
@@ -22,7 +23,6 @@ def append_to_logfile(text):
         
 def clean_v4_migration():
     try:
-        import simplejson as json
         rpc_file = os.path.join(user_dir, 'rpcServer.json')
         cache_file = os.path.join(user_dir, 'cache.json')
         
@@ -47,7 +47,7 @@ def clean_v4_migration():
             with open(cache_file) as data_file:
                 cache = json.load(data_file)
             # copy to Settings
-            saveCacheSettings(cache)
+            saveCacheSettings(cache, True)
             printDbg("...saved to Settings")
             # and delete old file
             os.remove(cache_file)
@@ -112,7 +112,6 @@ def getRemoteSPMTversion():
 
 
 def getSPMTVersion():
-    import simplejson as json
     version_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
     with open(version_file) as data_file:
@@ -263,7 +262,6 @@ def printOK(what):
     
 def readMNfile():
     try:
-        import simplejson as json
         mn_file = os.path.join(user_dir, masternodes_File)
         if os.path.exists(mn_file):
             with open(mn_file) as data_file:
@@ -310,17 +308,21 @@ def saveLocalRPCSettings(ip, port, user, password):
 
 def saveLocalRPCSettingsConf(conf):
     saveLocalRPCSettings(conf.get('rpc_ip'), conf.get('rpc_port'), conf.get('rpc_user'), conf.get('rpc_password'))
+ 
     
     
 
-def saveCacheSettings(cache):
-    import simplejson as json
+def saveCacheSettings(cache, old_version=False):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
     settings.setValue('cache_winWidth', cache.get('window_width'))
     settings.setValue('cache_winHeight', cache.get('window_height'))
-    settings.setValue('cache_splitterX', cache.get('splitter_sizes')[0])
-    settings.setValue('cache_splitterY', cache.get('splitter_sizes')[1])
+    if old_version:
+        settings.setValue('cache_splitterX', cache.get('splitter_sizes')[0])
+        settings.setValue('cache_splitterY', cache.get('splitter_sizes')[1])
+    else:
+        settings.setValue('cache_splitterX', cache.get('splitter_x'))
+        settings.setValue('cache_splitterY', cache.get('splitter_y'))
     settings.setValue('cache_mnOrder', json.dumps(cache.get('mnList_order')))
     settings.setValue('cache_consoleHidden', cache.get('console_hidden'))   
     settings.setValue('cache_useSwiftX', cache.get('useSwiftX'))
@@ -328,6 +330,44 @@ def saveCacheSettings(cache):
     settings.setValue('cache_vdCheck', cache.get('votingDelayCheck'))
     settings.setValue('cache_vdNeg', cache.get('votingDelayNeg'))
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))
+    if not old_version:
+        settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
+    
+
+def persistCacheSetting(cache_key, cache_value):
+    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+    if not settings.contains(cache_key):
+        errorMsg = "Adding new cache key to settings..."
+        causeMsg = "Cache key %s not found" % str(cache_key)
+        printException(getCallerName(), getFunctionName(), errorMsg, causeMsg)
+        
+    if cache_value and type(cache_value) in [list, dict]:    
+        settings.setValue(cache_key, json.dumps(cache_value))
+    else:
+        settings.setValue(cache_key, cache_value)
+
+    return cache_value
+
+
+
+def readCacheSettings():
+    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+    defaultcache = DefaultCache()
+    cache = {}
+    cache["lastAddress"] = settings.value('cache_lastAddress', defaultcache.lastAddress, type=str)
+    cache["window_width"] = settings.value('cache_winWidth', defaultcache.winWidth, type=int)
+    cache["window_height"] = settings.value('cache_winHeight', defaultcache.winHeight, type=int)
+    cache["splitter_x"] = settings.value('cache_splitterX', defaultcache.splitterX, type=int)
+    cache["splitter_y"] = settings.value('cache_splitterY', defaultcache.splitterY, type=int)
+    cache["mnList_order"] = json.loads(settings.value('cache_mnOrder', json.dumps(defaultcache.mnOrder), type=str))
+    cache["console_hidden"] = settings.value('cache_consoleHidden', defaultcache.consoleHidden, type=bool)
+    cache["useSwiftX"] = settings.value('cache_useSwiftX', defaultcache.useSwiftX, type=bool)
+    cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(defaultcache.votingMNs), type=str))
+    cache["votingDelayCheck"] = settings.value('cache_vdCheck', defaultcache.vdCheck, type=bool)
+    cache["votingDelayNeg"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
+    cache["votingDelayPos"] = settings.value('cache_vdPos', defaultcache.vdPos, type=int)
+    cache['selectedRPC_index'] = settings.value('cache_RPCindex', defaultcache.RPCindex, type=int)
+    return cache
 
     
     
@@ -373,7 +413,6 @@ def updateSplash(label, i):
 
 def writeToFile(data, filename):
     try:
-        import simplejson as json
         datafile_name = os.path.join(user_dir, filename)
         with open(datafile_name, 'w+') as data_file:
             json.dump(data, data_file)        

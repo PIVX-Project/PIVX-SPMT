@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import simplejson as json
 
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
     QTableWidgetItem, QLabel, QHBoxLayout, QPushButton
     
-from misc import writeToFile
+from misc import writeToFile, persistCacheSetting
     
 class masternodeItem(QTableWidgetItem):
     def __init__(self, name, txid):
@@ -52,9 +51,7 @@ class SelectMNs_dlg(QDialog):
         self.main_wnd.votingMasternodes = self.getSelection()
         self.main_wnd.updateSelectedMNlabel()
         # persist voting masternodes to cache
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        self.main_wnd.caller.parent.cache['votingMasternodes'] = self.main_wnd.votingMasternodes
-        settings.setValue('cache_votingMNs', json.dumps(self.main_wnd.votingMasternodes))
+        self.main_wnd.caller.parent.cache['votingMasternodes'] = persistCacheSetting('cache_votingMNs', self.main_wnd.votingMasternodes)
         self.accept()
         
         

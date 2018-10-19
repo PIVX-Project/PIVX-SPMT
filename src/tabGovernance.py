@@ -4,13 +4,13 @@ import random
 import time
 
 from PyQt5.Qt import QFont, QDesktopServices, QUrl
-from PyQt5.QtCore import Qt, pyqtSlot, QSettings
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
     QMessageBox, QScrollArea, QLabel
 
 from constants import DefaultCache
 from misc import printException, getCallerName, getFunctionName, \
-    printDbg, printOK, writeToFile
+    printDbg, printOK, writeToFile, persistCacheSetting
 from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
@@ -68,13 +68,9 @@ class TabGovernance():
         
     
     def clear(self):
-        # Clear voting masternodes
-        self.votingMasternodes = []
-        self.caller.parent.cache['votingMasternodes'] = []
-        # update cache
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        defaultcache = DefaultCache()
-        settings.setValue('cache_votingMNs', json.dumps(defaultcache.votingMNs))
+        # Clear voting masternodes and update cache
+        self.votingMasternodes = DefaultCache().votingMNs
+        self.caller.parent.cache['votingMasternodes'] = persistCacheSetting('cache_votingMNs', self.votingMasternodes)
         
                 
     def countMyVotes(self):
@@ -287,15 +283,10 @@ class TabGovernance():
         self.successVotes = 0
         self.failedVotes = 0
         
-        # save delay check data to cache
-        self.caller.parent.cache["votingDelayCheck"] = self.ui.randomDelayCheck.isChecked()
-        self.caller.parent.cache["votingDelayNeg"] = self.ui.randomDelayNeg_edt.value()
-        self.caller.parent.cache["votingDelayPos"] = self.ui.randomDelayPos_edt.value()
-        # persist to settings
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        settings.setValue('cache_vdCheck', self.caller.parent.cache["votingDelayCheck"])
-        settings.setValue('cache_vdNeg', self.caller.parent.cache["votingDelayNeg"])
-        settings.setValue('cache_vdPos', self.caller.parent.cache["votingDelayPos"])
+        # save delay check data to cache and persist settings
+        self.caller.parent.cache["votingDelayCheck"] = persistCacheSetting('cache_vdCheck', self.ui.randomDelayCheck.isChecked())
+        self.caller.parent.cache["votingDelayNeg"] = persistCacheSetting('cache_vdNeg', self.ui.randomDelayNeg_edt.value())
+        self.caller.parent.cache["votingDelayPos"] = persistCacheSetting('cache_vdPos', self.ui.randomDelayPos_edt.value())
         
         for prop in self.selectedProposals:
             for mn in self.votingMasternodes:               

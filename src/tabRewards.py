@@ -3,14 +3,14 @@
 import simplejson as json
 
 from PyQt5.Qt import QApplication
-from PyQt5.QtCore import Qt, pyqtSlot, QSettings
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile
+from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile, persistCacheSetting
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
@@ -256,14 +256,9 @@ class TabRewards():
             self.ui.loadingLinePercent.show()
             QApplication.processEvents()            
             
-            # save last destination address and swiftxCheck to cache
-            self.caller.parent.cache["lastAddress"] = self.dest_addr
-            self.caller.parent.cache["useSwiftX"] = self.useSwiftX()
-            # persist to settings
-            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-            settings.setValue('cache_lastAddress', self.caller.parent.cache["lastAddress"])
-            settings.setValue('cache_useSwiftX', self.caller.parent.cache["useSwiftX"])
-                             
+            # save last destination address and swiftxCheck to cache and persist to settings
+            self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
+            self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())                            
             
             self.currFee = self.ui.feeLine.value() * 1e8            
 

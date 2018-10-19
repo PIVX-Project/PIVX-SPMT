@@ -14,7 +14,8 @@ from apiClient import ApiClient
 from constants import starting_height, log_File, masternodes_File, DefaultRPCConf, DefaultCache
 from hwdevice import HWdevice
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
-    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
+    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
+    writeToFile, persistCacheSetting
 from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf
@@ -213,9 +214,8 @@ class MainWindow(QWidget):
         # Select RPC server:
         if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
             # (if manually removed from the config files) replace default index
-            self.parent.cache['selectedRPC_index'] = DefaultCache().RPCindex
-            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-            settings.setValue('cache_RPCindex', DefaultCache().RPCindex)
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache().RPCindex)
+
         self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
 
         
@@ -345,9 +345,7 @@ class MainWindow(QWidget):
     @pyqtSlot(int)
     def onChangeSelectedRPC(self, i):
         # persist setting
-        self.parent.cache['selectedRPC_index'] = i
-        settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-        settings.setValue('cache_RPCindex', i)
+        self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
         # close connection and try to open new one
         self.rpcClient = None
         self.runInThread(self.updateRPCstatus, (), self.showRPCstatus)
