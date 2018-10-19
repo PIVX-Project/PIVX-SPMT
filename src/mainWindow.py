@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxL
     QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
-from constants import starting_height, log_File, masternodes_File, DefaultRPCConf
+from constants import starting_height, log_File, masternodes_File, DefaultRPCConf, DefaultCache
 from hwdevice import HWdevice
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, writeToFile
@@ -210,9 +210,15 @@ class MainWindow(QWidget):
         ###-- Hide console if it was previously hidden
         if self.parent.cache.get("console_hidden"):
             self.onToggleConsole()
-        # Select RPC server
+        # Select RPC server:
+        if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
+            # (if manually removed from the config files) replace default index
+            self.parent.cache['selectedRPC_index'] = DefaultCache().RPCindex
+            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+            settings.setValue('cache_RPCindex', DefaultCache().RPCindex)
         self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
 
+        
     
     def isMasternodeInList(self, mn_alias):
         return (mn_alias in [x['name'] for x in self.masternode_list])    
@@ -339,6 +345,7 @@ class MainWindow(QWidget):
     @pyqtSlot(int)
     def onChangeSelectedRPC(self, i):
         # persist setting
+        self.parent.cache['selectedRPC_index'] = i
         settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
         settings.setValue('cache_RPCindex', i)
         # close connection and try to open new one
