@@ -167,7 +167,7 @@ class RpcClient:
             masternodes = self.conn.listmasternodes()
         except Exception as e:
             err_msg = "error in getMasternodes"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e)
             masternodes = []
         finally:
             self.lock.release()

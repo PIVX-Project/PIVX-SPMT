@@ -11,11 +11,11 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxL
     QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
-from constants import starting_height, log_File, masternodes_File, DefaultRPCConf, DefaultCache
+from constants import starting_height, log_File, DefaultRPCConf, DefaultCache
 from hwdevice import HWdevice
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
-    writeToFile, persistCacheSetting
+    persistCacheSetting,  appendMasternode
 from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf
@@ -34,7 +34,8 @@ class MainWindow(QWidget):
         self.imgDir = imgDir 
         self.runInThread = ThreadFuns.runInThread
         ###-- Masternode list 
-        self.masternode_list = masternode_list      
+        self.masternode_list = masternode_list
+
         ###-- Create clients and statuses
         self.hwdevice = None
         self.hwStatus = 0
@@ -214,7 +215,7 @@ class MainWindow(QWidget):
         # Select RPC server:
         if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
             # (if manually removed from the config files) replace default index
-            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache().RPCindex)
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache["selectedRPC_index"])
 
         self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
 
@@ -242,23 +243,19 @@ class MainWindow(QWidget):
             messText = "Unable to load data from file '%s'" % fileName
             self.myPopUp2(QMessageBox.Warning, "SPMT - warning", messText)
         else:
-            # Append new masternodes to list
             new_masternodes = []
             skip_masternodes = []
             for x in hot_masternodes:
+                # If masternode name is not in list
                 if not self.isMasternodeInList(x['name']):
-                    self.masternode_list.append(x)
+                    # Add to cache, QListWidget and database 
+                    appendMasternode(self, x)
                     new_masternodes.append(x)
+                # Otherwise skip it
                 else:
                     skip_masternodes.append(x)
 
-            # Show new list
-            for new_masternode in new_masternodes:
-                name = new_masternode['name']
-                self.tabMain.insert_mn_list(name, new_masternode['ip'], new_masternode['port'], None, isHardware=False)
-                self.tabMain.btn_remove[name].clicked.connect(lambda: self.t_main.onRemoveMN())
-            
-            # print number of nodes added
+            # Print number of nodes added
             new_nodes = len(new_masternodes)
             final_message = ""
             if new_nodes == 0:
@@ -274,14 +271,6 @@ class MainWindow(QWidget):
                 final_message += "Following entries skipped due to duplicate names:"
                 final_message += str([x['name'] for x in skip_masternodes]) + ".  "
             printDbg(final_message)
-            
-            if new_nodes > 0:
-                # update files
-                printDbg("saving MN configuration file")
-                writeToFile(self.masternode_list, masternodes_File)
-                printDbg("saved")
-                # Clear voting masternodes configuration and update cache
-                self.t_governance.clear() 
 
         
         

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
 
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, writeToFile, getCallerName, getFunctionName, printException, persistCacheSetting
+from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting
 from threads import ThreadFuns
 from utils import checkPivxAddr
 

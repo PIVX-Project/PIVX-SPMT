@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
     QTableWidgetItem, QLabel, QHBoxLayout, QPushButton
     
-from misc import writeToFile, persistCacheSetting
+from misc import persistCacheSetting
     
 class masternodeItem(QTableWidgetItem):
     def __init__(self, name, txid):

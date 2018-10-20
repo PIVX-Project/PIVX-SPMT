@@ -8,9 +8,9 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from apiClient import ApiClient
-from constants import masternodes_File
 from masternode import Masternode
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, writeToFile, now
+from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
+    now, removeMNfromList
 from qt.gui_tabMain import TabMain_gui
 from qt.dlg_mnStatus import MnStatus_dlg
 from qt.dlg_sweepAll import SweepAll_dlg
@@ -172,17 +172,9 @@ class TabMain():
         
             for masternode in self.caller.masternode_list:
                 if masternode['name'] == masternode_alias:
-                    self.caller.masternode_list.remove(masternode)
+                    # remove from cache, QListWidget and DB
+                    removeMNfromList(self.caller, masternode)
                     break
-            try:
-                writeToFile(self.caller.masternode_list, masternodes_File)
-                self.ui.myList.takeItem(self.ui.myList.row(self.ui.current_mn[masternode_alias]))
-            except Exception as e:
-                err_msg = "Error writing masternode file"
-                printException(getCallerName(), getFunctionName(), err_msg, e)
-                
-            # Clear voting masternodes configuration and update cache
-            self.caller.t_governance.clear()
             
     
     

@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 
-from constants import user_dir, log_File, masternodes_File, DEFAULT_MN_CONF, DefaultCache
+from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache
 
 
 def append_to_logfile(text):
@@ -18,15 +18,64 @@ def append_to_logfile(text):
         logFile.close()
     except Exception as e:
         print(e)
+
+    
+    
+        
+def appendMasternode(mainWnd, mn):
+    printDbg("saving MN configuration for %s" % mn['name'])
+    
+    # If we are changing a MN, remove previous entry:
+    if not mainWnd.mnode_to_change is None:
+        # remove from cache and QListWidget only
+        removeMNfromList(mainWnd, mainWnd.mnode_to_change, removeFromDB=False)
+        
+    # Append new mn to list
+    mainWnd.masternode_list.append(mn)
+    
+    # Save/edit DB
+    mainWnd.parent.db.addMasternode(mn, mainWnd.mnode_to_change)
+    mainWnd.mnode_to_change = None
+    
+    # Insert item in list of Main tab
+    name = mn['name']
+    namelist = [x['name'] for x in mainWnd.masternode_list]
+    row = namelist.index(name)
+    if row == -1:
+        row = None
+    mainWnd.tabMain.insert_mn_list(name, mn['ip'], mn['port'], row, isHardware=mn['isHardware'])
+    
+    # Connect buttons
+    mainWnd.tabMain.btn_remove[name].clicked.connect(lambda: mainWnd.t_main.onRemoveMN())
+    mainWnd.tabMain.btn_edit[name].clicked.connect(lambda: mainWnd.t_main.onEditMN())
+    mainWnd.tabMain.btn_start[name].clicked.connect(lambda: mainWnd.t_main.onStartMN())
+    mainWnd.tabMain.btn_rewards[name].clicked.connect(lambda: mainWnd.t_main.onRewardsMN())   
+    printDbg("saved")
+
+
+
+
+def checkRPCstring(urlstring, action_msg="Resetting default credentials"):
+    try:
+        if urlsplit(urlstring).netloc != urlstring[7:]:
+            raise
+        return True
+    
+    except:
+        error_msg = "Unable to parse URL"
+        printException(getCallerName(), getFunctionName(), action_msg, [error_msg])
+        return False
         
         
         
-def clean_v4_migration():
+        
+def clean_v4_migration(db):
     try:
         rpc_file = os.path.join(user_dir, 'rpcServer.json')
         cache_file = os.path.join(user_dir, 'cache.json')
+        mn_file = os.path.join(user_dir, 'masternodes.json')
         
-        if os.path.exists(rpc_file) or os.path.exists(cache_file):
+        if os.path.exists(rpc_file) or os.path.exists(cache_file) or os.path.exists(mn_file):
             printDbg("Clean migration to v0.4.0 data storage")
         
         if os.path.exists(rpc_file):
@@ -51,24 +100,26 @@ def clean_v4_migration():
             printDbg("...saved to Settings")
             # and delete old file
             os.remove(cache_file)
-            printDbg("old cache.json file deleted")   
+            printDbg("old cache.json file deleted")
+        
+        if os.path.exists(mn_file):
+            # If mn file exists
+            printDbg("found old masternodes.json file")
+            with open(mn_file) as data_file:
+                mnList = json.load(data_file)
+            # add to database
+            for mn in mnList:
+                db.addMasternode(mn)
+            printDbg("...saved to Database")
+            # and delete old file
+            os.remove(mn_file)
+            printDbg("old masternodes.json file deleted")    
         
     except Exception as e:
-        if e.args is not None:
-            printDbg(e.args[0])
+        printDbg(e)
         
         
         
-def checkRPCstring(urlstring, action_msg="Resetting default credentials"):
-    try:
-        if urlsplit(urlstring).netloc != urlstring[7:]:
-            raise
-        return True
-    
-    except:
-        error_msg = "Unable to parse URL"
-        printException(getCallerName(), getFunctionName(), action_msg, [error_msg])
-        return False
         
 
 
@@ -144,12 +195,14 @@ def ipport(ip, port):
             raise Exception("invalid IP version number")
         
         
+        
 def is_hex(s):
     try:
         int(s, 16)
         return True
     except ValueError:
         return False
+
 
 
 def loadMNConfFile(fileName):
@@ -185,8 +238,12 @@ def loadMNConfFile(fileName):
                 new_mn['ip'] = ipaddr[0]
                 new_mn['port'] = int(ipaddr[1])
                 new_mn['mnPrivKey'] = configs[2]
+                new_mn['isTestnet'] = DEFAULT_MN_CONF['isTestnet']
                 new_mn['isHardware'] = False
+                new_mn['hwAcc'] = DEFAULT_MN_CONF['hwAcc']
                 collateral = {}
+                collateral['address'] = ""
+                collateral['pubkey'] = ""
                 collateral['txid'] = configs[3]
                 collateral['txidn'] = int(configs[4])
                 new_mn['collateral'] = collateral
@@ -198,13 +255,30 @@ def loadMNConfFile(fileName):
     except Exception as e:
         errorMsg = "error loading MN file"
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)
-      
-      
+            
     
     
     
 def now():
     return int(time.time())
+
+
+
+
+def persistCacheSetting(cache_key, cache_value):
+    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+    if not settings.contains(cache_key):
+        errorMsg = "Adding new cache key to settings..."
+        causeMsg = "Cache key %s not found" % str(cache_key)
+        printException(getCallerName(), getFunctionName(), errorMsg, causeMsg)
+        
+    if type(cache_value) in [list, dict]:    
+        settings.setValue(cache_key, json.dumps(cache_value))
+    else:
+        settings.setValue(cache_key, cache_value)
+
+    return cache_value
+
 
 
 
@@ -258,42 +332,47 @@ def printOK(what):
     append_to_logfile(msg)
     print(msg)
     
-    
-    
-def readMNfile():
+
+
+
+def readCacheSettings():
+    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     try:
-        mn_file = os.path.join(user_dir, masternodes_File)
-        if os.path.exists(mn_file):
-            with open(mn_file) as data_file:
-                mnList = json.load(data_file)    
-   
-        else:
-            # save default config (empty list) and return it
-            resetMNfile()
+        cache = {}
+        cache["lastAddress"] = settings.value('cache_lastAddress', DefaultCache["lastAddress"], type=str)
+        cache["window_width"] = settings.value('cache_winWidth', DefaultCache["window_width"], type=int)
+        cache["window_height"] = settings.value('cache_winHeight', DefaultCache["window_height"], type=int)
+        cache["splitter_x"] = settings.value('cache_splitterX', DefaultCache["splitter_x"], type=int)
+        cache["splitter_y"] = settings.value('cache_splitterY', DefaultCache["splitter_y"], type=int)
+        cache["mnList_order"] = json.loads(settings.value('cache_mnOrder', json.dumps(DefaultCache["mnList_order"]), type=str))
+        cache["console_hidden"] = settings.value('cache_consoleHidden', DefaultCache["console_hidden"], type=bool)
+        cache["useSwiftX"] = settings.value('cache_useSwiftX', DefaultCache["useSwiftX"], type=bool)
+        cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(DefaultCache["votingMasternodes"]), type=str))
+        cache["votingDelayCheck"] = settings.value('cache_vdCheck', DefaultCache["votingDelayCheck"], type=bool)
+        cache["votingDelayNeg"] = settings.value('cache_vdNeg', DefaultCache["votingDelayNeg"], type=int)
+        cache["votingDelayPos"] = settings.value('cache_vdPos', DefaultCache["votingDelayPos"], type=int)
+        cache["selectedRPC_index"] = settings.value('cache_RPCindex', DefaultCache["selectedRPC_index"], type=int)
+        return cache
+    except:
+        return DefaultCache
         
-    except Exception as e:
-        if e.args is not None:
-            printDbg(e.args[0])
-        resetMNfile()
-        return []
-    
-    # Fix missing data
-    newKeys = False
-    for key in DEFAULT_MN_CONF:
-        for node in mnList:
-            if key not in node:
-                node[key] = DEFAULT_MN_CONF[key]
-                newKeys = True   
-    if newKeys:
-        writeToFile(mnList, masternodes_File)
+      
         
-    return mnList
+def removeMNfromList(mainWnd, mn, removeFromDB=True):
+    # remove from cache list
+    mainWnd.masternode_list.remove(mn)
+    # remove from tabMain widget
+    row = mainWnd.tabMain.myList.row
+    item = mainWnd.tabMain.current_mn[mn['name']]
+    mainWnd.tabMain.myList.takeItem(row(item))
+    # remove from database
+    if removeFromDB:
+        mainWnd.parent.db.deleteMasternode(mn['name'])
+    # Clear voting masternodes configuration and update cache
+    # if we are removing an already selected masternode
+    if mn['name'] in [x[1] for x in mainWnd.t_governance.votingMasternodes]:
+        mainWnd.t_governance.clear()
 
-
-
-def resetMNfile():
-    printDbg("Creating empty masternodes.json")
-    writeToFile([], masternodes_File)
     
     
     
@@ -332,43 +411,7 @@ def saveCacheSettings(cache, old_version=False):
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))
     if not old_version:
         settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
-    
-
-def persistCacheSetting(cache_key, cache_value):
-    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-    if not settings.contains(cache_key):
-        errorMsg = "Adding new cache key to settings..."
-        causeMsg = "Cache key %s not found" % str(cache_key)
-        printException(getCallerName(), getFunctionName(), errorMsg, causeMsg)
         
-    if cache_value and type(cache_value) in [list, dict]:    
-        settings.setValue(cache_key, json.dumps(cache_value))
-    else:
-        settings.setValue(cache_key, cache_value)
-
-    return cache_value
-
-
-
-def readCacheSettings():
-    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-    defaultcache = DefaultCache()
-    cache = {}
-    cache["lastAddress"] = settings.value('cache_lastAddress', defaultcache.lastAddress, type=str)
-    cache["window_width"] = settings.value('cache_winWidth', defaultcache.winWidth, type=int)
-    cache["window_height"] = settings.value('cache_winHeight', defaultcache.winHeight, type=int)
-    cache["splitter_x"] = settings.value('cache_splitterX', defaultcache.splitterX, type=int)
-    cache["splitter_y"] = settings.value('cache_splitterY', defaultcache.splitterY, type=int)
-    cache["mnList_order"] = json.loads(settings.value('cache_mnOrder', json.dumps(defaultcache.mnOrder), type=str))
-    cache["console_hidden"] = settings.value('cache_consoleHidden', defaultcache.consoleHidden, type=bool)
-    cache["useSwiftX"] = settings.value('cache_useSwiftX', defaultcache.useSwiftX, type=bool)
-    cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(defaultcache.votingMNs), type=str))
-    cache["votingDelayCheck"] = settings.value('cache_vdCheck', defaultcache.vdCheck, type=bool)
-    cache["votingDelayNeg"] = settings.value('cache_vdNeg', defaultcache.vdNeg, type=int)
-    cache["votingDelayPos"] = settings.value('cache_vdPos', defaultcache.vdPos, type=int)
-    cache['selectedRPC_index'] = settings.value('cache_RPCindex', defaultcache.RPCindex, type=int)
-    return cache
-
     
     
     
@@ -380,6 +423,7 @@ def sec_to_time(seconds):
     mins = seconds//60
     seconds -= mins*60   
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
+
 
       
     
@@ -409,17 +453,6 @@ def updateSplash(label, i):
     elif i==99:
         time.sleep(0.1)
 
-
-
-def writeToFile(data, filename):
-    try:
-        datafile_name = os.path.join(user_dir, filename)
-        with open(datafile_name, 'w+') as data_file:
-            json.dump(data, data_file)        
-
-    except Exception as e:
-        errorMsg = "error writing file %s" % filename
-        printException(getCallerName(), getFunctionName(), errorMsg, e.args)
     
     
     

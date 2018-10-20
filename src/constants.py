@@ -15,8 +15,8 @@ APPDATA_DIRNAME = ".SecurePivxMasternodeTool"
 home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'lastLogs.html')
-database_file = os.path.join(user_dir, 'data.db')
-masternodes_File = 'masternodes.json'
+database_File = os.path.join(user_dir, 'application.db')
+
 
 DEFAULT_MN_CONF = {
     "name": "",
@@ -24,26 +24,26 @@ DEFAULT_MN_CONF = {
     "port": 51472,
     "mnPrivKey": "",
     "isTestnet": 0,
-    "isHardware": True,
+    "isHardware": False,
     "hwAcc": 0,
     "collateral": {}
     }
 
-class DefaultCache():
-    def __init__(self):
-        self.lastAddress = ""
-        self.winWidth = starting_width
-        self.winHeight = starting_height
-        self.useSwiftX = False
-        self.consoleHidden = False
-        self.splitterX = 342
-        self.splitterY = 133
-        self.mnOrder = {}
-        self.votingMNs = []
-        self.vdCheck = False
-        self.vdNeg = 0
-        self.vdPos = 300
-        self.RPCindex = 1
+DefaultCache = {
+    "lastAddress": "",
+    "window_width": starting_width,
+    "window_height": starting_height,
+    "splitter_x": 342,
+    "splitter_y": 133,
+    "mnList_order": {},
+    "console_hidden": False,
+    "useSwiftX": False,
+    "votingMasternodes": [],
+    "votingDelayCheck": False,
+    "votingDelayNeg": 0,
+    "votingDelayPos": 300,
+    "selectedRPC_index": 1
+    }
         
 
 class DefaultRPCConf():

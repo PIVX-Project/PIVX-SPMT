@@ -8,9 +8,8 @@ from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
     QMessageBox, QScrollArea, QLabel
 
-from constants import DefaultCache
 from misc import printException, getCallerName, getFunctionName, \
-    printDbg, printOK, writeToFile, persistCacheSetting
+    printDbg, printOK, persistCacheSetting
 from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
@@ -69,7 +68,7 @@ class TabGovernance():
     
     def clear(self):
         # Clear voting masternodes and update cache
-        self.votingMasternodes = DefaultCache().votingMNs
+        self.votingMasternodes = []
         self.caller.parent.cache['votingMasternodes'] = persistCacheSetting('cache_votingMNs', self.votingMasternodes)
         
                 

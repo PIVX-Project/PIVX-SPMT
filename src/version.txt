@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "f",
- "comments": ["Remote RPC servers"]
+ "tag": "g",
+ "comments": ["MN Database"]
  }

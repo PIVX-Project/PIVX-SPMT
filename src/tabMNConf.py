@@ -5,8 +5,7 @@ from ipaddress import ip_address
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
-from constants import masternodes_File
-from misc import printDbg, printOK, writeToFile, is_hex
+from misc import printDbg, printOK, is_hex, appendMasternode
 from pivx_hashlib import generate_privkey
 from qt.gui_tabMNConf import TabMNConf_gui
 from qt.dlg_findCollTx import FindCollTx_dlg
@@ -253,9 +252,9 @@ class TabMNConf():
                 self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
                 return
             
-            # check for duplicate name
+            # check for duplicate names
             mn_alias = self.ui.edt_name.text().strip()
-            # if we are changing a masternode don't check old alias
+            # if we are changing a masternode check for duplicate only if name is changed
             old_alias = None
             if not self.caller.mnode_to_change is None:
                 old_alias = self.caller.mnode_to_change['name']
@@ -264,16 +263,6 @@ class TabMNConf():
                 mess_text += 'Choose a different name (alias) for the masternode'
                 self.caller.myPopUp2(QMessageBox.Critical, 'Complete Form', mess_text)
                 return
-            
-            # remove previous element
-            if not self.caller.mnode_to_change is None:
-                # remove from memory list
-                self.caller.masternode_list.remove(self.caller.mnode_to_change)
-                # remove from tabMain list
-                row = self.caller.tabMain.myList.row
-                name = self.caller.tabMain.current_mn[self.caller.mnode_to_change['name']]
-                self.caller.tabMain.myList.takeItem(row(name))
-                self.caller.mnode_to_change = None
 
             # create new item
             new_masternode = {}
@@ -297,27 +286,8 @@ class TabMNConf():
             
             new_masternode['collateral'] = coll
 
-            # add new item
-            self.caller.masternode_list.append(new_masternode)
-            # Write to file
-            printDbg("saving MN configuration for %s" % new_masternode['name'])
-            writeToFile(self.caller.masternode_list, masternodes_File)
-            printDbg("saved")
-           
-            # Insert item in list of Main tab and connect buttons
-            name = new_masternode['name']
-            namelist = [x['name'] for x in self.caller.masternode_list]
-            row = namelist.index(name)
-            if row == -1:
-                row = None
-            self.caller.tabMain.insert_mn_list(name, new_masternode['ip'], new_masternode['port'], row)
-            self.caller.tabMain.btn_remove[name].clicked.connect(lambda: self.caller.t_main.onRemoveMN())
-            self.caller.tabMain.btn_edit[name].clicked.connect(lambda: self.caller.t_main.onEditMN())
-            self.caller.tabMain.btn_start[name].clicked.connect(lambda: self.caller.t_main.onStartMN())
-            self.caller.tabMain.btn_rewards[name].clicked.connect(lambda: self.caller.t_main.onRewardsMN())   
-            
-            # Clear voting masternodes configuration and update cache
-            self.caller.t_governance.clear()  
+            # Add to cache, QListWidget and database (and remove/edit mnode_to_change)
+            appendMasternode(self.caller, new_masternode, self.caller.mnode_to_change) 
             
             # go back
             self.onCancelMNConfig()

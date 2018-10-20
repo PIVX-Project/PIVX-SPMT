@@ -6,8 +6,9 @@ import sys
 
 from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
 
-from misc import getSPMTVersion, printDbg, readMNfile, writeToFile, printOK, \
-clean_v4_migration, saveCacheSettings, readCacheSettings
+from database import Database
+from misc import getSPMTVersion, printDbg, printOK, \
+    clean_v4_migration, saveCacheSettings, readCacheSettings
 from mainWindow import MainWindow
 from constants import user_dir
 from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
@@ -41,12 +42,15 @@ class App(QMainWindow):
         # Create the userdir if it doesn't exist
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
+        # Open database
+        self.db = Database()
+        self.db.open()
         # Clean v4 migration (read data from old files and delete them)
-        clean_v4_migration()
+        clean_v4_migration(self.db)
+        # Read Masternode List
+        masternode_list = self.db.getMasternodeList()
         # Read cached app data
         self.cache = readCacheSettings()
-        # Read Masternode List
-        masternode_list = readMNfile()
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
         
@@ -71,8 +75,14 @@ class App(QMainWindow):
         confMenu.addAction(self.loadMNConfAction)
         
         # Sort masternode list (by alias if no previous order set)
-        if self.cache.get('mnList_order') != {}:
-            masternode_list.sort(key=self.extract_order)
+        if self.cache.get('mnList_order') != {} and (
+            len(self.cache.get('mnList_order')) == len(masternode_list)):
+            try:
+                masternode_list.sort(key=self.extract_order)
+            except Exception as e:
+                print(e)
+                masternode_list.sort(key=self.extract_name)
+                
         else:
             masternode_list.sort(key=self.extract_name)
         
@@ -96,7 +106,9 @@ class App(QMainWindow):
     def extract_order(self, json):
         try:
             name = json['name']
-            return self.cache.get('mnList_order').get(name)
+            if name in self.cache.get('mnList_order'):
+                return self.cache.get('mnList_order').get(name)
+            return 0
         
         except KeyError:
             return 0
@@ -131,6 +143,9 @@ class App(QMainWindow):
         
         # persist cache
         saveCacheSettings(self.cache)
+        
+        # close database
+        self.db.close()
         
         # Adios
         print("Bye Bye.")

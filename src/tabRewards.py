@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, printException, getCallerName, getFunctionName, writeToFile, persistCacheSetting
+from misc import printDbg, printException, getCallerName, getFunctionName, persistCacheSetting
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
