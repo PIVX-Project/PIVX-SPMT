@@ -7,11 +7,13 @@ from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
 
 from constants import trusted_RPC_Servers
+from PyQt5.Qt import QSizePolicy
 
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        italicFont = QFont("Times", italic=True)
+        boldFont = QFont("Times")
+        boldFont.setBold(True)
         smallFont = QFont("Times", 7)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -22,9 +24,9 @@ class GuiHeader(QWidget):
         label1 = QLabel("PIVX RPC Server")
         self.centralBox.addWidget(label1, 0, 0)
         self.rpcClientsBox = QComboBox()
-        self.rpcClientsBox.setToolTip("Select RPC server.\nLocal must be configured.")
+        self.rpcClientsBox.setToolTip("Select RPC server.")
         self.rpcClientsBox.addItem("Local Wallet", -1)
-        self.rpcClientsBox.setItemData(0, italicFont, Qt.FontRole)
+        self.rpcClientsBox.setItemData(0, boldFont, Qt.FontRole)
         for trusted_server in trusted_RPC_Servers:
             url = trusted_server[0] + "://" + trusted_server[1][:-5]
             self.rpcClientsBox.addItem(url, trusted_server)
@@ -37,6 +39,10 @@ class GuiHeader(QWidget):
         self.rpcLed.setPixmap(caller.ledGrayH_icon)
         self.centralBox.addWidget(self.rpcLed, 0, 3)
         self.lastPingBox = QWidget()
+        sp_retain = QSizePolicy()
+        sp_retain.setRetainSizeWhenHidden(True) 
+        self.lastPingBox.setSizePolicy(sp_retain)
+        self.lastPingBox.setContentsMargins(0, 0, 0, 0)
         lastPingBoxLayout = QHBoxLayout()
         self.lastPingIcon = QLabel()
         self.lastPingIcon.setToolTip("Last ping server response time.\n(The lower, the better)")

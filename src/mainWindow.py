@@ -5,7 +5,7 @@ from queue import Queue
 from time import strftime, gmtime
 import sys
 
-from PyQt5.QtCore import pyqtSlot, Qt, QThread, QSettings
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QThread, QSettings
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
     QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
@@ -28,11 +28,15 @@ from watchdogThreads import RpcWatchdog
 
 class MainWindow(QWidget):
     
+    # signal: clear RPC status label and icons (emitted by updateRPCstatus)
+    sig_clearRPCstatus = pyqtSignal()
+    
     def __init__(self, parent, masternode_list, imgDir):
         super(QWidget, self).__init__(parent)
         self.parent = parent
         self.imgDir = imgDir 
         self.runInThread = ThreadFuns.runInThread
+        
         ###-- Masternode list 
         self.masternode_list = masternode_list
 
@@ -63,7 +67,10 @@ class MainWindow(QWidget):
         self.queue = Queue()
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
-        sys.stderr = WriteStream(self.queue2)  
+        sys.stderr = WriteStream(self.queue2)
+        
+        ##-- Connect signals
+        self.sig_clearRPCstatus.connect(self.clearRPCstatus)
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -97,6 +104,7 @@ class MainWindow(QWidget):
         self.t_governance = TabGovernance(self)
         
         ###-- Add tabs
+        self.tabs.setTabPosition(QTabWidget.West)
         self.tabs.addTab(self.tabMain, "Masternode Control")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
         self.tabs.addTab(self.tabRewards, "Transfer Rewards")
@@ -136,6 +144,13 @@ class MainWindow(QWidget):
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
+        
+        
+        
+    @pyqtSlot()
+    def clearRPCstatus(self):
+        self.header.lastPingBox.setHidden(True)
+        self.header.rpcLed.setPixmap(self.ledGrayH_icon)
         
         
         
