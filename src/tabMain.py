@@ -42,9 +42,9 @@ class TabMain():
             
     def displayMNlistUpdated(self):
         for masternode in self.caller.masternode_list:
-            printOK("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('address')))
+            printDbg("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('txid')))
             self.displayMNStatus(masternode)
-            time.sleep(0.2)         
+            time.sleep(0.1)         
     
     
     
@@ -68,7 +68,7 @@ class TabMain():
         self.ui.btn_details[masternode_alias].show()
     
         if statusData is None:
-            printDbg("%s (%s) not found" % (masternode_alias, currMN['collateral'].get('address')))
+            printOK("%s Not Found" % (masternode_alias))
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
             msg = "<b>Masternode not found.</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
@@ -79,7 +79,7 @@ class TabMain():
             if statusData['balance'] is not None:
                 self.ui.mnBalance[masternode_alias].setText('&nbsp;<span style="color:purple">%s PIV</span>' % str(statusData['balance']))
                 self.ui.mnBalance[masternode_alias].show()
-            printDbg("Got status %s for %s (%s)" % (statusData['status'], masternode_alias, statusData['addr']))
+            printOK("Got status %s for %s" % (statusData['status'], masternode_alias))
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
                 display_text += '<span style="color:green">%s</span>&nbsp;&nbsp;' % statusData['status']
@@ -108,7 +108,7 @@ class TabMain():
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
             return
         try:
-            printOK("Check-All pressed")
+            printDbg("Check-All pressed")
             ThreadFuns.runInThread(self.updateAllMasternodes_thread, (), self.displayMNlistUpdated)
                    
         except Exception as e:

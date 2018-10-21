@@ -6,7 +6,7 @@ import threading
 from PyQt5.QtCore import pyqtSlot, QSettings
 
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
-from misc import getCallerName, getFunctionName, printException, printDbg, now
+from misc import getCallerName, getFunctionName, printException, printDbg, now, timeThis
 from tabGovernance import Proposal
 
 
@@ -16,11 +16,11 @@ class RpcClient:
         # Lock for threads
         self.lock = threading.Lock()
 
-        rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
+        self.rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
 
         try:
             self.lock.acquire()
-            self.conn = AuthServiceProxy(rpc_url, timeout=30)     
+            self.conn = AuthServiceProxy(self.rpc_url, timeout=30)     
         except JSONRPCException as e:
             err_msg = 'remote or local PIVX-cli running?'
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -302,9 +302,12 @@ class RpcClient:
         statusMess = "Unable to connect to a PIVX RPC server.\n" 
         statusMess += "Either the local PIVX wallet is not open, or the remote RPC server is not responding."
         n = 0
+        response_time = None
         try:
             self.lock.acquire()
-            n = self.conn.getblockcount()
+            
+            n, response_time = timeThis(self.conn.getblockcount)
+            
             if n > 0:
                 status = True
                 statusMess = "Connected to PIVX Blockchain"
@@ -326,15 +329,17 @@ class RpcClient:
         finally:
             self.lock.release()
                 
-        return status, statusMess, n
+        return status, statusMess, n, response_time
      
     
     
     
     def isBlockchainSynced(self):
+        response_time = None
         try:
             self.lock.acquire()
-            res = self.conn.mnsync('status').get("IsBlockchainSynced")
+            status, response_time = timeThis(self.conn.mnsync, 'status')
+            res = status.get("IsBlockchainSynced")
         except Exception as e:
             if str(e.args[0]) != "Request-sent":
                 err_msg = "error in isBlockchainSynced"
@@ -343,7 +348,7 @@ class RpcClient:
         finally:
             self.lock.release()
         
-        return res
+        return res, response_time
     
     
     

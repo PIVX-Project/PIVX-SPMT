@@ -234,6 +234,10 @@ class MainWindow(QWidget):
         self.ledRedV_icon = QPixmap(os.path.join(self.imgDir, 'icon_redLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
         self.ledGrayV_icon = QPixmap(os.path.join(self.imgDir, 'icon_grayLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
         self.ledGreenV_icon = QPixmap(os.path.join(self.imgDir, 'icon_greenLedV.png')).scaledToHeight(17, Qt.SmoothTransformation)
+        self.lastBlock_icon = QPixmap(os.path.join(self.imgDir, 'icon_lastBlock.png')).scaledToHeight(15, Qt.SmoothTransformation)
+        self.connGreen_icon = QPixmap(os.path.join(self.imgDir, 'icon_greenConn.png')).scaledToHeight(15, Qt.SmoothTransformation)
+        self.connRed_icon = QPixmap(os.path.join(self.imgDir, 'icon_redConn.png')).scaledToHeight(15, Qt.SmoothTransformation)
+        self.connOrange_icon = QPixmap(os.path.join(self.imgDir, 'icon_orangeConn.png')).scaledToHeight(15, Qt.SmoothTransformation)
        
     
     
@@ -264,13 +268,14 @@ class MainWindow(QWidget):
                 final_message = "1 External Masternode "
             else:
                 final_message = "%d External Masternodes " % new_nodes
-            final_message += "added to the list. "
+            final_message += "added to the list."
             if new_nodes > 0:
-                final_message +=  str([x['name'] for x in new_masternodes]) + ".  "
+                final_message +=  "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
+            printOK(final_message)
             if len(skip_masternodes) > 0:
-                final_message += "Following entries skipped due to duplicate names:"
+                final_message = "Following entries skipped due to duplicate names:<br>"
                 final_message += str([x['name'] for x in skip_masternodes]) + ".  "
-            printDbg(final_message)
+                printOK(final_message)
 
         
         
@@ -314,12 +319,13 @@ class MainWindow(QWidget):
         
     def checkVersion(self, ctrl):
         local_version = self.parent.version['number'].split('.')
-        remote_version = getRemoteSPMTversion().split('.')
+        self.gitVersion = getRemoteSPMTversion()
+        remote_version = self.gitVersion.split('.')
         
         if (remote_version[0] > local_version[0]) or \
         (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
         (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] > local_version[2]):
-            self.versionMess = '<b style="color:red">New Version Available:</b> %s.%s.%s  ' % (remote_version[0], remote_version[1], remote_version[2])
+            self.versionMess = '<b style="color:red">New Version Available:</b> %s  ' % (self.gitVersion)
             self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
         else:
             self.versionMess = "You have the latest version of SPMT"
@@ -328,6 +334,7 @@ class MainWindow(QWidget):
     def updateVersion(self):
         if self.versionMess is not None:
             self.versionLabel.setText(self.versionMess)
+        printOK("Remote version: %s" % str(self.gitVersion))
             
             
             
@@ -482,6 +489,26 @@ class MainWindow(QWidget):
                 
         self.header.lastBlockLabel.setText(text)
         
+        
+        
+    def updateLastBlockPing(self):
+        if not self.rpcConnected:
+            self.header.lastPingBox.setHidden(True)
+        else:
+            self.header.lastPingBox.setHidden(False)
+            if self.rpcResponseTime > 2:
+                color = "red"
+                self.header.lastPingIcon.setPixmap(self.connRed_icon)
+            elif self.rpcResponseTime > 1:
+                color = "orange"
+                self.header.lastPingIcon.setPixmap(self.connOrange_icon)
+            else:
+                color = "green"
+                self.header.lastPingIcon.setPixmap(self.connGreen_icon)
+            if self.rpcResponseTime is not None:
+                self.header.responseTimeLabel.setText("%.3f" % self.rpcResponseTime)
+                self.header.responseTimeLabel.setStyleSheet("color: %s" % color)
+                self.header.lastPingIcon.setStyleSheet("color: %s" % color)
        
         
 
@@ -503,11 +530,13 @@ class MainWindow(QWidget):
             
         self.header.rpcLed.setToolTip(self.rpcStatusMess)
         self.updateLastBlockLabel()
+        self.updateLastBlockPing()
         
 
     
         
     def updateRPCstatus(self, ctrl, fDebug=True):
+        self.rpcResponseTime = None
         rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         
         if self.rpcClient is None:
@@ -517,12 +546,15 @@ class MainWindow(QWidget):
         if fDebug:
             printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
         
-        status, statusMess, lastBlock = self.rpcClient.getStatus()
+        status, statusMess, lastBlock, r_time1 = self.rpcClient.getStatus()
             
         self.rpcConnected = status
         self.rpcLastBlock = lastBlock
         self.rpcStatusMess = statusMess
-        self.isBlockchainSynced = self.rpcClient.isBlockchainSynced()
+        self.isBlockchainSynced, r_time2  = self.rpcClient.isBlockchainSynced()
+        
+        if r_time1 is not None and r_time2 is not None:
+            self.rpcResponseTime = round((r_time1+r_time2)/2, 3)
         
         # If is not connected try again
         if not status:

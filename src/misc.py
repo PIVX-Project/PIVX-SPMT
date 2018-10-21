@@ -430,6 +430,15 @@ def sec_to_time(seconds):
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
+
+
+
+
+def timeThis(function, *args):
+    start = time.clock()
+    val = function(*args)
+    end = time.clock()
+    return val, (end-start)
     
 
 

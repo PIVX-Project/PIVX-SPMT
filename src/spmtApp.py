@@ -67,7 +67,7 @@ class App(QMainWindow):
         # Add RPC server menu
         mainMenu = self.menuBar()
         confMenu = mainMenu.addMenu('Setup')
-        self.rpcConfMenu = QAction(self.pivx_icon, 'Local RPC Server...', self)
+        self.rpcConfMenu = QAction(self.pivx_icon, 'Setup RPC...', self)
         self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
         confMenu.addAction(self.rpcConfMenu)
         self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
@@ -165,5 +165,5 @@ class App(QMainWindow):
         # Create Dialog
         ui = ConfigureRPCserver_dlg(self)
         if ui.exec():
-            printDbg("Configuring RPC Server...")       
+            printDbg("Configuring RPC Servers...")       
         
