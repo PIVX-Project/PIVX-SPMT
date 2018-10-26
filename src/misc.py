@@ -4,11 +4,19 @@ import os
 from ipaddress import ip_address
 import simplejson as json
 import time
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 
 from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache
+from PyQt5.QtWidgets import QMessageBox
+from sympy.physics.units.dimensions import action
+
+
+def add_defaultKeys_to_dict(dictObj, defaultObj):
+    for key in defaultObj:
+        if key not in dictObj:
+            dictObj[key] = defaultObj[key]
 
 
 def append_to_logfile(text):
@@ -55,15 +63,30 @@ def appendMasternode(mainWnd, mn):
 
 
 
-def checkRPCstring(urlstring, action_msg="Resetting default credentials"):
+def checkRPCstring(urlstring, action_msg="Malformed credentials"):
     try:
-        if urlsplit(urlstring).netloc != urlstring[7:]:
+        o = urlparse(urlstring)
+        if o.scheme is None or o.scheme == '':
+            action_msg = "Wrong protocol. Set either http or https."
+            raise
+        if o.netloc is None or o.netloc == '':
+            action_msg = "Malformed host network location part"
+            raise
+        if o.port is None or o.port == '':
+            action_msg = "Wrong IP port number"
+            raise
+        if o.username is None:
+            action_msg = "Malformed username"
+            raise
+        if  o.password is None:
+            action_msg = "Malformed password"
             raise
         return True
     
-    except:
+    except Exception as e:
+        print(e)
         error_msg = "Unable to parse URL"
-        printException(getCallerName(), getFunctionName(), action_msg, [error_msg])
+        printException(getCallerName(), getFunctionName(), action_msg, error_msg)
         return False
         
         
@@ -83,9 +106,10 @@ def clean_v4_migration(db):
             printDbg("found old rpcServer.json file")
             with open(rpc_file) as data_file:
                 rpc_config = json.load(data_file)
-            # copy to Settings
-            saveLocalRPCSettingsConf(rpc_config)
-            printDbg("...saved to Settings")
+            # copy to database
+            rpc_host = "%s:%d" % (rpc_config['rpc_ip'], rpc_config['rpc_port'])
+            db.editRPCServer("http", rpc_host, rpc_config['rpc_user'], rpc_config['rpc_password'], 0)
+            printDbg("...saved to Database")
             # and delete old file
             os.remove(rpc_file)
             printDbg("old rpcServer.json file deleted")
@@ -256,7 +280,13 @@ def loadMNConfFile(fileName):
         errorMsg = "error loading MN file"
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)
             
-    
+            
+            
+def myPopUp(p, messType, messTitle, messText, defaultButton=QMessageBox.No):
+    mess = QMessageBox(messType, messTitle, messText, defaultButton, parent=p)
+    mess.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+    mess.setDefaultButton(defaultButton)
+    return mess.exec_()
     
     
 def now():
@@ -352,6 +382,7 @@ def readCacheSettings():
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', DefaultCache["votingDelayNeg"], type=int)
         cache["votingDelayPos"] = settings.value('cache_vdPos', DefaultCache["votingDelayPos"], type=int)
         cache["selectedRPC_index"] = settings.value('cache_RPCindex', DefaultCache["selectedRPC_index"], type=int)
+        add_defaultKeys_to_dict(cache, DefaultCache)
         return cache
     except:
         return DefaultCache
@@ -372,23 +403,8 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
     # if we are removing an already selected masternode
     if mn['name'] in [x[1] for x in mainWnd.t_governance.votingMasternodes]:
         mainWnd.t_governance.clear()
-
-    
-    
-    
-def saveLocalRPCSettings(ip, port, user, password):
-    settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-    settings.setValue('local_RPC_ip', ip)
-    settings.setValue('local_RPC_port', port)
-    settings.setValue('local_RPC_user', user)
-    settings.setValue('local_RPC_pass', password)
     
 
-
-def saveLocalRPCSettingsConf(conf):
-    saveLocalRPCSettings(conf.get('rpc_ip'), conf.get('rpc_port'), conf.get('rpc_user'), conf.get('rpc_password'))
- 
-    
     
 
 def saveCacheSettings(cache, old_version=False):

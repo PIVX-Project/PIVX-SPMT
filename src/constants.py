@@ -24,7 +24,7 @@ DEFAULT_MN_CONF = {
     "port": 51472,
     "mnPrivKey": "",
     "isTestnet": 0,
-    "isHardware": False,
+    "isHardware": True,
     "hwAcc": 0,
     "collateral": {}
     }
@@ -42,16 +42,8 @@ DefaultCache = {
     "votingDelayCheck": False,
     "votingDelayNeg": 0,
     "votingDelayPos": 300,
-    "selectedRPC_index": 1
+    "selectedRPC_index": 0
     }
-        
-
-class DefaultRPCConf():
-    def __init__(self):
-        self.ip = '127.0.0.1'
-        self.port = 51473
-        self.user = 'myUsername'
-        self.password = 'myPassword'
         
         
 trusted_RPC_Servers = [

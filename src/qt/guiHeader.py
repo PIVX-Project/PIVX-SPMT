@@ -12,8 +12,6 @@ from PyQt5.Qt import QSizePolicy
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        boldFont = QFont("Times")
-        boldFont.setBold(True)
         smallFont = QFont("Times", 7)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -25,11 +23,6 @@ class GuiHeader(QWidget):
         self.centralBox.addWidget(label1, 0, 0)
         self.rpcClientsBox = QComboBox()
         self.rpcClientsBox.setToolTip("Select RPC server.")
-        self.rpcClientsBox.addItem("Local Wallet", -1)
-        self.rpcClientsBox.setItemData(0, boldFont, Qt.FontRole)
-        for trusted_server in trusted_RPC_Servers:
-            url = trusted_server[0] + "://" + trusted_server[1][:-5]
-            self.rpcClientsBox.addItem(url, trusted_server)
         self.centralBox.addWidget(self.rpcClientsBox, 0, 1)
         self.button_checkRpc = QPushButton("Connect/Update")
         self.button_checkRpc.setToolTip("try to connect to RPC server")

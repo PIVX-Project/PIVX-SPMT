@@ -21,18 +21,18 @@ class SweepAll_dlg(QDialog):
         self.setWindowTitle('Sweep All Rewards')
         ##--- Initialize GUI
         self.setupUI()
-        self.suggestedFee = MINIMUM_FEE
+        self.suggestedFee = MINIMUM_FEE    
+        # Connect GUI buttons
+        self.connectButtons()
+        
+        
+    def load_data(self):
         # load last used destination from cache
         self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
         # load useSwiftX check from cache
         if self.main_tab.caller.parent.cache.get("useSwiftX"):
             self.ui.swiftxCheck.setChecked(True)
         self.updateFee()
-        # Connect GUI buttons
-        self.connectButtons()
-        
-        
-    def load_data(self):
         ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
         
     

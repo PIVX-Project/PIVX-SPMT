@@ -3,15 +3,16 @@
 import os
 from queue import Queue
 from time import strftime, gmtime
+import threading
 import sys
 
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QThread, QSettings
-from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon
+from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
     QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
-from constants import starting_height, log_File, DefaultRPCConf, DefaultCache
+from constants import starting_height, log_File, DefaultCache
 from hwdevice import HWdevice
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
@@ -31,6 +32,12 @@ class MainWindow(QWidget):
     # signal: clear RPC status label and icons (emitted by updateRPCstatus)
     sig_clearRPCstatus = pyqtSignal()
     
+    # signal: RPC status (for server id) is changed (emitted by updateRPCstatus)
+    sig_RPCstatusUpdated = pyqtSignal(int, bool)
+    
+    # signal: RPC list has been reloaded (emitted by updateRPClist)
+    sig_RPClistReloaded = pyqtSignal()
+    
     def __init__(self, parent, masternode_list, imgDir):
         super(QWidget, self).__init__(parent)
         self.parent = parent
@@ -46,16 +53,21 @@ class MainWindow(QWidget):
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
         self.rpcConnected = False
+        self.rpcCheckLock = threading.Lock()
+        self.updatingRPCbox = False
         self.rpcStatusMess = "Not Connected"
         self.isBlockchainSynced = False
         
         ###-- Load icons & images
-        self.loadIcons()        
+        self.loadIcons()
         ###-- Create main layout
         self.layout = QVBoxLayout()
         self.header = GuiHeader(self)
         self.initConsole()
         self.layout.addWidget(self.header)
+        
+        ##-- Load RPC Servers list
+        self.updateRPClist()
 
         ###-- Create RPC Whatchdog
         self.rpc_watchdogThread = QThread()
@@ -71,6 +83,8 @@ class MainWindow(QWidget):
         
         ##-- Connect signals
         self.sig_clearRPCstatus.connect(self.clearRPCstatus)
+        self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
+        self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
         
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -162,25 +176,19 @@ class MainWindow(QWidget):
             
             
     def getRPCserver(self):
-        # if local wallet get QSettings
-        if self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex()) == -1:
-            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
-            defaultconf = DefaultRPCConf()
-            rpc_protocol = 'http'
-            rpc_ip = settings.value('local_RPC_ip', defaultconf.ip, type=str)
-            rpc_port = settings.value('local_RPC_port', defaultconf.port, type=int)
-            rpc_host = '%s:%d' % (rpc_ip, rpc_port)
-            rpc_user = settings.value('local_RPC_user', defaultconf.user, type=str)
-            rpc_password = settings.value('local_RPC_pass', defaultconf.password, type=str)
-        
-        # else get Variant data
-        else:
-            rpc_protocol = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[0]
-            rpc_host = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[1]
-            rpc_user = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[2]
-            rpc_password = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())[3]
+        itemData = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())
+        rpc_index  = self.header.rpcClientsBox.currentIndex()
+        rpc_protocol = itemData["protocol"]
+        rpc_host = itemData["host"]
+        rpc_user = itemData["user"]
+        rpc_password = itemData["password"]
             
-        return rpc_protocol, rpc_host, rpc_user, rpc_password
+        return rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password
+    
+    
+    
+    def getServerListIndex(self, server):
+        return self.header.rpcClientsBox.findData(server)
         
         
         
@@ -227,12 +235,7 @@ class MainWindow(QWidget):
         ###-- Hide console if it was previously hidden
         if self.parent.cache.get("console_hidden"):
             self.onToggleConsole()
-        # Select RPC server:
-        if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
-            # (if manually removed from the config files) replace default index
-            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache["selectedRPC_index"])
 
-        self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
 
         
     
@@ -321,7 +324,7 @@ class MainWindow(QWidget):
     
     @pyqtSlot()
     def onCheckRpc(self):
-        self.runInThread(self.updateRPCstatus, (), self.showRPCstatus) 
+        self.runInThread(self.updateRPCstatus, (True,),) 
         
         
         
@@ -355,11 +358,12 @@ class MainWindow(QWidget):
             
     @pyqtSlot(int)
     def onChangeSelectedRPC(self, i):
-        # persist setting
-        self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
-        # close connection and try to open new one
-        self.rpcClient = None
-        self.runInThread(self.updateRPCstatus, (), self.showRPCstatus)
+        # Don't update when we are clearing the box
+        if not self.updatingRPCbox:
+            # persist setting
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
+            # close connection and try to open new one
+            self.runInThread(self.updateRPCstatus, (True,), )
 
         
         
@@ -439,10 +443,15 @@ class MainWindow(QWidget):
         
         
     
-        
-    def showRPCstatus(self):
-        self.updateRPCled()
-        self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "%s" % self.rpcStatusMess, QMessageBox.Ok)
+    @pyqtSlot(int, bool)
+    def showRPCstatus(self, server_index, fDebug):
+        # Update displayed status only if selected server is not changed
+        if server_index == self.header.rpcClientsBox.currentIndex():
+            self.updateRPCled(fDebug)
+            if fDebug:
+                self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "%s" % self.rpcStatusMess, QMessageBox.Ok)
+        else:
+            printDbg("RPC server changed while checking... aborted.")
 
             
             
@@ -528,7 +537,7 @@ class MainWindow(QWidget):
         
 
                   
-    def updateRPCled(self, fDebug=True):
+    def updateRPCled(self, fDebug=False):
         if self.rpcConnected:
             self.header.rpcLed.setPixmap(self.ledPurpleH_icon)
             if fDebug:
@@ -548,32 +557,66 @@ class MainWindow(QWidget):
         self.updateLastBlockPing()
         
 
-    
+
+    #@pyqtSlot()   
+    def updateRPClist(self):
+        # Clear old stuff
+        self.updatingRPCbox = True
+        self.header.rpcClientsBox.clear()
+        public_servers = self.parent.db.getRPCServers(custom=False)
+        custom_servers = self.parent.db.getRPCServers(custom=True)
+        self.rpcServersList = public_servers + custom_servers
+        # Add public servers (italics)
+        italicsFont = QFont("Times", italic=True)
+        for s in public_servers:
+            url = s["protocol"] + "://" + s["host"].split(':')[0]
+            self.header.rpcClientsBox.addItem(url, s)
+            self.header.rpcClientsBox.setItemData(self.getServerListIndex(s), italicsFont, Qt.FontRole)
+        # Add Local Wallet (bold)
+        boldFont = QFont("Times")
+        boldFont.setBold(True)
+        self.header.rpcClientsBox.addItem("Local Wallet", custom_servers[0])
+        self.header.rpcClientsBox.setItemData(self.getServerListIndex(custom_servers[0]), boldFont, Qt.FontRole)
+        # Add custom servers
+        for s in custom_servers[1:]:
+            url = s["protocol"] + "://" + s["host"].split(':')[0]
+            self.header.rpcClientsBox.addItem(url, s)
+        # reset index
+        if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
+            # (if manually removed from the config files) replace default index
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache["selectedRPC_index"])
+        self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
+        self.updatingRPCbox = False
+        # reload servers in configure dialog
+        self.sig_RPClistReloaded.emit()
         
-    def updateRPCstatus(self, ctrl, fDebug=True):
-        self.rpcResponseTime = None
-        rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         
-        if self.rpcClient is None:
+        
+    def updateRPCstatus(self, ctrl, fDebug=False):
+        with self.rpcCheckLock:
+            self.sig_clearRPCstatus.emit()
+            self.rpcClient = None
+            
+            self.rpcResponseTime = None
+            rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
+            
             rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
             self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
  
-        if fDebug:
-            printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
-        
-        status, statusMess, lastBlock, r_time1 = self.rpcClient.getStatus()
+            if fDebug:
+                printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
             
-        self.rpcConnected = status
-        self.rpcLastBlock = lastBlock
-        self.rpcStatusMess = statusMess
-        self.isBlockchainSynced, r_time2  = self.rpcClient.isBlockchainSynced()
-        
-        if r_time1 is not None and r_time2 is not None:
-            self.rpcResponseTime = round((r_time1+r_time2)/2, 3)
-        
-        # If is not connected try again
-        if not status:
-            del self.rpcClient
-            self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
-    
+            status, statusMess, lastBlock, r_time1 = self.rpcClient.getStatus()
+                
+            self.rpcConnected = status
+            self.rpcLastBlock = lastBlock
+            self.rpcStatusMess = statusMess
+            self.isBlockchainSynced, r_time2  = self.rpcClient.isBlockchainSynced()
+            
+            if r_time1 is not None and r_time2 is not None:
+                self.rpcResponseTime = round((r_time1+r_time2)/2, 3)
+                
+            self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)
+
+            
     

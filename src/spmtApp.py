@@ -4,14 +4,14 @@ import os
 import signal
 import sys
 
-from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog
+from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog, pyqtSignal
 
 from database import Database
 from misc import getSPMTVersion, printDbg, printOK, \
     clean_v4_migration, saveCacheSettings, readCacheSettings
 from mainWindow import MainWindow
 from constants import user_dir
-from qt.dlg_configureRPCserver import ConfigureRPCserver_dlg
+from qt.dlg_configureRPCservers import ConfigureRPCservers_dlg
 
 
 class ServiceExit(Exception):
@@ -29,6 +29,8 @@ def service_shutdown(signum, frame):
 
 
 class App(QMainWindow):
+    # Signal emitted from database
+    sig_changed_rpcServers = pyqtSignal()
  
     def __init__(self, imgDir, app):
         super().__init__()
@@ -43,7 +45,7 @@ class App(QMainWindow):
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
         # Open database
-        self.db = Database()
+        self.db = Database(self)
         self.db.open()
         # Clean v4 migration (read data from old files and delete them)
         clean_v4_migration(self.db)
@@ -161,9 +163,15 @@ class App(QMainWindow):
             self.mainWindow.loadMNConf(fileName)     
     
     
+            
+            
     def onEditRPCServer(self):
         # Create Dialog
-        ui = ConfigureRPCserver_dlg(self)
+        ui = ConfigureRPCservers_dlg(self)
         if ui.exec():
-            printDbg("Configuring RPC Servers...")       
+            printDbg("Configuring RPC Servers...") 
+
+
+
+
         

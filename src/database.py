@@ -4,14 +4,17 @@ import os
 import sqlite3
 import threading
 
-from constants import user_dir, database_File
-from misc import printDbg, getCallerName, getFunctionName, printException
+from constants import user_dir, database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
+from misc import printDbg, getCallerName, getFunctionName, printException, add_defaultKeys_to_dict
+
 
 class Database():
+    
     '''
     class methods
     '''
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         self.file_name = database_File
         self.lock = threading.Lock()
         self.isOpen = False
@@ -28,6 +31,7 @@ class Database():
                     self.conn = sqlite3.connect(self.file_name)
                 
                 self.initTables()
+                self.conn.commit()
                 self.conn.close()
                 self.conn = None
                 self.isOpen = True
@@ -118,6 +122,17 @@ class Database():
         try:
             cursor = self.conn.cursor()
             
+            # Tables for RPC Servers
+            cursor.execute("CREATE TABLE IF NOT EXISTS PUBLIC_RPC_SERVERS("
+                           " id INTEGER PRIMARY KEY, protocol TEXT, host TEXT,"
+                           " user TEXT, pass TEXT)")
+            
+            cursor.execute("CREATE TABLE IF NOT EXISTS CUSTOM_RPC_SERVERS("
+                           " id INTEGER PRIMARY KEY, protocol TEXT, host TEXT,"
+                           " user TEXT, pass TEXT)")
+            
+            self.initTable_RPC(cursor)
+            
             # Tables for Masternodes
             cursor.execute("CREATE TABLE IF NOT EXISTS MASTERNODES("
                         " name TEXT PRIMARY KEY, ip TEXT, port INTEGER, mnPrivKey TEXT,"
@@ -128,8 +143,120 @@ class Database():
         except Exception as e:
             err_msg = 'error initializing tables'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    
+    def initTable_RPC(self, cursor):
+        s = trusted_RPC_Servers
+        # Insert Default public trusted servers
+        cursor.execute("INSERT OR REPLACE INTO PUBLIC_RPC_SERVERS VALUES"
+                       " (?, ?, ?, ?, ?),"
+                       " (?, ?, ?, ?, ?),"
+                       " (?, ?, ?, ?, ?);",
+                       (0, s[0][0], s[0][1], s[0][2], s[0][3],
+                        1, s[1][0], s[1][1], s[1][2], s[1][3],
+                        2, s[2][0], s[2][1], s[2][2], s[2][3]))
+        
+        # Insert Local wallet
+        cursor.execute("INSERT OR IGNORE INTO CUSTOM_RPC_SERVERS VALUES"
+                       " (?, ?, ?, ?, ?);",
+                       (0, "http", "127.0.0.1:51473", "rpcUser", "rpcPass"))
+
+        
+    '''
+    RPC servers methods
+    '''
+    def addRPCServer(self, protocol, host, user, passwd):
+        try:
+            cursor = self.getCursor()
+
+            cursor.execute("INSERT INTO CUSTOM_RPC_SERVERS (protocol, host, user, pass) "
+                           "VALUES (?, ?, ?, ?)",
+                           (protocol, host, user, passwd)
+                           )
             
+        except Exception as e:
+            err_msg = 'error adding RPC server entry to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)      
+        finally:
+            self.releaseCursor()
+        
+        self.app.sig_changed_rpcServers.emit()     
+        
+        
+        
+    def editRPCServer(self, protocol, host, user, passwd, id):
+        try:
+            cursor = self.getCursor()
+
+            cursor.execute("UPDATE CUSTOM_RPC_SERVERS "
+                           "SET protocol = ?, host = ?, user = ?, pass = ?"
+                           "WHERE id = ?",
+                           (protocol, host, user, passwd, id)
+                           )
+                    
+        except Exception as e:
+            err_msg = 'error editing RPC server entry to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)       
+        finally:
+            self.releaseCursor()   
+        
+        self.app.sig_changed_rpcServers.emit()
+        
+        
+        
+    def getRPCServers(self, custom, id=None):
+        tableName = "CUSTOM_RPC_SERVERS" if custom else "PUBLIC_RPC_SERVERS"
+        try:
+            cursor = self.getCursor()
+            if id is None:
+                cursor.execute("SELECT * FROM %s" % tableName)
+            else:
+                cursor.execute("SELECT * FROM %s WHERE id = ?" % tableName, (id,))
+            rows = cursor.fetchall()
             
+        except Exception as e:
+            err_msg = 'error getting RPC servers from database'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            rows = []     
+        finally:
+            self.releaseCursor() 
+        
+        server_list = []
+        for row in rows:
+            server = {}
+            server["id"] = row[0]
+            server["protocol"] = row[1]
+            server["host"] = row[2]
+            server["user"] = row[3]
+            server["password"] = row[4]
+            server["isCustom"] = custom
+            server_list.append(server)
+        
+        if id is not None:
+            return server_list[0]
+        
+        return server_list
+        
+            
+    
+    def removeRPCServer(self, index):
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DELETE FROM RPC_SERVERS"
+                           " WHERE id=?", (index,))
+            
+        except Exception as e:
+            err_msg = 'error getting RPC servers from database'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+   
+        finally:
+            self.releaseCursor()
+            
+        self.app.sig_changed_rpcServers.emit()
+            
+        
+        
     '''
     Masternode methods
     '''
@@ -139,36 +266,39 @@ class Database():
 
             cursor.execute("SELECT * FROM MASTERNODES")
             rows = cursor.fetchall()
-            self.releaseCursor()
-            
-            mnlist = []
-            
-            for row in rows:
-                # fetch masternode item
-                new_masternode = {}
-                new_masternode['name'] = row[0]
-                new_masternode['ip'] = row[1]
-                new_masternode['port'] = row[2]
-                new_masternode['mnPrivKey'] = row[3]
-                new_masternode['hwAcc'] = row[4]
-                new_masternode['isTestnet'] = row[5]
-                new_masternode['isHardware'] = (row[6] > 0)          
-                coll = {}
-                coll['address'] = row[7]
-                coll['spath'] = row[8]
-                coll['pubKey'] = row[9]
-                coll['txid'] = row[10]
-                coll['txidn'] = row[11]
-                new_masternode['collateral'] = coll
-                # add to list
-                mnlist.append(new_masternode)
-            
-            return mnlist
             
         except Exception as e:
             err_msg = 'error getting masternode list'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            
+            rows = []       
+        finally:
+            self.releaseCursor() 
+        
+        mnlist = []
+        
+        for row in rows:
+            # fetch masternode item
+            new_masternode = {}
+            new_masternode['name'] = row[0]
+            new_masternode['ip'] = row[1]
+            new_masternode['port'] = row[2]
+            new_masternode['mnPrivKey'] = row[3]
+            new_masternode['hwAcc'] = row[4]
+            new_masternode['isTestnet'] = row[5]
+            new_masternode['isHardware'] = (row[6] > 0)          
+            coll = {}
+            coll['address'] = row[7]
+            coll['spath'] = row[8]
+            coll['pubKey'] = row[9]
+            coll['txid'] = row[10]
+            coll['txidn'] = row[11]
+            new_masternode['collateral'] = coll
+            # add to list
+            mnlist.append(new_masternode)
+        
+        return mnlist
+
+     
             
     def addNewMasternode(self, mn):
         try:
@@ -183,15 +313,17 @@ class Database():
                             mn['collateral'].get('pubKey'), mn['collateral'].get('txid'), mn['collateral'].get('txidn'))
                            )
             
-            self.releaseCursor()
-            
         except Exception as e:
             err_msg = 'error writing masternode to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        finally:
+            self.releaseCursor() 
             
-            
-            
+    
+    
     def addMasternode(self, mn, old_mn=None):
+        add_defaultKeys_to_dict(mn, DEFAULT_MN_CONF)
+        
         if not old_mn is None:
             try:
                 cursor = self.getCursor()
@@ -207,28 +339,28 @@ class Database():
                                 old_mn['name'])
                                )
                 
-                self.releaseCursor()
-                
             except Exception as e:
                 err_msg = 'error writing masternode to DB'
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e.args)                
+            finally:
+                self.releaseCursor() 
                 
         else:
             # Add new record to the table
             self.addNewMasternode(mn)
             
-            
+
             
     def deleteMasternode(self, mn_name):
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM MASTERNODES WHERE name = ? ", (mn_name,))
-            self.releaseCursor()
             
         except Exception as e:
             err_msg = 'error deleting masternode from DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
+        finally:
+            self.releaseCursor() 
             
             
                 
