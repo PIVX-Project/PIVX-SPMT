@@ -162,6 +162,29 @@ class Database():
                        " (?, ?, ?, ?, ?);",
                        (0, "http", "127.0.0.1:51473", "rpcUser", "rpcPass"))
 
+    
+    
+    '''
+    General methods
+    '''  
+    def clearTable(self,  table_name):
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DELETE FROM %s" % table_name)
+            # in case, reload default RPC
+            if table_name == 'CUSTOM_RPC_SERVERS':
+                self.initTable_RPC(cursor)
+            
+        except Exception as e:
+            err_msg = 'error clearing %s in database' % table_name
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+   
+        finally:
+            self.releaseCursor()
+            
+        self.app.sig_changed_rpcServers.emit()    
+        
+        
         
     '''
     RPC servers methods
@@ -181,7 +204,7 @@ class Database():
         finally:
             self.releaseCursor()
         
-        self.app.sig_changed_rpcServers.emit()     
+        self.app.sig_changed_rpcServers.emit()
         
         
         
@@ -247,7 +270,7 @@ class Database():
                            " WHERE id=?", (index,))
             
         except Exception as e:
-            err_msg = 'error getting RPC servers from database'
+            err_msg = 'error removing RPC servers from database'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
    
         finally:
@@ -314,7 +337,7 @@ class Database():
                            )
             
         except Exception as e:
-            err_msg = 'error writing masternode to DB'
+            err_msg = 'error writing new masternode to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
             self.releaseCursor() 

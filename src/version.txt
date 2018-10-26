@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "h",
- "comments": ["RPC Database+GUI"]
+ "tag": "i",
+ "comments": ["clearData flags"]
  }

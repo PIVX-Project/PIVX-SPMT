@@ -7,6 +7,21 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
       
     
 if __name__ == '__main__':
+    
+    # parse input if there's `--clear[?]Data` flags
+    import argparse
+    parser = argparse.ArgumentParser(description='Secure PIVX Masternode Tool')
+    parser.add_argument('--clearAppData', dest='clearAppData', action='store_true',
+                    help='clear all previously saved application data')
+    parser.add_argument('--clearMnData', dest='clearMnData', action='store_true',
+                    help='clear all previously saved masternodes')
+    parser.add_argument('--clearRpcData', dest='clearRpcData', action='store_true',
+                    help='clear all previously saved custom RPC servers')
+    parser.set_defaults(clearAppData=False)
+    parser.set_defaults(clearMnData=False)
+    parser.set_defaults(clearRpcData=False)
+    args = parser.parse_args()
+    
     if getattr( sys, 'frozen', False ) :
         # running in a bundle
         imgDir = os.path.join(sys._MEIPASS, 'img')
@@ -62,7 +77,7 @@ if __name__ == '__main__':
     ### --------------       
     
     # Create QMainWindow Widget
-    ex = App(imgDir, app)
+    ex = App(imgDir, app, args)
     
     # Close Splashscreen
     splash.close()

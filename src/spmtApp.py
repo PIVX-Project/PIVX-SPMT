@@ -4,7 +4,7 @@ import os
 import signal
 import sys
 
-from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog, pyqtSignal
+from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog, pyqtSignal, QSettings
 
 from database import Database
 from misc import getSPMTVersion, printDbg, printOK, \
@@ -32,23 +32,37 @@ class App(QMainWindow):
     # Signal emitted from database
     sig_changed_rpcServers = pyqtSignal()
  
-    def __init__(self, imgDir, app):
+    def __init__(self, imgDir, app, start_args):
         super().__init__()
         self.app = app
         # Register the signal handlers
         signal.signal(signal.SIGTERM, service_shutdown)
         signal.signal(signal.SIGINT, service_shutdown)
+        
         # Get version and title
         self.version = getSPMTVersion()
         self.title = 'SPMT - Secure PIVX Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
+        
         # Create the userdir if it doesn't exist
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
+        
         # Open database
         self.db = Database(self)
         self.db.open()
+        
         # Clean v4 migration (read data from old files and delete them)
         clean_v4_migration(self.db)
+        
+        # Check for startup args (clear data)
+        if start_args.clearAppData:
+            settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
+            settings.clear()
+        if start_args.clearRpcData:
+            self.db.clearTable('CUSTOM_RPC_SERVERS')
+        if start_args.clearMnData:
+            self.db.clearTable('MASTERNODES')
+            
         # Read Masternode List
         masternode_list = self.db.getMasternodeList()
         # Read cached app data

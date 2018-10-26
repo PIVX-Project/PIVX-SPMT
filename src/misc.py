@@ -10,7 +10,6 @@ from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 
 from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache
 from PyQt5.QtWidgets import QMessageBox
-from sympy.physics.units.dimensions import action
 
 
 def add_defaultKeys_to_dict(dictObj, defaultObj):
@@ -298,9 +297,8 @@ def now():
 def persistCacheSetting(cache_key, cache_value):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     if not settings.contains(cache_key):
-        errorMsg = "Adding new cache key to settings..."
-        causeMsg = "Cache key %s not found" % str(cache_key)
-        printException(getCallerName(), getFunctionName(), errorMsg, causeMsg)
+        printDbg("Cache key %s not found" % str(cache_key))
+        printOK("Adding new cache key to settings...")
         
     if type(cache_value) in [list, dict]:    
         settings.setValue(cache_key, json.dumps(cache_value))
