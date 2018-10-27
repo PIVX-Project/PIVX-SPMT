@@ -16,7 +16,7 @@ from constants import starting_height, log_File, DefaultCache
 from hwdevice import HWdevice
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
-    persistCacheSetting,  appendMasternode
+    persistCacheSetting,  appendMasternode, myPopUp_sb
 from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf
@@ -263,7 +263,7 @@ class MainWindow(QWidget):
         hot_masternodes = loadMNConfFile(fileName)
         if hot_masternodes == None:
             messText = "Unable to load data from file '%s'" % fileName
-            self.myPopUp2(QMessageBox.Warning, "SPMT - warning", messText)
+            myPopUp_sb(self, "warn", "SPMT - Load MN Conf", messText)
         else:
             new_masternodes = []
             skip_masternodes = []
@@ -294,21 +294,6 @@ class MainWindow(QWidget):
                 final_message = "Following entries skipped due to duplicate names:<br>"
                 final_message += str([x['name'] for x in skip_masternodes]) + ".  "
                 printOK(final_message)
-
-        
-        
-    def myPopUp(self, messType, messTitle, messText, defaultButton=QMessageBox.No):
-        mess = QMessageBox(messType, messTitle, messText, defaultButton, parent=self)
-        mess.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        mess.setDefaultButton(defaultButton)
-        return mess.exec_()
-    
-        
-     
-    def myPopUp2(self, messType, messTitle, messText, singleButton=QMessageBox.Ok):
-        mess = QMessageBox(messType, messTitle, messText, singleButton, parent=self)
-        mess.setStandardButtons(singleButton | singleButton)
-        return mess.exec_()
         
         
         
@@ -439,7 +424,7 @@ class MainWindow(QWidget):
     
     def showHWstatus(self):
         self.updateHWleds()
-        self.myPopUp2(QMessageBox.Information, 'SPMT - hw check', "%s" % self.hwStatusMess, QMessageBox.Ok)
+        myPopUp_sb(self, "info", 'SPMT - hw check', "%s" % self.hwStatusMess)
         
         
     
@@ -449,7 +434,7 @@ class MainWindow(QWidget):
         if server_index == self.header.rpcClientsBox.currentIndex():
             self.updateRPCled(fDebug)
             if fDebug:
-                self.myPopUp2(QMessageBox.Information, 'SPMT - rpc check', "%s" % self.rpcStatusMess, QMessageBox.Ok)
+                myPopUp_sb(self, "info", 'SPMT - rpc check', "%s" % self.rpcStatusMess)
         else:
             printDbg("RPC server changed while checking... aborted.")
 

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,
     QMessageBox, QScrollArea, QLabel
 
 from misc import printException, getCallerName, getFunctionName, \
-    printDbg, printOK, persistCacheSetting
+    printDbg, printOK, persistCacheSetting, myPopUp_sb
 from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
 from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
@@ -214,10 +214,12 @@ class TabGovernance():
     @pyqtSlot(str)
     def onVote(self, vote_code):
         if len(self.selectedProposals) == 0:
-            printDbg("NO PROPOSAL SELECTED. Select proposals from the list.")
+            message = "NO PROPOSAL SELECTED. Select proposals from the list."
+            myPopUp_sb(self.caller, "crit", 'Vote on proposals', message)
             return
         if len(self.votingMasternodes) == 0:
-            printDbg("NO MASTERNODE SELECTED FOR VOTING. Click on 'Select Masternodes...'")
+            message = "NO MASTERNODE SELECTED FOR VOTING. Click on 'Select Masternodes...'"
+            myPopUp_sb(self.caller, "crit", 'Vote on proposals', message)
             return
         
         reply = self.summaryDlg(vote_code)
@@ -238,7 +240,7 @@ class TabGovernance():
         dlg = ScrollMessageBox(self.caller, message)
         
         return dlg.exec_() 
-    #self.caller.myPopUp(QMessageBox.Question, 'Confirm VOTE', message, QMessageBox.Yes)
+
     
     
     @pyqtSlot(object) 
@@ -352,7 +354,7 @@ class TabGovernance():
             message += '<p>Successful Votes: <b>%d</b></p>' % self.successVotes
         if self.failedVotes > 0:
             message += '<p>Failed Votes: <b>%d</b>' % self.failedVotes
-        self.caller.myPopUp2(QMessageBox.Information, 'Vote Finished', message)
+        myPopUp_sb(self.caller, "info", 'Vote Finished', message)
         # refresh proposals
         self.ui.proposalBox.setRowCount(0)
         self.ui.proposalBox.setSortingEnabled(False)

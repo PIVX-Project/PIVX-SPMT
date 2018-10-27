@@ -26,7 +26,13 @@ def append_to_logfile(text):
     except Exception as e:
         print(e)
 
-    
+
+QT_MESSAGE_TYPE = {
+    "info": QMessageBox.Information,
+    "warn": QMessageBox.Warning,
+    "crit": QMessageBox.Critical,
+    "quest": QMessageBox.Question
+    }    
     
         
 def appendMasternode(mainWnd, mn):
@@ -281,11 +287,27 @@ def loadMNConfFile(fileName):
             
             
             
-def myPopUp(p, messType, messTitle, messText, defaultButton=QMessageBox.No):
-    mess = QMessageBox(messType, messTitle, messText, defaultButton, parent=p)
+def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageBox.No):
+    if messType in QT_MESSAGE_TYPE:
+        type = QT_MESSAGE_TYPE[messType]
+    else:
+        type = QMessageBox.Question
+    mess = QMessageBox(type, messTitle, messText, defaultButton, parent=parentWindow)
     mess.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     mess.setDefaultButton(defaultButton)
     return mess.exec_()
+
+
+
+def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessageBox.Ok):
+    if messType in QT_MESSAGE_TYPE:
+        type = QT_MESSAGE_TYPE[messType]
+    else:
+        type = QMessageBox.Information
+    mess = QMessageBox(type, messTitle, messText, singleButton, parent=parentWindow)
+    mess.setStandardButtons(singleButton | singleButton)
+    return mess.exec_()
+
     
     
 def now():

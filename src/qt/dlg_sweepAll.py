@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
 
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting
+from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, myPopUp_sb
 from threads import ThreadFuns
 from utils import checkPivxAddr
 
@@ -138,12 +138,12 @@ class SweepAll_dlg(QDialog):
              
              # Check RPC & dongle  
             if not self.main_tab.caller.rpcConnected or self.main_tab.caller.hwStatus != 2:
-                self.main_tab.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+                myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
                 return None
             
             # Check destination Address      
             if not checkPivxAddr(self.dest_addr):
-                self.main_tab.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
+                myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
                 return None
 
             # LET'S GO
@@ -177,7 +177,7 @@ class SweepAll_dlg(QDialog):
                 self.txFinished = False
                 self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
             else:
-                self.main_tab.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "No UTXO to send") 
+                myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send") 
                 
         except DisconnectedException as e:
             self.main_tab.caller.hwStatus = 0
@@ -213,7 +213,7 @@ class SweepAll_dlg(QDialog):
                 
                 if len(tx_hex) > 90000:
                     mess = "Transaction's length exceeds 90000 bytes. Select less UTXOs and try again."
-                    self.main_tab.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
+                    myPopUp_sb(self.main_tab.caller, "warn", 'transaction Warning', mess)
                 
                 else:
                     decodedTx = self.main_tab.caller.rpcClient.decodeRawTransaction(tx_hex)
@@ -235,7 +235,7 @@ class SweepAll_dlg(QDialog):
                         mess2.exec_()
                         
                     else:
-                        self.main_tab.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "Transaction NOT sent")
+                        myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "Transaction NOT sent")
                     
             except Exception as e:
                 err_msg = "Exception in FinishSend"

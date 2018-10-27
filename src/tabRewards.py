@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, printException, getCallerName, getFunctionName, persistCacheSetting
+from misc import printDbg, printException, getCallerName, getFunctionName, persistCacheSetting, myPopUp, myPopUp_sb
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
@@ -220,13 +220,13 @@ class TabRewards():
         # Check dongle
         printDbg("Checking HW device")
         if self.caller.hwStatus != 2:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "Connect to HW device first")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         
         # Check destination Address      
         if not checkPivxAddr(self.dest_addr):
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
             return None
         
         # Check spending collateral
@@ -236,15 +236,15 @@ class TabRewards():
             warning1 = "Are you sure you want to transfer the collateral?"
             warning2 = "Really?"
             warning3 = "Take a deep breath. Do you REALLY want to transfer your collateral?"
-            ans = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - warning', warning1)
+            ans = myPopUp(self.caller, "warn", 'SPMT - warning', warning1)
             if ans == QMessageBox.No:
                 return None
             else:
-                ans2 = self.caller.myPopUp(QMessageBox.Warning, 'SPMT - warning', warning2)
+                ans2 = myPopUp(self.caller, "warn", 'SPMT - warning', warning2)
                 if ans2 == QMessageBox.No:
                     return None
                 else:
-                    ans3 = self.caller.myPopUp(QMessageBox.Critical, 'SPMT - warning', warning3)
+                    ans2 = myPopUp(self.caller, "crit", 'SPMT - warning', warning3)
                     if ans3 == QMessageBox.No:
                         return None
                     
@@ -276,7 +276,7 @@ class TabRewards():
                 err_msg += "<b>Wait for full synchronization</b> then hit 'Clear/Reload'"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
         else:
-            self.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "No UTXO to send")         
+            myPopUp_sb(self.caller, "warn", 'Transaction NOT sent', "No UTXO to send")         
                     
             
             
@@ -306,7 +306,7 @@ class TabRewards():
                     self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
             
         else:
-            self.caller.myPopUp2(QMessageBox.Information, 'No Collateral', "No collateral selected")
+            myPopUp_sb(self.caller, "warn", 'No Collateral', "No collateral selected")
             
             
             
@@ -324,7 +324,7 @@ class TabRewards():
                 
                 if len(tx_hex) > 90000:
                     mess = "Transaction's length exceeds 90000 bytes. Select less UTXOs and try again."
-                    self.caller.myPopUp2(QMessageBox.Warning, 'transaction Warning', mess)
+                    myPopUp_sb(self.caller, "crit", 'transaction Warning', mess)
                 
                 else:
                     decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
@@ -347,7 +347,7 @@ class TabRewards():
                         self.onCancel()
                         
                     else:
-                        self.caller.myPopUp2(QMessageBox.Information, 'Transaction NOT sent', "Transaction NOT sent")
+                        myPopUp_sb(self.caller, "warn", 'Transaction NOT sent', "Transaction NOT sent")
                         self.onCancel()
                         
             except Exception as e:

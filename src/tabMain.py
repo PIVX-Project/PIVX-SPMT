@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox
 from apiClient import ApiClient
 from masternode import Masternode
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
-    now, removeMNfromList
+    now, removeMNfromList, myPopUp, myPopUp_sb
 from qt.gui_tabMain import TabMain_gui
 from qt.dlg_mnStatus import MnStatus_dlg
 from qt.dlg_sweepAll import SweepAll_dlg
@@ -104,8 +104,11 @@ class TabMain():
     @pyqtSlot()
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+            return
+        if self.caller.masternode_list is None or self.caller.masternode_list == []:
+            myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes', "No masternode in list. Add masternodes first.")
             return
         try:
             printDbg("Check-All pressed")
@@ -164,7 +167,7 @@ class TabMain():
             target = self.ui.sender()
             masternode_alias = target.alias
 
-            reply = self.caller.myPopUp(QMessageBox.Warning, 'Confirm REMOVE', 
+            reply = myPopUp(self.caller, "warn", 'Confirm REMOVE', 
                                  "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
 
             if reply == QMessageBox.No:
@@ -193,11 +196,12 @@ class TabMain():
         printOK("Start-All pressed")
         # Check RPC & dongle
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")
             return None
+
         try:
-            reply = self.caller.myPopUp(QMessageBox.Question, 'Confirm START', 
+            reply = myPopUp(self.caller, "quest", 'Confirm START', 
                                                  "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
             if reply == QMessageBox.Yes:
                 mnList = [x for x in self.caller.masternode_list if x['isHardware']]
@@ -222,7 +226,7 @@ class TabMain():
     def onStartMN(self, data=None):
         # Check RPC & dongle  
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
-            self.caller.myPopUp2(QMessageBox.Critical, 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")
             return None
         try:
@@ -274,12 +278,12 @@ class TabMain():
         printOK("Start Message: %s" % text)
         ret = self.caller.rpcClient.decodemasternodebroadcast(text)
         if ret is None:
-            self.caller.myPopUp2(QMessageBox.Critical, 'message decoding failed', 'message decoding failed')
+            myPopUp_sb(self.caller, "crit", 'message decoding failed', 'message decoding failed')
             self.sendBroadcastCheck()
             return
         
         msg = "Broadcast START message?\n" + json.dumps(ret, indent=4, sort_keys=True)  
-        reply = self.caller.myPopUp(QMessageBox.Question, 'message decoded', msg, QMessageBox.Yes)
+        reply = myPopUp(self.caller, "quest", 'message decoded', msg, QMessageBox.Yes)
         if reply == QMessageBox.No:
             self.sendBroadcastCheck()
             return
@@ -291,7 +295,7 @@ class TabMain():
             message += "If your remote server is correctly configured and connected to the network, "
             message += "the output of the <b>./pivx-cli masternode status</b> command on the VPS should show:<br>"
             message += "<br><em>\"message\": \"Masternode successfully started\"</em>"
-            self.caller.myPopUp2(QMessageBox.Information, 'message relayed', message, QMessageBox.Ok)
+            myPopUp_sb(self.caller, "info", 'message relayed', message)
         else:
             print(json.dumps(ret2)[1:26])
             print("\n")
@@ -309,9 +313,9 @@ class TabMain():
         
     def startMN(self):       
         if self.caller.hwStatus != 2:
-            self.caller.myPopUp2(QMessageBox.Question, 'SPMT - hw device check', self.caller.hwStatusMess, QMessageBox.Ok)
+            myPopUp_sb(self.caller, "warn", 'SPMT - hw device check', self.caller.hwStatusMess)
         elif not self.caller.rpcConnected:
-            self.caller.myPopUp2(QMessageBox.Question, 'SPMT - rpc device check', self.caller.rpcStatusMess, QMessageBox.Ok)
+            myPopUp_sb(self.caller, "warn", 'SPMT - rpc device check', self.caller.rpcStatusMess)
         else:           
             try:
                 self.masternodeToStart = self.mnToStartList.pop()
