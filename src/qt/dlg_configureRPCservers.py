@@ -202,6 +202,7 @@ class Ui_ConfigureRPCserversDlg(object):
         self.protocol_select = QComboBox()
         self.protocol_select.addItems(['http', 'https'])
         hBox.addWidget(self.protocol_select)
+        hBox.addWidget(QLabel("://"))
         self.host_edt = QLineEdit()
         self.host_edt.setPlaceholderText('myserver.net:8080')
         hBox.addWidget(self.host_edt)
@@ -216,6 +217,7 @@ class Ui_ConfigureRPCserversDlg(object):
         self.layout.addWidget(self.editFrame)
         self.editFrame.setHidden(True)
         ConfigureRPCserversDlg.setMinimumWidth(500)
+        ConfigureRPCserversDlg.setMinimumHeight(500)
         # Connect main buttons
         self.addServer_btn.clicked.connect(lambda: ConfigureRPCserversDlg.onAddServer())
         self.close_btn.clicked.connect(lambda: ConfigureRPCserversDlg.onClose())

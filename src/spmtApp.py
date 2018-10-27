@@ -83,7 +83,7 @@ class App(QMainWindow):
         # Add RPC server menu
         mainMenu = self.menuBar()
         confMenu = mainMenu.addMenu('Setup')
-        self.rpcConfMenu = QAction(self.pivx_icon, 'Setup RPC...', self)
+        self.rpcConfMenu = QAction(self.pivx_icon, 'RPC Servers config...', self)
         self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
         confMenu.addAction(self.rpcConfMenu)
         self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
@@ -132,8 +132,6 @@ class App(QMainWindow):
         
         
     def closeEvent(self, *args, **kwargs):
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         self.mainWindow.myRpcWd.shutdown_flag.set()
@@ -165,6 +163,12 @@ class App(QMainWindow):
         
         # Adios
         print("Bye Bye.")
+        
+        # Restore output streams
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+        
+        # Return
         return QMainWindow.closeEvent(self, *args, **kwargs)
     
     

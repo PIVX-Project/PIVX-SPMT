@@ -122,8 +122,11 @@ class TabGovernance():
         self.ui.proposalBox.setRowCount(len(self.proposals))
         
         for row, prop in enumerate(self.proposals):
+            # Make proposal name Bold
             self.ui.proposalBox.setItem(row, 0, item(prop.name))
-            self.ui.proposalBox.item(row, 0).setFont(QFont("Arial", 9, QFont.Bold))
+            font = self.ui.proposalBox.item(row, 0).font()
+            font.setBold(True)
+            self.ui.proposalBox.item(row, 0).setFont(font)
             
             hash = item(prop.Hash)
             hash.setToolTip(prop.Hash)

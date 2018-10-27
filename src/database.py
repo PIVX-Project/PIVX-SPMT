@@ -69,7 +69,8 @@ class Database():
                 self.lock.release()
         
         else:
-            raise Exception("Database not open")
+            err_msg = "Database already closed"
+            printException(getCallerName(), "close()", err_msg, "")
         
         
         
@@ -171,9 +172,10 @@ class Database():
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM %s" % table_name)
-            # in case, reload default RPC
+            # in case, reload default RPC and emit changed signal
             if table_name == 'CUSTOM_RPC_SERVERS':
                 self.initTable_RPC(cursor)
+                self.app.sig_changed_rpcServers.emit()
             
         except Exception as e:
             err_msg = 'error clearing %s in database' % table_name
@@ -181,8 +183,7 @@ class Database():
    
         finally:
             self.releaseCursor()
-            
-        self.app.sig_changed_rpcServers.emit()    
+                
         
         
         

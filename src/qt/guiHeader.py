@@ -3,7 +3,7 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
 
 from constants import trusted_RPC_Servers
@@ -12,7 +12,6 @@ from PyQt5.Qt import QSizePolicy
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        smallFont = QFont("Times", 7)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         # --- 1) Check Box
@@ -42,7 +41,6 @@ class GuiHeader(QWidget):
         self.lastPingIcon.setPixmap(caller.connRed_icon)
         lastPingBoxLayout.addWidget(self.lastPingIcon)
         self.responseTimeLabel = QLabel()
-        self.responseTimeLabel.setFont(smallFont)
         self.responseTimeLabel.setToolTip("Last ping server response time.\n(The lower, the better)")
         lastPingBoxLayout.addWidget(self.responseTimeLabel)
         lastPingBoxLayout.addSpacing(10)
@@ -51,7 +49,6 @@ class GuiHeader(QWidget):
         self.lastBlockIcon.setPixmap(caller.lastBlock_icon)
         lastPingBoxLayout.addWidget(self.lastBlockIcon)
         self.lastBlockLabel = QLabel()
-        self.lastBlockLabel.setFont(smallFont)
         self.lastBlockLabel.setToolTip("Last ping block number")
         lastPingBoxLayout.addWidget(self.lastBlockLabel)
         self.lastPingBox.setLayout(lastPingBoxLayout)
