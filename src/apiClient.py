@@ -24,8 +24,7 @@ class ApiClient:
             data = resp.json()
             return data
         else:
-            print("Invalid response from API provider\n")
-            print("Status code: %s\n" % str(resp.status_code))
+            printException(getCallerName(), getFunctionName(), "Invalid response from API provider", "Status code: %s\n" % str(resp.status_code))
             try:
                 self.client.close()
                 self.client = requests.session()

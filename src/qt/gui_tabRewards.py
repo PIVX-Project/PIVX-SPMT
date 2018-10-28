@@ -49,8 +49,8 @@ class TabRewards_gui(QWidget):
         layout.addRow(QLabel("Masternode"), hBox)             
         ## --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()
-        self.rewardsList.statusLabel = QLabel('<b style="color:purple">Checking explorer...</b>')
-        self.rewardsList.statusLabel.setVisible(True)
+        self.rewardsList.statusLabel = QLabel()
+        self.resetStatusLabel()
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
         self.rewardsList.box.setMinimumHeight(140)
@@ -135,3 +135,15 @@ class TabRewards_gui(QWidget):
         self.rewardsForm.setLayout(layout)
         #--- ROW 5
         self.btn_Cancel = QPushButton("Clear/Reload")
+        
+        
+        
+    def resetStatusLabel(self, message=None):
+        self.rewardsList.statusLabel.setVisible(True)
+        if message is None:
+            self.rewardsList.statusLabel.setText('<em><b style="color:purple">Checking explorer...</b></em>')
+        else:
+            self.rewardsList.statusLabel.setText(message)
+            
+            
+            

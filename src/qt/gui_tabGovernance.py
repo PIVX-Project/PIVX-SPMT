@@ -37,7 +37,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.selectMN_btn)
         self.selectedMNlabel = QLabel("<em>0 masternodes selected for voting</em")
         row.addWidget(self.selectedMNlabel)
-        self.refreshingLabel = QLabel("<em><b style='color:red'>Refreshing proposals...</b></em>")
+        self.refreshingLabel = QLabel("<em><b style='color:purple'>Refreshing proposals...</b></em>")
         self.refreshingLabel.hide()
         row.addWidget(self.refreshingLabel)
         row.addStretch(1)

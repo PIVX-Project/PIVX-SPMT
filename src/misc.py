@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
+import os, sys
 from ipaddress import ip_address
 import simplejson as json
 import time

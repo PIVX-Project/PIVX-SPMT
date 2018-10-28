@@ -119,9 +119,9 @@ class MainWindow(QWidget):
         
         ###-- Add tabs
         self.tabs.setTabPosition(QTabWidget.West)
-        self.tabs.addTab(self.tabMain, "Masternode Control")
+        self.tabs.addTab(self.tabMain, "Masternode List")
         #self.tabs.addTab(self.tabMNConf, "MN Configuration")
-        self.tabs.addTab(self.tabRewards, "Transfer Rewards")
+        self.tabs.addTab(self.tabRewards, "Rewards")
         self.tabs.addTab(self.tabGovernance, "Governance")            
         ###-- Connect change action
         self.tabs.currentChanged.connect(lambda: self.onTabChange())                    

@@ -87,13 +87,11 @@ class TabRewards():
                                 
             else:
                 if not self.caller.rpcConnected:
-                    self.ui.rewardsList.statusLabel.setText('<b style="color:purple">PIVX wallet not connected</b>')
+                    self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
+                elif self.apiConnected:
+                    self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
                 else:
-                    if self.apiConnected:
-                        self.ui.rewardsList.statusLabel.setText('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
-                    else:
-                        self.ui.rewardsList.statusLabel.setText('<b style="color:purple">Unable to connect to API provider</b>')
-                self.ui.rewardsList.statusLabel.setVisible(True)
+                    self.ui.resetStatusLabel('<b style="color:red">Unable to connect to API provider</b>')
               
         
             
@@ -114,7 +112,7 @@ class TabRewards():
             
             
     def loadMnSelect(self):
-        self.ui.mnSelect.clear()            
+        self.ui.mnSelect.clear()
         for x in self.caller.masternode_list:
             if x['isHardware']:
                 name = x['name']
@@ -130,35 +128,32 @@ class TabRewards():
     
     def load_utxos_thread(self, ctrl):
         self.apiConnected = False
-        try:
-            if not self.caller.rpcConnected:
-                self.rewards = []
-                printDbg('PIVX daemon not connected')
-            
-            else:
-                try:
-                    if self.caller.apiClient.getStatus() != 200:
-                        return
-                    
-                    self.apiConnected = True
-                    self.blockCount = self.caller.rpcClient.getBlockCount()
-                    self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
-                    
-                    for utxo in self.rewards:
-                        rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
-                        self.rawtransactions[utxo['tx_hash']] = rawtx
-                        if rawtx is None:
-                            print("Unable to get raw TX from RPC server\n")
-                            
-                    self.feePerKb = self.caller.rpcClient.getFeePerKb()
-                            
-                except Exception as e:
-                    self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                    printDbg(self.errorMsg)
-                    
-        except Exception as e:
-            print(e)
-            pass
+
+        if not self.caller.rpcConnected:
+            self.rewards = []
+            printDbg('PIVX daemon not connected')
+        
+        else:
+            try:
+                if self.caller.apiClient.getStatus() != 200:
+                    return
+                
+                self.apiConnected = True
+                self.blockCount = self.caller.rpcClient.getBlockCount()
+                self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
+                
+                for utxo in self.rewards:
+                    rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                    self.rawtransactions[utxo['tx_hash']] = rawtx
+                    if rawtx is None:
+                        print("Unable to get raw TX from RPC server\n")
+                        
+                self.feePerKb = self.caller.rpcClient.getFeePerKb()
+                        
+            except Exception as e:
+                self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
+                printDbg(self.errorMsg)
+
         
     
     
@@ -181,6 +176,7 @@ class TabRewards():
     @pyqtSlot()
     def onChangeSelectedMN(self):
         if self.ui.mnSelect.currentIndex() >= 0:
+            self.ui.resetStatusLabel()
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2] 
