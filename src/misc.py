@@ -50,6 +50,9 @@ def appendMasternode(mainWnd, mn):
     mainWnd.parent.db.addMasternode(mn, mainWnd.mnode_to_change)
     mainWnd.mnode_to_change = None
     
+    # update list in rewards tab
+    mainWnd.t_rewards.onChangedMNlist()
+    
     # Insert item in list of Main tab
     name = mn['name']
     namelist = [x['name'] for x in mainWnd.masternode_list]
@@ -57,7 +60,7 @@ def appendMasternode(mainWnd, mn):
     if row == -1:
         row = None
     mainWnd.tabMain.insert_mn_list(name, mn['ip'], mn['port'], row, isHardware=mn['isHardware'])
-    
+
     # Connect buttons
     mainWnd.tabMain.btn_remove[name].clicked.connect(lambda: mainWnd.t_main.onRemoveMN())
     mainWnd.tabMain.btn_edit[name].clicked.connect(lambda: mainWnd.t_main.onEditMN())

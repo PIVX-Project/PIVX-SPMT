@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "i",
- "comments": ["clearData flags"]
+ "tag": "j",
+ "comments": ["Rewards DataBase"]
  }

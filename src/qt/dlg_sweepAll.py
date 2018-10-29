@@ -15,25 +15,35 @@ from utils import checkPivxAddr
 
 
 class SweepAll_dlg(QDialog):
+    # Dialog initialized in TabMain constructor
     def __init__(self, main_tab):
         QDialog.__init__(self, parent=main_tab.ui)
         self.main_tab = main_tab
         self.setWindowTitle('Sweep All Rewards')
+        ##--- Initialize Selection
+        self.feePerKb = MINIMUM_FEE
+        self.suggestedFee = MINIMUM_FEE
         ##--- Initialize GUI
-        self.setupUI()
-        self.suggestedFee = MINIMUM_FEE    
+        self.setupUI() 
         # Connect GUI buttons
         self.connectButtons()
         
-        
+    
+    # Called each time before exec_ in showDialog
     def load_data(self):
         # load last used destination from cache
         self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
         # load useSwiftX check from cache
         if self.main_tab.caller.parent.cache.get("useSwiftX"):
             self.ui.swiftxCheck.setChecked(True)
-        self.updateFee()
-        ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
+        # update fee and show UTXO list
+        self.display_utxos()
+
+
+
+    def showDialog(self):
+        self.load_data()
+        self.exec_()
         
     
     
@@ -51,75 +61,61 @@ class SweepAll_dlg(QDialog):
     
     
     def display_utxos(self):
+        rewards = self.main_tab.caller.parent.db.getRewardsList()
+        self.rewardsArray = []
+        for mn in self.main_tab.caller.masternode_list:
+            x = {}
+            x['name'] = mn['name']
+            x['addr'] = mn['collateral'].get('address')
+            x['path'] = MPATH + "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
+            x['utxos'] = [r for r in rewards 
+                          if r['mn_name'] == x['name']                      # this mn's UTXOs
+                          and r['tx_hash'] != mn['collateral'].get('txid')  # except the collateral
+                          and r['confirmations'] > 100]                     # and immature rewards
+            x['total_rewards'] = round(sum([reward['value'] for reward in x['utxos']])/1e8, 8)
+            self.rewardsArray.append(x)          
+        
+        # update fee per Kb
+        if self.main_tab.caller.rpcConnected:
+            self.feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()  
+        
         def item(value):
             item = QTableWidgetItem(value)
             item.setTextAlignment(Qt.AlignCenter)
             item.setFlags(Qt.NoItemFlags)
             return item
         
-        if len(self.rewards) == 0:
+        if len(self.rewardsArray) == 0:
             self.ui.lblMessage.setText("Unable to get raw TX from RPC server\nPlease wait for full synchronization and try again.")
             
         else:
-            self.ui.tableW.setRowCount(len(self.rewards))
+            self.ui.tableW.setRowCount(len(self.rewardsArray))
             numOfInputs = 0
-            for row, mnode in enumerate(self.rewards):
+            for row, mnode in enumerate(self.rewardsArray):
                 self.ui.tableW.setItem(row, 0, item(mnode['name']))
                 self.ui.tableW.setItem(row, 1, item(mnode['addr']))
                 newInputs = len(mnode['utxos'])
                 numOfInputs += newInputs
-                rewards_line = "%s PIV (%d payments)" % (mnode['total_rewards'], newInputs)
+                rewards_line = "%s PIV" % mnode['total_rewards']
                 self.ui.tableW.setItem(row, 2, item(rewards_line))
+                self.ui.tableW.setItem(row, 3, item(str(newInputs)))
             
             self.ui.tableW.resizeColumnsToContents()
             self.ui.lblMessage.setVisible(False)
             self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
             
-            total = sum([float(mnode['total_rewards']) for mnode in self.rewards])
-            self.ui.totalLine.setText("<b>%s</b>" % str(round(total,8)))
+            total = sum([float(mnode['total_rewards']) for mnode in self.rewardsArray])
+            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total,8)))
+            self.ui.noOfUtxosLine.setText("<b>%s</b>" % str(numOfInputs))
+            
             
             # update fee
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.updateFee()
             
-            
-    
-       
-        
-    def load_utxos_thread(self, ctrl):
-        self.rewards = []
-        collaterals = []
-        self.rawtransactions = {}
-        mnlist = [x for x in self.main_tab.caller.masternode_list if x['isHardware']]
-        for mn in mnlist:
-            mnode = {}
-            addy = mn['collateral'].get('address')
-            mnode['name'] = mn['name']
-            mnode['addr'] = addy
-            mnode['path'] = MPATH + "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
-            # get UTXOs of current masternode
-            mnode['utxos'] = self.main_tab.caller.apiClient.getAddressUtxos(addy)['unspent_outputs']
-            # remove collateral and immature rewards
-            mnode['utxos'] = [x for x in mnode['utxos'] if (x['tx_hash'] != mn['collateral'].get('txid') and
-                                                            x['confirmations'] > 100) ]
-            
-            # compute total rewards
-            total = sum([int(x['value']) for x in mnode['utxos']])
-            mnode['total_rewards'] = str(round(total/1e8, 8))                
-            self.rewards.append(mnode)   
-            
-        # get raw transactions
-            for utxo in mnode['utxos']:
-                rawtx = self.main_tab.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
-                self.rawtransactions[utxo['tx_hash']] = rawtx
-                if rawtx is None:
-                    print("Unable to get raw TX from RPC server\n")
-                    self.rewards = []
-                    return
-        # update fee
-        self.feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()        
-    
+                  
+
     
     
     @pyqtSlot()
@@ -147,7 +143,7 @@ class SweepAll_dlg(QDialog):
                 return None
 
             # LET'S GO
-            if len(self.rawtransactions) > 0:
+            if len(self.rewardsArray) > 0:
                 printDbg("Preparing transaction. Please wait...")
                 self.ui.loadingLine.show()
                 self.ui.loadingLinePercent.show()
@@ -175,7 +171,7 @@ class SweepAll_dlg(QDialog):
                 self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
     
                 self.txFinished = False
-                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
+                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewardsArray, self.dest_addr, self.currFee, self.useSwiftX())
             else:
                 myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send") 
                 
@@ -229,10 +225,12 @@ class SweepAll_dlg(QDialog):
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:
                         txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
-                        mess2_text = "<p>Transaction successfully sent.</p><p>(Note that the selected rewards will remain displayed in the app until the transaction is confirmed.)</p>"
+                        mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
+                        # remove spent rewards (All of them except for collaterals)
+                        self.removeSpentRewards()
                         
                     else:
                         myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "Transaction NOT sent")
@@ -240,6 +238,13 @@ class SweepAll_dlg(QDialog):
             except Exception as e:
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
+    
+    
+    
+    def removeSpentRewards(self):
+        for mn in self.rewardsArray:
+            for utxo in mn['utxos']:
+                self.main_tab.caller.parent.db.deleteReward(utxo['tx_hash'], utxo['tx_ouput_n'])
 
     
     
@@ -281,9 +286,9 @@ class Ui_SweepAllDlg(object):
         self.tableW = QTableWidget(SweepAllDlg)
         self.tableW.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.tableW.setShowGrid(True)
-        self.tableW.setColumnCount(3)
+        self.tableW.setColumnCount(4)
         self.tableW.setRowCount(0)
-        self.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.tableW.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.tableW.verticalHeader().hide()
         item = QTableWidgetItem()
         item.setText("Name")
@@ -297,6 +302,10 @@ class Ui_SweepAllDlg(object):
         item.setText("Rewards")
         item.setTextAlignment(Qt.AlignCenter)
         self.tableW.setHorizontalHeaderItem(2, item)
+        item = QTableWidgetItem()
+        item.setText("n. of UTXOs")
+        item.setTextAlignment(Qt.AlignCenter)
+        self.tableW.setHorizontalHeaderItem(3, item)
         layout.addWidget(self.tableW)
         myForm = QFormLayout()
         myForm.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
@@ -313,6 +322,10 @@ class Ui_SweepAllDlg(object):
         self.loadingLine.hide()
         self.loadingLinePercent.hide()
         myForm.addRow(QLabel("Total Rewards: "), hBox)
+        hBox = QHBoxLayout()
+        self.noOfUtxosLine = QLabel("<b>0</b>")
+        hBox.addWidget(self.noOfUtxosLine)
+        myForm.addRow(QLabel("Total number of UTXOs: "), hBox)
         hBox = QHBoxLayout()
         self.edt_destination = QLineEdit()
         self.edt_destination.setToolTip("PIVX address to transfer rewards to")

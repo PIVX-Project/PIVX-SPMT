@@ -39,7 +39,7 @@ class Database():
 
             except Exception as e:
                 err_msg = 'SQLite initialization error'
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e)
                 
             finally:
                 self.lock.release()
@@ -136,9 +136,15 @@ class Database():
             
             # Tables for Masternodes
             cursor.execute("CREATE TABLE IF NOT EXISTS MASTERNODES("
-                        " name TEXT PRIMARY KEY, ip TEXT, port INTEGER, mnPrivKey TEXT,"
-                        " hwAcc INTEGER, isTestnet INTEGER, isHardware INTEGER,"
-                        " address TEXT, spath INTEGER, pubkey TEXT, txid TEXT, txidn INTEGER)")
+                           " name TEXT PRIMARY KEY, ip TEXT, port INTEGER, mnPrivKey TEXT,"
+                           " hwAcc INTEGER, isTestnet INTEGER, isHardware INTEGER,"
+                           " address TEXT, spath INTEGER, pubkey TEXT, txid TEXT, txidn INTEGER)")
+            
+            # Tables for Rewards
+            cursor.execute("CREATE TABLE IF NOT EXISTS REWARDS("
+                           " tx_hash TEXT, tx_ouput_n INTEGER,"
+                           " value INTEGER, confirmations INTEGER, script TEXT, raw_tx TEXT, mn_name TEXT,"
+                           " PRIMARY KEY (tx_hash, tx_ouput_n))")
 
             
         except Exception as e:
@@ -199,13 +205,14 @@ class Database():
                            (protocol, host, user, passwd)
                            )
             
+            self.app.sig_changed_rpcServers.emit()
+            
         except Exception as e:
             err_msg = 'error adding RPC server entry to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)      
         finally:
             self.releaseCursor()
         
-        self.app.sig_changed_rpcServers.emit()
         
         
         
@@ -218,6 +225,8 @@ class Database():
                            "WHERE id = ?",
                            (protocol, host, user, passwd, id)
                            )
+            
+            self.app.sig_changed_rpcServers.emit()
                     
         except Exception as e:
             err_msg = 'error editing RPC server entry to DB'
@@ -225,7 +234,6 @@ class Database():
         finally:
             self.releaseCursor()   
         
-        self.app.sig_changed_rpcServers.emit()
         
         
         
@@ -270,6 +278,8 @@ class Database():
             cursor.execute("DELETE FROM RPC_SERVERS"
                            " WHERE id=?", (index,))
             
+            self.app.sig_changed_rpcServers.emit()
+            
         except Exception as e:
             err_msg = 'error removing RPC servers from database'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
@@ -277,7 +287,7 @@ class Database():
         finally:
             self.releaseCursor()
             
-        self.app.sig_changed_rpcServers.emit()
+
             
         
         
@@ -385,6 +395,102 @@ class Database():
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
             self.releaseCursor() 
+    
+    
+    
+    '''
+    Rewards methods
+    '''
+    def rewards_from_rows(self, rows):
+        rewards = []
+        
+        for row in rows:
+            # fetch masternode item
+            utxo = {}
+            utxo['tx_hash'] = row[0]
+            utxo['tx_ouput_n'] = row[1]
+            utxo['value'] = row[2]
+            utxo['confirmations'] = row[3]
+            utxo['script'] = row[4]
+            utxo['raw_tx'] = row[5]
+            utxo['mn_name'] = row[6]
+            # add to list
+            rewards.append(utxo)
+            
+        return rewards
+        
+    
+    
+    def addReward(self, utxo):
+        try:
+            cursor = self.getCursor()
+            
+            cursor.execute("INSERT INTO REWARDS "
+                           "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                           (utxo['tx_hash'], utxo['tx_ouput_n'], utxo['value'], 
+                            utxo['confirmations'], utxo['script'], utxo['raw_tx'], utxo['mn_name'])
+                           )
+            
+        except Exception as e:
+            err_msg = 'error adding reward UTXO to to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+
+        finally:
+            self.releaseCursor()
             
             
-                
+            
+            
+    def deleteReward(self, txid, txidn):
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DELETE FROM REWARDS WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
+            
+        except Exception as e:
+            err_msg = 'error deleting UTXO from DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        finally:
+            self.releaseCursor() 
+            
+    
+    
+    
+    def getReward(self, txid, txidn):
+        try:
+            cursor = self.getCursor()
+
+            cursor.execute("SELECT * FROM REWARDS"
+                           " WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
+            rows = cursor.fetchall()
+            
+        except Exception as e:
+            err_msg = 'error getting reward %s-%d' % (txid, txidn)
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            rows = []       
+        finally:
+            self.releaseCursor() 
+        
+        return self.rewards_from_rows(rows)[0]
+    
+    
+    
+    def getRewardsList(self, mn_name=None):
+        try:
+            cursor = self.getCursor()
+
+            if mn_name is None:
+                cursor.execute("SELECT * FROM REWARDS")
+            else:
+                cursor.execute("SELECT * FROM REWARDS WHERE mn_name = ?", (mn_name,))
+            rows = cursor.fetchall()
+            
+        except Exception as e:
+            err_msg = 'error getting rewards list for masternode %s' % mn_name
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            rows = []       
+        finally:
+            self.releaseCursor() 
+        
+        return self.rewards_from_rows(rows)
+
+

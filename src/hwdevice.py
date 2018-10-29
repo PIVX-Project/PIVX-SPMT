@@ -66,6 +66,7 @@ class HWdevice(QObject):
         QObject.__init__(self, *args, **kwargs)
         # Device Lock for threads
         self.lock = threading.Lock()
+        self.dongle = None
         printDbg("Creating HW device class")
         self.initDevice()
         # Connect signal
@@ -77,8 +78,9 @@ class HWdevice(QObject):
         try:
             self.lock.acquire()
             self.status = 0
-            if hasattr(self, 'dongle'):
+            if hasattr(self, 'dongle') and self.dongle is not None:
                 self.dongle.close()
+                self.dongle = None
             self.dongle = getDongle(False)
             printOK('Ledger Nano S drivers found')
             self.chip = btchip(self.dongle)
@@ -112,7 +114,7 @@ class HWdevice(QObject):
     
     
     @process_ledger_exceptions
-    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions, useSwiftX=False):
+    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
@@ -125,10 +127,7 @@ class HWdevice(QObject):
             for idx, utxo in enumerate(utxos_to_spend):
                 
                 self.amount += int(utxo['value'])
-                raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
-    
-                if not raw_tx:
-                    raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
+                raw_tx = bytearray.fromhex(utxo['raw_tx'])
                 
                 # parse the raw transaction, so that we can extract the UTXO locking script we refer to
                 prev_transaction = bitcoinTransaction(raw_tx)
@@ -216,25 +215,22 @@ class HWdevice(QObject):
         
         
     @process_ledger_exceptions
-    def prepare_transfer_tx_bulk(self, caller, mnodes, dest_address, tx_fee, rawtransactions, useSwiftX=False):
+    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
         self.arg_inputs = []
         self.amount = 0
         self.lock.acquire()
-        num_of_sigs = sum([len(mnode['utxos']) for mnode in mnodes])
+        num_of_sigs = sum([len(mnode['utxos']) for mnode in rewardsArray])
         curr_utxo_checked = 0
         try:
-            for i, mnode in enumerate(mnodes): 
+            for i, mnode in enumerate(rewardsArray): 
                 
                 for idx, utxo in enumerate(mnode['utxos']):
                                        
                     self.amount += int(utxo['value'])
-                    raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
-    
-                    if not raw_tx:
-                        raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
+                    raw_tx = bytearray.fromhex(utxo['raw_tx'])
                 
                     # parse the raw transaction, so that we can extract the UTXO locking script we refer to
                     prev_transaction = bitcoinTransaction(raw_tx)

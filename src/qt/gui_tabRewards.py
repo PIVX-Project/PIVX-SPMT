@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
     QProgressBar, QLineEdit, QComboBox, QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, \
     QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
+from PyQt5.Qt import QIcon
     
 
 class TabRewards_gui(QWidget):
-    def __init__(self, *args, **kwargs):
-        QWidget.__init__(self)      
+    def __init__(self, caller, *args, **kwargs):
+        QWidget.__init__(self)
+        self.caller = caller
         self.initRewardsForm()    
         mainVertical = QVBoxLayout()        
         mainVertical.addWidget(self.rewardsForm)
@@ -34,6 +38,12 @@ class TabRewards_gui(QWidget):
         self.mnSelect = QComboBox()
         self.mnSelect.setToolTip("Select Masternode") 
         hBox.addWidget(self.mnSelect)
+        self.btn_ReloadUTXOs = QPushButton()
+        self.btn_ReloadUTXOs.setToolTip("Reload UTXOs")
+        refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
+        self.btn_ReloadUTXOs.setIcon(refresh_icon)
+        hBox.addWidget(self.btn_ReloadUTXOs)
+        hBox.addStretch(1)
         label = QLabel("Total Address Balance")
         label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         hBox.addWidget(label)
@@ -43,9 +53,6 @@ class TabRewards_gui(QWidget):
         hBox.addWidget(self.addrAvailLine)
         self.btn_toggleCollateral = QPushButton("Show Collateral")
         hBox.addWidget(self.btn_toggleCollateral)
-        hBox.setStretch(0,1)
-        hBox.setStretch(1,0)
-        hBox.setStretch(2,0)
         layout.addRow(QLabel("Masternode"), hBox)             
         ## --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()

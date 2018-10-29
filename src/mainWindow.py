@@ -68,12 +68,9 @@ class MainWindow(QWidget):
         
         ##-- Load RPC Servers list
         self.updateRPClist()
-
-        ###-- Create RPC Whatchdog
-        self.rpc_watchdogThread = QThread()
-        self.myRpcWd = RpcWatchdog(self)
-        self.myRpcWd.moveToThread(self.rpc_watchdogThread)
-        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
+        
+        ##-- init Api Client
+        self.apiClient = ApiClient()
         
         ###-- Create Queues and redirect stdout and stderr
         self.queue = Queue()
@@ -116,7 +113,6 @@ class MainWindow(QWidget):
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
         self.t_governance = TabGovernance(self)
-        
         ###-- Add tabs
         self.tabs.setTabPosition(QTabWidget.West)
         self.tabs.addTab(self.tabMain, "Masternode List")
@@ -133,7 +129,7 @@ class MainWindow(QWidget):
         self.splitter.setStretchFactor(0,0)
         self.splitter.setStretchFactor(1,1)
         self.layout.addWidget(self.splitter)
-        
+
         ###-- Set Layout
         self.setLayout(self.layout)
         ###-- Init Settings
@@ -141,15 +137,18 @@ class MainWindow(QWidget):
         ###-- Connect buttons/signals
         self.connButtons()
         
-        ###-- Let's go
-        self.mnode_to_change = None
-        printOK("Hello! Welcome to " + parent.title)
-            
         ##-- Check version
         self.onCheckVersion()
         
-        ##-- init Api Client
-        self.apiClient = ApiClient()
+        ###-- Create RPC Whatchdog
+        self.rpc_watchdogThread = QThread()
+        self.myRpcWd = RpcWatchdog(self)
+        self.myRpcWd.moveToThread(self.rpc_watchdogThread)
+        self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
+        
+        ###-- Let's go
+        self.mnode_to_change = None
+        printOK("Hello! Welcome to " + parent.title)
                
         
     
@@ -383,25 +382,25 @@ class MainWindow(QWidget):
             
     @pyqtSlot()
     def onTabChange(self):
-        # reload (and re-sort)masternode list in tabs
+        # # Update mnList order to cache settings and sort
+        mnOrder = {}
+        mnList = self.tabMain.myList
+        for i in range(mnList.count()):
+            mnName = mnList.itemWidget(mnList.item(i)).alias
+            mnOrder[mnName] = i
+        self.parent.cache['mnList_order'] = mnOrder
+        self.masternode_list.sort(key=self.parent.extract_order)
+        
+        # tabRewards
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
-            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
-            # get new order
-            mnOrder = {}
-            mnList = self.tabMain.myList
-            for i in range(mnList.count()):
-                mnName = mnList.itemWidget(mnList.item(i)).alias
-                mnOrder[mnName] = i
-            self.parent.cache['mnList_order'] = mnOrder
-            # Sort masternode list (by alias if no previous order set)
-            if self.parent.cache.get('mnList_order') != {}:
-                self.masternode_list.sort(key=self.parent.extract_order)
+            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))        
+            # update sorted list in MnSelect
             self.t_rewards.loadMnSelect()
-            self.t_rewards.selectedRewards = None
             
-        # reload proposal and voting masternode list
+        # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
+            # reload proposal list
             self.t_governance.onRefreshProposals()
             self.t_governance.updateSelectedMNlabel()
             

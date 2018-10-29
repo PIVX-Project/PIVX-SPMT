@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import threading
 import simplejson as json
 
 from PyQt5.Qt import QApplication
@@ -14,26 +15,37 @@ from misc import printDbg, printException, getCallerName, getFunctionName, persi
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
+from time import sleep
 
 
 class TabRewards():
     def __init__(self, caller):
         self.caller = caller
+        ##--- Lock for loading UTXO thread
+        self.runInThread = ThreadFuns.runInThread
+        self.Lock = threading.Lock()
+        
         ##--- Initialize Selection
-        self.rewards = None
+        self.utxoLoaded = False
         self.selectedRewards = None
-        self.rawtransactions = {}
         self.feePerKb = MINIMUM_FEE
-        ##--- Initialize GUI
-        self.ui = TabRewards_gui()
-        self.caller.tabRewards = self.ui
         self.suggestedFee = MINIMUM_FEE
+        
+        ##--- Initialize GUI
+        self.ui = TabRewards_gui(caller)
+        self.caller.tabRewards = self.ui
+        
         # load last used destination from cache
         self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress")) 
         # load useSwiftX check from cache
         if self.caller.parent.cache.get("useSwiftX"):
             self.ui.swiftxCheck.setChecked(True)
+        
+        # init first selected MN
+        self.loadMnSelect()         # loads masternodes list in MnSelect
+        self.onChangeSelectedMN()   # dislays UTXOs for first of the list
         self.updateFee()
+        
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
         self.ui.btn_toggleCollateral.clicked.connect(lambda: self.onToggleCollateral())
@@ -43,22 +55,37 @@ class TabRewards():
         self.ui.swiftxCheck.clicked.connect(lambda: self.updateFee())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
+        self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
+
 
         
         
         
-    def display_utxos(self):
-        if self.rewards is not None:
+    def display_mn_utxos(self):
+        if self.curr_name is None:
+            return
+        
+        # update fee
+        if self.caller.rpcConnected:
+            self.feePerKb = self.caller.rpcClient.getFeePerKb()
+        
+        rewards = self.caller.parent.db.getRewardsList(self.curr_name)
+        self.updateTotalBalance(rewards)
+        
+        if rewards is not None:
             def item(value):
                 item = QTableWidgetItem(value)
                 item.setTextAlignment(Qt.AlignCenter)
                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
                 return item
-    
-            self.ui.rewardsList.box.setRowCount(len(self.rewards))
-            for row, utxo in enumerate(self.rewards):
+
+            # Clear up old list
+            self.ui.rewardsList.box.setRowCount(0)
+            # Make room for new list
+            self.ui.rewardsList.box.setRowCount(len(rewards))
+            # Insert items
+            for row, utxo in enumerate(rewards):
                 txId = utxo.get('tx_hash', None)
-    
                 pivxAmount = round(int(utxo.get('value', 0))/1e8, 8)
                 self.ui.rewardsList.box.setItem(row, 0, item(str(pivxAmount)))
                 self.ui.rewardsList.box.setItem(row, 1, item(str(utxo.get('confirmations', None))))
@@ -70,17 +97,17 @@ class TabRewards():
                     for i in range(0,4):
                         self.ui.rewardsList.box.item(row, i).setFont(QFont("Arial", 9, QFont.Bold))
                     self.ui.rewardsList.box.collateralRow = row
-                
+
                 # make immature rewards unselectable
                 if utxo.get('confirmations') < 101:
                     for i in range(0,4):
                         self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
                         self.ui.rewardsList.box.item(row, i).setToolTip("Immature - 100 confirmations required")
-                    
+ 
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
-                   
-            if len(self.rewards) > 1:  # (collateral is a reward)
+
+            if len(rewards) > 1:  # (collateral is a reward)
                 self.ui.rewardsList.box.resizeColumnsToContents()
                 self.ui.rewardsList.statusLabel.setVisible(False)
                 self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
@@ -91,70 +118,98 @@ class TabRewards():
                 elif self.apiConnected:
                     self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
                 else:
-                    self.ui.resetStatusLabel('<b style="color:red">Unable to connect to API provider</b>')
-              
-        
+                    self.ui.resetStatusLabel('<b style="color:red">Unable to connect to API provider</b>')        
+
             
             
             
     def getSelection(self):
+        # Get selected rows indexes
         items = self.ui.rewardsList.box.selectedItems()
-        # Save row indexes to a set to avoid repetition
         rows = set()
         for i in range(0, len(items)):
             row = items[i].row()
             rows.add(row)
-        rowList = list(rows)  
-        return [self.rewards[row] for row in rowList]
+        indexes = list(rows)
+        # Get UTXO info from DB for each
+        selection = []
+        for idx in indexes:
+            txid = self.ui.rewardsList.box.item(idx, 2).text()
+            txidn = int(self.ui.rewardsList.box.item(idx, 3).text())
+            selection.append(self.caller.parent.db.getReward(txid, txidn))
             
-
-       
+        return selection
+    
             
             
     def loadMnSelect(self):
         self.ui.mnSelect.clear()
+        self.curr_name = None
+        self.selectedRewards = None
+
         for x in self.caller.masternode_list:
             if x['isHardware']:
                 name = x['name']
                 address = x['collateral'].get('address')
                 txid = x['collateral'].get('txid')
+                txidn = x['collateral'].get('txidn')
                 hwAcc = x['hwAcc']
                 spath = x['collateral'].get('spath')
                 path = MPATH + "%d'/0/%d" % (hwAcc, spath)
-                self.ui.mnSelect.addItem(name, [address, txid, path])
+                self.ui.mnSelect.addItem(name, [address, txid, txidn, path])
                      
            
     
     
     def load_utxos_thread(self, ctrl):
-        self.apiConnected = False
+        with self.Lock:
+            self.apiConnected = False
+            # clear rewards DB
+            printDbg("Clearing REWARDS table")
+            self.caller.parent.db.clearTable('REWARDS')
+            self.utxoLoaded = False
+    
+            # If rpc is not connected warn and return.
+            if not self.caller.rpcConnected:
+                printDbg('PIVX daemon not connected - Unable to update UTXO list')
+                return
+            
+            api_status = self.caller.apiClient.getStatus()
+            if  api_status != 200:
+                printDbg("Wrong response from API client. Status: %s" % status)
+                return
+            
+            self.apiConnected = True
+            self.blockCount = self.caller.rpcClient.getBlockCount()
 
-        if not self.caller.rpcConnected:
-            self.rewards = []
-            printDbg('PIVX daemon not connected')
-        
-        else:
-            try:
-                if self.caller.apiClient.getStatus() != 200:
+            for mn in self.caller.masternode_list:
+
+                # Load UTXOs from API client
+                rewards = self.caller.apiClient.getAddressUtxos(
+                    mn['collateral'].get('address'))['unspent_outputs']
+
+                if rewards is None:
+                    printDbg('Error occurred while calling getaddressutxos method.')
                     return
-                
-                self.apiConnected = True
-                self.blockCount = self.caller.rpcClient.getBlockCount()
-                self.rewards = self.caller.apiClient.getAddressUtxos(self.curr_addr)['unspent_outputs']
-                
-                for utxo in self.rewards:
-                    rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
-                    self.rawtransactions[utxo['tx_hash']] = rawtx
-                    if rawtx is None:
-                        print("Unable to get raw TX from RPC server\n")
-                        
-                self.feePerKb = self.caller.rpcClient.getFeePerKb()
-                        
-            except Exception as e:
-                self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                printDbg(self.errorMsg)
 
-        
+                # for each UTXO
+                for utxo in rewards:
+                    # get raw TX from RPC client
+                    rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+ 
+                    # Don't save UTXO if raw TX is unavailable
+                    if rawtx is None:
+                        printDbg("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
+                        continue
+
+                    # Add mn_name and raw_tx to UTXO and save it to DB
+                    else:
+                        utxo['mn_name'] = mn['name']
+                        utxo['raw_tx'] = rawtx
+                        self.caller.parent.db.addReward(utxo)                
+            
+            printDbg("table REWARDS updated")
+            self.utxoLoaded = True
     
     
     
@@ -169,27 +224,35 @@ class TabRewards():
         self.ui.collateralHidden = True
         self.onChangeSelectedMN()
         self.AbortSend()
+        
+        
+        
+    def onChangedMNlist(self):
+        # reload MnSelect
+        self.loadMnSelect()
+        # reload utxos
+        self.onReloadUTXOs()
     
     
     
         
     @pyqtSlot()
     def onChangeSelectedMN(self):
+        self.curr_name = None
         if self.ui.mnSelect.currentIndex() >= 0:
             self.ui.resetStatusLabel()
+            self.curr_name = self.ui.mnSelect.itemText(self.ui.mnSelect.currentIndex())
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
-            self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2] 
-            if self.curr_addr is not None:
-                result = self.caller.apiClient.getBalance(self.curr_addr)
-                self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % result)
+            self.curr_txidn = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2]
+            self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3] 
+            
             self.ui.selectedRewardsLine.setText("0.0")
             self.ui.rewardsList.box.clearSelection()
             self.ui.rewardsList.box.collateralRow = None
             self.ui.collateralHidden = True
             self.ui.btn_toggleCollateral.setText("Show Collateral")
-            if result is not None:
-                self.runInThread = ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
+            self.display_mn_utxos()
             
       
         
@@ -206,6 +269,14 @@ class TabRewards():
         self.ui.rewardsList.box.clearSelection()
         self.updateSelection()
     
+    
+    
+    @pyqtSlot()
+    def onReloadUTXOs(self):
+        if not self.Lock.locked():
+            self.ui.resetStatusLabel()
+            self.runInThread(self.load_utxos_thread, (), self.display_mn_utxos)
+        
             
             
             
@@ -256,11 +327,11 @@ class TabRewards():
             self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
             self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())                            
             
-            self.currFee = self.ui.feeLine.value() * 1e8            
+            self.currFee = self.ui.feeLine.value() * 1e8
 
             try:
                 self.txFinished = False
-                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.rawtransactions, self.useSwiftX())
+                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX())
             
             except DisconnectedException as e:
                 self.caller.hwStatus = 0
@@ -278,31 +349,36 @@ class TabRewards():
             
     @pyqtSlot()
     def onToggleCollateral(self):
-        if(self.rewards is not None):
-            
-            if len(self.rewards) and self.ui.rewardsList.box.collateralRow is not None:
-                if not self.ui.collateralHidden:
-                    try:
-                        if self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected():
-                            self.ui.rewardsList.box.selectRow(self.ui.rewardsList.box.collateralRow)
-                    except Exception as e:
-                        err_msg = "Error toggling collateral"
-                        printException(getCallerName(), getFunctionName(), err_msg, e.args)
-                    
-                    self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
-                    self.ui.btn_toggleCollateral.setText("Show Collateral")
-                    self.ui.collateralHidden = True
-                    self.updateSelection()
-                else:
-                    self.ui.rewardsList.box.showRow(self.ui.rewardsList.box.collateralRow)
-                    self.ui.btn_toggleCollateral.setText("Hide Collateral")
-                    self.ui.collateralHidden = False
-                    self.updateSelection()
-                    self.ui.rewardsList.box.resizeColumnsToContents()
-                    self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        if self.ui.rewardsList.box.collateralRow is not None:
+            if not self.ui.collateralHidden:
+                try:
+                    # If collateral row was selected, deselect it before hiding
+                    if self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected():
+                        self.ui.rewardsList.box.selectRow(self.ui.rewardsList.box.collateralRow)
+                except Exception as e:
+                    err_msg = "Error toggling collateral"
+                    printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                
+                self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
+                self.ui.btn_toggleCollateral.setText("Show Collateral")
+                self.ui.collateralHidden = True
+                self.updateSelection()
+            else:
+                self.ui.rewardsList.box.showRow(self.ui.rewardsList.box.collateralRow)
+                self.ui.btn_toggleCollateral.setText("Hide Collateral")
+                self.ui.collateralHidden = False
+                self.updateSelection()
+                self.ui.rewardsList.box.resizeColumnsToContents()
+                self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
             
         else:
             myPopUp_sb(self.caller, "warn", 'No Collateral', "No collateral selected")
+            
+            
+            
+    def removeSpentRewards(self):
+        for utxo in self.selectedRewards:
+            self.caller.parent.db.deleteReward(utxo['tx_hash'], utxo['tx_ouput_n'])
             
             
             
@@ -336,10 +412,12 @@ class TabRewards():
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
-                        mess2_text = "<p>Transaction successfully sent.</p><p>(Note that the selected rewards will remain displayed in the app until the transaction is confirmed.)</p>"
+                        mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
+                        # remove spent rewards
+                        self.removeSpentRewards()
                         self.onCancel()
                         
                     else:
@@ -356,6 +434,7 @@ class TabRewards():
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
+        
         
         
         
@@ -378,6 +457,7 @@ class TabRewards():
         
  
  
+ 
     def updateSelection(self, clicked_item=None):
         total = 0
         self.selectedRewards = self.getSelection()
@@ -398,9 +478,24 @@ class TabRewards():
             self.ui.selectedRewardsLine.setText("")
         
         self.updateFee()
-            
-            
+
+    
+                
+
+    
+    def updateTotalBalance(self, rewards):
+        nAmount = 0
+        if rewards is not None:
+            for utxo in rewards:
+                nAmount = nAmount + utxo['value']
+                
+        totalBalance = str(round(nAmount/1e8, 8))
+        self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % totalBalance)
+        
+        
+        
             
     def useSwiftX(self):
         return self.ui.swiftxCheck.isChecked()
+    
         

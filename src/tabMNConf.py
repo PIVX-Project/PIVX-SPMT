@@ -287,7 +287,7 @@ class TabMNConf():
             new_masternode['collateral'] = coll
 
             # Add to cache, QListWidget and database (and remove/edit mnode_to_change)
-            appendMasternode(self.caller, new_masternode, self.caller.mnode_to_change) 
+            appendMasternode(self.caller, new_masternode) 
             
             # go back
             self.onCancelMNConfig()
