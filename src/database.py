@@ -23,9 +23,11 @@ class Database():
         
     
     def open(self):
-        if not self.isOpen:
-            printDbg("trying to open database...")
-            self.lock.acquire()
+        if self.isOpen:
+            raise Exception("Database already open")
+
+        printDbg("trying to open database...")
+        with self.lock:
             try:
                 if self.conn is None:
                     self.conn = sqlite3.connect(self.file_name)
@@ -36,23 +38,22 @@ class Database():
                 self.conn = None
                 self.isOpen = True
                 printDbg("Database open")
-
+    
             except Exception as e:
                 err_msg = 'SQLite initialization error'
                 printException(getCallerName(), getFunctionName(), err_msg, e)
-                
-            finally:
-                self.lock.release()
-                
-        else:
-            raise Exception("Database already open")
+            
         
         
             
     def close(self):
-        if self.isOpen:
-            printDbg("trying to close database...")
-            self.lock.acquire()
+        if not self.isOpen:
+            err_msg = "Database already closed"
+            printException(getCallerName(), "close()", err_msg, "")
+            return
+        
+        printDbg("trying to close database...")
+        with self.lock:
             try:
                 if self.conn is not None:
                     self.conn.close()
@@ -64,13 +65,8 @@ class Database():
             except Exception as e:
                 err_msg = 'SQLite closing error'
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
-                
-            finally:
-                self.lock.release()
-        
-        else:
-            err_msg = "Database already closed"
-            printException(getCallerName(), "close()", err_msg, "")
+
+
         
         
         
@@ -89,6 +85,7 @@ class Database():
                 
         else:
             raise Exception("Database closed")
+
         
         
     def releaseCursor(self, rollingBack=False):

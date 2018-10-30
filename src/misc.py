@@ -167,16 +167,20 @@ def clear_screen():
 
 
 
-def getCallerName():
+def getCallerName(inDecorator=False):
     try:
+        if inDecorator:
+            return sys._getframe(3).f_code.co_name
         return sys._getframe(2).f_code.co_name
     except Exception:
         return None
 
 
 
-def getFunctionName():
+def getFunctionName(inDecorator=False):
     try:
+        if inDecorator:
+            return sys._getframe(2).f_code.co_name
         return sys._getframe(1).f_code.co_name
     except Exception:
         return None
@@ -474,10 +478,13 @@ def splitString(text, n):
 
 
 def timeThis(function, *args):
-    start = time.clock()
-    val = function(*args)
-    end = time.clock()
-    return val, (end-start)
+    try:
+        start = time.clock()
+        val = function(*args)
+        end = time.clock()
+        return val, (end-start)
+    except Exception:
+        return None, None
     
 
 

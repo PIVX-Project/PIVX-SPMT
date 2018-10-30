@@ -41,14 +41,14 @@ def process_ledger_exceptions(func):
             elif (e.sw == 0x6982):
                 e.message = 'Enter the PIN on your Ledger device.'
             statusmess = e.message
-            printException(getCallerName(), getFunctionName(), e.message, e.args)
+            printException(getCallerName(True), getFunctionName(True), e.message, e.args)
             raise DisconnectedException(e.message, hwDevice, statusmess)
             
         except Exception as e:
             e.message = "Ledger - generic exception"
             if str(e.args[0]) == 'read error':
                 e.message = 'Read Error. Click "Connect" to reconnect HW device'
-            printException(getCallerName(), getFunctionName(), e.message, str(e))
+            printException(getCallerName(True), getFunctionName(True), e.message, str(e))
             statusmess = e.message
             raise DisconnectedException(e.message, hwDevice, statusmess)
         

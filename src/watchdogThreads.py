@@ -26,7 +26,6 @@ class RpcWatchdog(QObject):
     def run(self):    
         while not self.shutdown_flag.is_set():
             # update status without printing on debug
-            
             self.control_tab.updateRPCstatus(self.ctrl_obj, self.firstLoop)
             
             if not self.control_tab.rpcConnected:

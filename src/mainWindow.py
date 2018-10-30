@@ -496,7 +496,7 @@ class MainWindow(QWidget):
         text = '--'
         if self.rpcLastBlock == 1:
             text = "Loading block index..."
-        elif self.rpcLastBlock > 0 and self.rpcConnected:
+        elif self.rpcConnected and self.rpcLastBlock > 0:
             text = str(self.rpcLastBlock)
             if not self.isBlockchainSynced:
                 text += " (Synchronizing)"
@@ -541,7 +541,7 @@ class MainWindow(QWidget):
                 self.header.rpcLed.setPixmap(self.ledGrayH_icon)
                 if fDebug:
                     printDbg("Connection to RPC server failed.")
-            
+
         self.header.rpcLed.setToolTip(self.rpcStatusMess)
         self.updateLastBlockLabel()
         self.updateLastBlockPing()
@@ -597,7 +597,7 @@ class MainWindow(QWidget):
                 printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
             
             status, statusMess, lastBlock, r_time1 = self.rpcClient.getStatus()
-                
+            
             self.rpcConnected = status
             self.rpcLastBlock = lastBlock
             self.rpcStatusMess = statusMess
@@ -605,7 +605,7 @@ class MainWindow(QWidget):
             
             if r_time1 is not None and r_time2 is not None:
                 self.rpcResponseTime = round((r_time1+r_time2)/2, 3)
-                
+
             self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)
 
             
