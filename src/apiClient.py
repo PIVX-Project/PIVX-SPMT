@@ -7,15 +7,45 @@ from misc import getCallerName, getFunctionName, printException, printDbg
 
 api_keys = ["b62b40b5091e", "f1d66708a077", "ed85c85c0126", "ccc60d06f737"]
 
+class DisconnectedException(Exception):
+    def __init__(self, message, apiClient):
+        # Call the base class constructor
+        super().__init__(message)
+        # clear client
+        try:
+            apiClient.client.close()
+            apiClient.client = requests.session()
+        except Exception:
+            pass
+        
+
+def process_api_exceptions(func):
+
+    def process_api_exceptions_int(*args, **kwargs):
+        apiClient = args[0]
+        try:
+            return func(*args, **kwargs)
+        
+        except DisconnectedException as e:
+            raise e
+            
+        except Exception as e:
+            message = "API Client exception"
+            printException(getCallerName(True), getFunctionName(True), message, str(e))
+            raise DisconnectedException(message, apiClient)
+        
+    return process_api_exceptions_int       
+        
+        
+
 class ApiClient:
     
     def __init__(self):
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {}
-      
-      
         
-   
+        
+
     def checkResponse(self, parameters):
         key = choice(api_keys)
         parameters['key'] = key
@@ -24,73 +54,40 @@ class ApiClient:
             data = resp.json()
             return data
         else:
-            printException(getCallerName(), getFunctionName(), "Invalid response from API provider", "Status code: %s\n" % str(resp.status_code))
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
+            raise DisconnectedException("Wrong Response", self)
             return None    
     
     
     
-    
+    @process_api_exceptions
     def getAddressUtxos(self, address):
-        try:
-            self.parameters = {}
-            self.parameters['q'] = 'unspent'
-            self.parameters['active'] = address
-            return self.checkResponse(self.parameters)
-        except Exception as e:
-            err_msg = "error in getAddressUtxos"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
+        self.parameters = {}
+        self.parameters['q'] = 'unspent'
+        self.parameters['active'] = address
+        return self.checkResponse(self.parameters)
             
             
         
-            
+    @process_api_exceptions        
     def getBalance(self, address):
-        try:
-            self.parameters = {}
-            self.parameters['q'] = 'getbalance'
-            self.parameters['a'] = address
-            return self.checkResponse(self.parameters)
-        except Exception as e:
-            err_msg = "error in getBalance"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
+        self.parameters = {}
+        self.parameters['q'] = 'getbalance'
+        self.parameters['a'] = address
+        return self.checkResponse(self.parameters)
     
     
         
-    
+    @process_api_exceptions
     def getStatus(self):
-        try:
-            self.parameters = {}
-            self.parameters['q'] = 'getblockcount'
-            resp = requests.get(self.url, self.parameters)
-            return resp.status_code
-        
-        except Exception as e:
-            err_msg = "Unable to connect to API provider"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
-            return 0
-        
+        status_code = 0
+        self.parameters = {}
+        self.parameters['q'] = 'getblockcount'
+        resp = requests.get(self.url, self.parameters)
+        status_code = resp.status_code
+        return status_code
+            
     
-        
-        
+      
     def getStatusMess(self, statusCode):
         message = {
             0: "No response from server",
@@ -103,36 +100,19 @@ class ApiClient:
     
                 
     
-    
+    @process_api_exceptions
     def getBlockCount(self):
-        try:
-            self.parameters = {}
-            self.parameters['q'] = 'getblockcount'
-            return self.checkResponse(self.parameters)
-        except Exception as e:
-            err_msg = "error in getBlockCount"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
+        self.parameters = {}
+        self.parameters['q'] = 'getblockcount'
+        return self.checkResponse(self.parameters)
             
     
     
-    
+    @process_api_exceptions
     def getBlockHash(self, blockNum):
-        try:
-            self.parameters = {}
-            self.parameters['q'] = 'getblockhash'
-            self.parameters['height'] = str(blockNum)
-            return self.checkResponse(self.parameters)
-        except Exception as e:
-            err_msg = "error in getBlockHash"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
-            try:
-                self.client.close()
-                self.client = requests.session()
-            except Exception:
-                pass
+        self.parameters = {}
+        self.parameters['q'] = 'getblockhash'
+        self.parameters['height'] = str(blockNum)
+        return self.checkResponse(self.parameters)
+
             

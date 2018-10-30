@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "j",
- "comments": ["Rewards DataBase"]
+ "tag": "k",
+ "comments": ["decorators refactoring"]
  }
