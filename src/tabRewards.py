@@ -3,7 +3,7 @@
 import threading
 import simplejson as json
 
-from PyQt5.Qt import QApplication
+from PyQt5.Qt import QApplication, pyqtSignal
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
@@ -19,6 +19,7 @@ from time import sleep
 
 
 class TabRewards():
+    
     def __init__(self, caller):
         self.caller = caller
         ##--- Lock for loading UTXO thread
@@ -55,11 +56,12 @@ class TabRewards():
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
+        
 
 
         
         
-        
+    @pyqtSlot()
     def display_mn_utxos(self):
         if self.curr_name is None:
             return
@@ -177,22 +179,21 @@ class TabRewards():
             printDbg("Clearing REWARDS table")
             self.caller.parent.db.clearTable('REWARDS')
             self.utxoLoaded = False
-    
+
             # If rpc is not connected warn and return.
             if not self.caller.rpcConnected:
                 printDbg('PIVX daemon not connected - Unable to update UTXO list')
                 return
-            
+
             api_status = self.caller.apiClient.getStatus()
             if  api_status != 200:
                 printDbg("Wrong response from API client. Status: %s" % status)
                 return
-            
+
             self.apiConnected = True
             self.blockCount = self.caller.rpcClient.getBlockCount()
 
             for mn in self.caller.masternode_list:
-
                 # Load UTXOs from API client
                 rewards = self.caller.apiClient.getAddressUtxos(
                     mn['collateral'].get('address'))['unspent_outputs']
@@ -219,6 +220,7 @@ class TabRewards():
             
             printDbg("table REWARDS updated")
             self.utxoLoaded = True
+            self.caller.sig_UTXOsLoaded.emit()
     
     
     
@@ -280,7 +282,7 @@ class TabRewards():
     def onReloadUTXOs(self):
         if not self.Lock.locked():
             self.ui.resetStatusLabel()
-            self.runInThread(self.load_utxos_thread, (), self.display_mn_utxos)
+            self.runInThread(self.load_utxos_thread, ())
         
             
             

@@ -38,11 +38,15 @@ class MainWindow(QWidget):
     # signal: RPC list has been reloaded (emitted by updateRPClist)
     sig_RPClistReloaded = pyqtSignal()
     
+    # signal: UTXO list has been reloaded (emitted by load_utxos_thread in tabRewards)
+    sig_UTXOsLoaded = pyqtSignal()
+    
     def __init__(self, parent, masternode_list, imgDir):
         super(QWidget, self).__init__(parent)
         self.parent = parent
         self.imgDir = imgDir 
         self.runInThread = ThreadFuns.runInThread
+        self.lock = threading.Lock()
         
         ###-- Masternode list 
         self.masternode_list = masternode_list
@@ -52,7 +56,6 @@ class MainWindow(QWidget):
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
         self.rpcConnected = False
-        self.rpcCheckLock = threading.Lock()
         self.updatingRPCbox = False
         self.rpcStatusMess = "Not Connected"
         self.isBlockchainSynced = False
@@ -70,15 +73,15 @@ class MainWindow(QWidget):
         
         ##-- init HW Client
         self.hwdevice = HWdevice()
-        
+
         ##-- init Api Client
         self.apiClient = ApiClient()
-        
+ 
         ###-- Create Queues and redirect stdout and stderr
         self.queue = Queue()
         self.queue2 = Queue()
-        #sys.stdout = WriteStream(self.queue)
-        #sys.stderr = WriteStream(self.queue2)
+        sys.stdout = WriteStream(self.queue)
+        sys.stderr = WriteStream(self.queue2)
 
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -170,8 +173,13 @@ class MainWindow(QWidget):
     @pyqtSlot()
     def clearRPCstatus(self):
         self.rpcConnected = False
-        self.header.lastPingBox.setHidden(True)
+        self.header.lastPingBox.setHidden(False)
         self.header.rpcLed.setPixmap(self.ledGrayH_icon)
+        self.header.lastBlockLabel.setText("<em>Connecting...</em>")
+        self.header.lastPingIcon.setPixmap(self.connRed_icon)
+        self.header.responseTimeLabel.setText("--")
+        self.header.responseTimeLabel.setStyleSheet("color: red")
+        self.header.lastPingIcon.setStyleSheet("color: red")
         
         
         
@@ -188,6 +196,7 @@ class MainWindow(QWidget):
         self.hwdevice.sigTxabort.connect(self.t_rewards.onCancel)
         self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
         self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
+        self.sig_UTXOsLoaded.connect(self.t_rewards.display_mn_utxos)
             
             
             
@@ -363,7 +372,7 @@ class MainWindow(QWidget):
         if not self.updatingRPCbox:
             # persist setting
             self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
-            # close connection and try to open new one
+
             self.runInThread(self.updateRPCstatus, (True,), )
 
         
@@ -459,8 +468,7 @@ class MainWindow(QWidget):
             self.updateRPCled(fDebug)
             if fDebug:
                 myPopUp_sb(self, "info", 'SPMT - rpc check', "%s" % self.rpcStatusMess)
-        else:
-            printDbg("RPC server changed while checking... aborted.")
+
 
             
             
@@ -581,32 +589,39 @@ class MainWindow(QWidget):
         self.sig_RPClistReloaded.emit()
         
         
-        
+  
     def updateRPCstatus(self, ctrl, fDebug=False):
-        with self.rpcCheckLock:
-            self.sig_clearRPCstatus.emit()
-            self.rpcClient = None
+        self.sig_clearRPCstatus.emit()
+        
+        rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
+        
+        rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
+        rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
+        
+        if fDebug:
+            printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
+        
+        status, statusMess, lastBlock, r_time1 = rpcClient.getStatus()
+        
+        isBlockchainSynced, r_time2  = rpcClient.isBlockchainSynced()
+        
+        rpcResponseTime = None
+        if r_time1 is not None and r_time2 is not None:
+            rpcResponseTime = round((r_time1+r_time2)/2, 3)
             
-            self.rpcResponseTime = None
-            rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
-            
-            rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
-            self.rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
- 
-            if fDebug:
-                printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
-            
-            status, statusMess, lastBlock, r_time1 = self.rpcClient.getStatus()
-            
+        # Update status and client only if selected server is not changed
+        if rpc_index != self.header.rpcClientsBox.currentIndex():
+            return
+        
+        with self.lock:
+            self.rpcClient = rpcClient
             self.rpcConnected = status
             self.rpcLastBlock = lastBlock
             self.rpcStatusMess = statusMess
-            self.isBlockchainSynced, r_time2  = self.rpcClient.isBlockchainSynced()
-            
-            if r_time1 is not None and r_time2 is not None:
-                self.rpcResponseTime = round((r_time1+r_time2)/2, 3)
-
-            self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)
+            self.isBlockchainSynced = isBlockchainSynced
+            self.rpcResponseTime = rpcResponseTime
+        
+        self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)
 
             
     

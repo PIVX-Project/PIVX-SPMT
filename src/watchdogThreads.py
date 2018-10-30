@@ -17,8 +17,8 @@ class RpcWatchdog(QObject):
         self.firstLoop  = True
         self.shutdown_flag = Event()
         self.control_tab = control_tab
-        self.timer_off = timer_off  #delay when not connected
-        self.timer_on = timer_on    #delay when connected
+        self.timer_off = timer_off      #delay when not connected
+        self.timer_on = timer_on        #delay when connected
         self.ctrl_obj = CtrlObject()
         self.ctrl_obj.finish = False
         
@@ -34,12 +34,14 @@ class RpcWatchdog(QObject):
                 # first time we get connection reload UTXOs
                 if not self.control_tab.t_rewards.utxoLoaded:
                     self.control_tab.t_rewards.load_utxos_thread(self.ctrl_obj)
-                    self.control_tab.t_rewards.display_mn_utxos()
+                    
                 sleep(self.timer_on)
                 
             if self.firstLoop:
                 self.firstLoop = False
             
         printOK("Exiting Rpc Watchdog Thread")
+        
+        
             
             

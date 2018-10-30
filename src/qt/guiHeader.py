@@ -53,7 +53,6 @@ class GuiHeader(QWidget):
         lastPingBoxLayout.addWidget(self.lastBlockLabel)
         self.lastPingBox.setLayout(lastPingBoxLayout)
         self.centralBox.addWidget(self.lastPingBox, 0, 4)
-        self.lastPingBox.setHidden(True)
         # -- 1b) Select & Check hardware
         label3 = QLabel("Hardware Device")
         self.centralBox.addWidget(label3, 1, 0)
