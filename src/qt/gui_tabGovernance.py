@@ -37,9 +37,10 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.selectMN_btn)
         self.selectedMNlabel = QLabel("<em>0 masternodes selected for voting</em")
         row.addWidget(self.selectedMNlabel)
-        self.refreshingLabel = QLabel("<em><b style='color:purple'>Refreshing proposals...</b></em>")
-        self.refreshingLabel.hide()
-        row.addWidget(self.refreshingLabel)
+        row.addStretch(1)
+        self.statusLabel = QLabel()
+        self.resetStatusLabel()
+        row.addWidget(self.statusLabel)
         row.addStretch(1)
         self.mnCountLabel = QLabel()
         row.addWidget(self.mnCountLabel)
@@ -203,6 +204,14 @@ class TabGovernance_gui(QWidget):
         self.list_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_list.png'))
         self.question_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_question.png'))
         
+    
+    
+    def resetStatusLabel(self, message=None):
+        self.statusLabel.setVisible(True)
+        if message is None:
+            self.statusLabel.setText('<em><b style="color:purple">Loading proposals...</b></em>')
+        else:
+            self.statusLabel.setText(message)
         
         
         

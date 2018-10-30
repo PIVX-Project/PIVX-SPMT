@@ -90,9 +90,14 @@ class TabGovernance():
     
         
     def displayProposals(self):
-        self.ui.refreshingLabel.hide()
         if len(self.proposals) == 0:
+            if not self.caller.rpcConnected:
+                self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
+            else:
+                self.ui.resetStatusLabel('<b style="color:red">No proposal found</b>')
             return
+        
+        self.ui.statusLabel.setVisible(False)
         
         def item(value):
             item = QTableWidgetItem(str(value))
@@ -182,14 +187,15 @@ class TabGovernance():
             
     @pyqtSlot()
     def onRefreshProposals(self):
-        self.ui.refreshingLabel.show()
+        self.ui.resetStatusLabel()
         self.ui.proposalBox.setRowCount(0)
         self.proposals = []
         self.selectedProposals = []
         self.ui.proposalBox.setSortingEnabled(False)
         ThreadFuns.runInThread(self.loadProposals_thread, (), self.displayProposals)
         
-        
+    
+    
     @pyqtSlot()
     def onToggleExpiring(self):
         if self.ui.toggleExpiring_btn.text() == "Hide Expiring":
@@ -261,6 +267,8 @@ class TabGovernance():
         self.countMyVotes()
         
         
+    
+    
     def updateSelectedMNlabel(self):
         selected_MN = len(self.votingMasternodes)
         if selected_MN == 1:
@@ -270,6 +278,8 @@ class TabGovernance():
         self.ui.selectedMNlabel.setText(label)
         
         
+    
+    
     def updateSelection(self):
         self.selectedProposals = self.getSelection()
         if len(self.selectedProposals) == 1:
@@ -278,6 +288,8 @@ class TabGovernance():
             self.ui.selectedPropLabel.setText("<em><b>%d</b> proposals selected" % len(self.selectedProposals))
             
             
+    
+    
     
     @pyqtSlot(object, str)
     def vote_thread(self, ctrl, vote_code):
@@ -355,11 +367,11 @@ class TabGovernance():
         if self.failedVotes > 0:
             message += '<p>Failed Votes: <b>%d</b>' % self.failedVotes
         myPopUp_sb(self.caller, "info", 'Vote Finished', message)
-        # refresh proposals
+        # refresh my votes on proposals
         self.ui.proposalBox.setRowCount(0)
         self.ui.proposalBox.setSortingEnabled(False)
-        self.ui.refreshingLabel.show()
         self.ui.selectedPropLabel.setText("<em><b>0</b> proposals selected")
+        self.ui.resetStatusLabel()
         ThreadFuns.runInThread(self.countMyVotes_thread, (), self.displayProposals)
                                         
                     
