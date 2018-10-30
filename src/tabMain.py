@@ -236,7 +236,7 @@ class TabMain():
                 printOK("Start-masternode %s pressed" % masternode_alias)
                 for mn_conf in self.caller.masternode_list:
                     if mn_conf['name'] == masternode_alias:
-                        reply = self.caller.myPopUp(QMessageBox.Question, 'Confirm START', 
+                        reply = myPopUp(self.caller, QMessageBox.Question, 'Confirm START', 
                                                  "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'], QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
                             self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'], 
@@ -245,8 +245,8 @@ class TabMain():
                             self.masternodeToStart.sigdone.connect(self.sendBroadcast) 
                             self.mnToStartList.append(self.masternodeToStart)
                             self.startMN()
-    
                         break
+
         except Exception as e:
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -257,8 +257,7 @@ class TabMain():
     def onSweepAllRewards(self):
         try:
             self.sweepAllDlg.showDialog()
-            
-            
+                      
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"
             printException(getCallerName(), getFunctionName(), err_msg, e)
@@ -316,16 +315,12 @@ class TabMain():
         elif not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "warn", 'SPMT - rpc device check', self.caller.rpcStatusMess)
         else:           
-            try:
-                self.masternodeToStart = self.mnToStartList.pop()
-                printDbg("Starting...%s" % self.masternodeToStart.name)
-                self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
-                # wait for signal when masternode.work is ready then ---> sendBroadcast
-            except Exception as e:
-                err_msg = "error in startMN"
-                printException(getCallerName(), getFunctionName(), err_msg, e)
-                
-      
+            self.masternodeToStart = self.mnToStartList.pop()
+            printDbg("Starting...%s" % self.masternodeToStart.name)
+            self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
+            # wait for signal when masternode.work is ready then ---> sendBroadcast
+            
+
                 
                 
     def updateAllMasternodes_thread(self, ctrl):

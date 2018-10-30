@@ -100,13 +100,7 @@ class TabMNConf():
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         
-        try:
-            result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
-            
-        except Exception as e:
-            error_msg = "ERROR: %s" % e.args[0]
-            printDbg(error_msg)
-            result = None
+        result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath)
         
         # Connection pop-up
         warningText = "Another application (such as Ledger Wallet app) has probably taken over "

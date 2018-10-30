@@ -48,7 +48,6 @@ class MainWindow(QWidget):
         self.masternode_list = masternode_list
 
         ###-- Create clients and statuses
-        self.hwdevice = None
         self.hwStatus = 0
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
@@ -69,6 +68,9 @@ class MainWindow(QWidget):
         ##-- Load RPC Servers list
         self.updateRPClist()
         
+        ##-- init HW Client
+        self.hwdevice = HWdevice()
+        
         ##-- init Api Client
         self.apiClient = ApiClient()
         
@@ -77,12 +79,7 @@ class MainWindow(QWidget):
         self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
         sys.stderr = WriteStream(self.queue2)
-        
-        ##-- Connect signals
-        self.sig_clearRPCstatus.connect(self.clearRPCstatus)
-        self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
-        self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
-        
+
         ###-- Init last logs
         logFile = open(log_File, 'w+')
         timestamp = strftime('%Y-%m-%d %H:%M:%S', gmtime(now()))
@@ -158,10 +155,21 @@ class MainWindow(QWidget):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
         
+    
+    
+    @pyqtSlot(str)
+    def clearHWstatus(self, message):
+        self.hwStatus = 1
+        self.hwStatusMess = 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.'
+        self.header.hwLed.setPixmap(self.ledGrayH_icon)
+        if message != '':
+            myPopUp_sb(self, "crit", "Ledger Disconnected", message)
         
         
+            
     @pyqtSlot()
     def clearRPCstatus(self):
+        self.rpcConnected = False
         self.header.lastPingBox.setHidden(True)
         self.header.rpcLed.setPixmap(self.ledGrayH_icon)
         
@@ -171,6 +179,15 @@ class MainWindow(QWidget):
         self.header.button_checkRpc.clicked.connect(lambda: self.onCheckRpc())
         self.header.button_checkHw.clicked.connect(lambda: self.onCheckHw())
         self.header.rpcClientsBox.currentIndexChanged.connect(self.onChangeSelectedRPC)
+        ##-- Connect signals
+        self.sig_clearRPCstatus.connect(self.clearRPCstatus)
+        self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
+        self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
+        self.hwdevice.sig_ledger_disconnected.connect(self.clearHWstatus)
+        self.hwdevice.sigTxdone.connect(self.t_rewards.FinishSend)
+        self.hwdevice.sigTxabort.connect(self.t_rewards.onCancel)
+        self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
+        self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
             
             
             
@@ -382,27 +399,19 @@ class MainWindow(QWidget):
             
     @pyqtSlot()
     def onTabChange(self):
-        # # Update mnList order to cache settings and sort
-        mnOrder = {}
-        mnList = self.tabMain.myList
-        for i in range(mnList.count()):
-            mnName = mnList.itemWidget(mnList.item(i)).alias
-            mnOrder[mnName] = i
-        self.parent.cache['mnList_order'] = mnOrder
-        self.masternode_list.sort(key=self.parent.extract_order)
-        
         # tabRewards
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
-            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))        
-            # update sorted list in MnSelect
-            self.t_rewards.loadMnSelect()
-            
+            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
+            # reload UTXOs from DB
+            self.t_rewards.display_mn_utxos()           
+
         # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
             # reload proposal list
             self.t_governance.onRefreshProposals()
             self.t_governance.updateSelectedMNlabel()
+            
             
         
 
@@ -417,9 +426,25 @@ class MainWindow(QWidget):
             self.console.setMinimumHeight(70)
             self.console.setMaximumHeight(starting_height)
             self.btn_consoleToggle.setText('Hide')
-            self.consoleArea.show()  
+            self.consoleArea.show()
 
-    
+
+
+
+    def saveMNListOrder(self):
+        # Update mnList order to cache settings and sort
+        mnOrder = {}
+        mnList = self.tabMain.myList
+        for i in range(mnList.count()):
+            mnName = mnList.itemWidget(mnList.item(i)).alias
+            mnOrder[mnName] = i
+        self.parent.cache['mnList_order'] = persistCacheSetting('cache_mnOrder', mnOrder)
+        self.masternode_list.sort(key=self.parent.extract_order)
+        # reload MnSelect in tabRewards
+        self.t_rewards.loadMnSelect()
+
+
+
     
     def showHWstatus(self):
         self.updateHWleds()
@@ -452,36 +477,17 @@ class MainWindow(QWidget):
         
  
         
-    def updateHWstatus(self, ctrl):          
-        if self.hwdevice is not None:
-            if hasattr(self.hwdevice, 'dongle'):
-                self.hwdevice.dongle.close()
-                
-        self.hwdevice = HWdevice()
+    def updateHWstatus(self, ctrl):
+        # re-initialize device
+        try:
+            self.hwdevice.initDevice()       
+            self.hwStatus, self.hwStatusMess = self.hwdevice.getStatus()
+            printDbg("mess: %s" % statusMess)
+        except:
+            pass
         
-        statusCode, statusMess = self.hwdevice.getStatus()
-        printDbg("mess: %s" % statusMess)
-        if statusCode != 2:
-            # If is not connected try again
-            try:
-                if hasattr(self.hwdevice, 'dongle'):
-                    self.hwdevice.dongle.close()
-                self.hwdevice = HWdevice()
-                self.hwdevice.initDevice()
-                statusCode, statusMess = self.hwdevice.getStatus()
-
-            except Exception as e:
-                err_msg = "error in checkHw"
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
-                    
-        self.hwStatus = statusCode
-        self.hwStatusMess = statusMess
-        
-        # if all is good connect the signals
-        if statusCode == 2:
-            self.hwdevice.sigTxdone.connect(self.t_rewards.FinishSend)
-            self.hwdevice.sigTxabort.connect(self.t_rewards.onCancel)
-            self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
+        printDbg("status:%s - mess: %s" % (self.hwStatus, self.hwStatusMess))
+            
             
 
   

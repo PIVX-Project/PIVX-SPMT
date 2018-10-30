@@ -42,8 +42,7 @@ class TabRewards():
             self.ui.swiftxCheck.setChecked(True)
         
         # init first selected MN
-        self.loadMnSelect()         # loads masternodes list in MnSelect
-        self.onChangeSelectedMN()   # dislays UTXOs for first of the list
+        self.loadMnSelect()         # loads masternodes list in MnSelect and display utxos
         self.updateFee()
         
         # Connect GUI buttons
@@ -104,11 +103,12 @@ class TabRewards():
                         self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
                         self.ui.rewardsList.box.item(row, i).setToolTip("Immature - 100 confirmations required")
  
+            self.ui.rewardsList.box.resizeColumnsToContents()
+            
             if self.ui.rewardsList.box.collateralRow is not None:
                     self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)    
 
             if len(rewards) > 1:  # (collateral is a reward)
-                self.ui.rewardsList.box.resizeColumnsToContents()
                 self.ui.rewardsList.statusLabel.setVisible(False)
                 self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
                                 
@@ -143,10 +143,13 @@ class TabRewards():
             
             
     def loadMnSelect(self):
+        # save previous index
+        index = 0
+        if self.ui.mnSelect.count() > 0:
+            index = self.ui.mnSelect.currentIndex()
+            
         self.ui.mnSelect.clear()
-        self.curr_name = None
-        self.selectedRewards = None
-
+        
         for x in self.caller.masternode_list:
             if x['isHardware']:
                 name = x['name']
@@ -157,6 +160,12 @@ class TabRewards():
                 spath = x['collateral'].get('spath')
                 path = MPATH + "%d'/0/%d" % (hwAcc, spath)
                 self.ui.mnSelect.addItem(name, [address, txid, txidn, path])
+                
+        # restore previous index
+        if index < self.ui.mnSelect.count():
+            self.ui.mnSelect.setCurrentIndex(index)
+            
+        self.onChangeSelectedMN()
                      
            
     
@@ -215,14 +224,13 @@ class TabRewards():
     
     #@pyqtSlot()
     def onCancel(self):
+        self.ui.rewardsList.box.clearSelection()
         self.selectedRewards = None
         self.ui.selectedRewardsLine.setText("0.0")
-        self.ui.mnSelect.setCurrentIndex(0)
         self.suggestedFee = MINIMUM_FEE
         self.updateFee()
         self.ui.btn_toggleCollateral.setText("Show Collateral")
         self.ui.collateralHidden = True
-        self.onChangeSelectedMN()
         self.AbortSend()
         
         
@@ -238,6 +246,7 @@ class TabRewards():
         
     @pyqtSlot()
     def onChangeSelectedMN(self):
+        
         self.curr_name = None
         if self.ui.mnSelect.currentIndex() >= 0:
             self.ui.resetStatusLabel()
@@ -245,13 +254,9 @@ class TabRewards():
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_txidn = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2]
-            self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3] 
-            
-            self.ui.selectedRewardsLine.setText("0.0")
-            self.ui.rewardsList.box.clearSelection()
+            self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3]            
             self.ui.rewardsList.box.collateralRow = None
-            self.ui.collateralHidden = True
-            self.ui.btn_toggleCollateral.setText("Show Collateral")
+            self.onCancel()
             self.display_mn_utxos()
             
       
