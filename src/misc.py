@@ -413,6 +413,7 @@ def readCacheSettings():
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', DefaultCache["votingDelayNeg"], type=int)
         cache["votingDelayPos"] = settings.value('cache_vdPos', DefaultCache["votingDelayPos"], type=int)
         cache["selectedRPC_index"] = settings.value('cache_RPCindex', DefaultCache["selectedRPC_index"], type=int)
+        cache["MN_count"] = settings.value('cache_MNcount', DefaultCache["MN_count"], type=int)
         add_defaultKeys_to_dict(cache, DefaultCache)
         return cache
     except:
@@ -458,6 +459,7 @@ def saveCacheSettings(cache, old_version=False):
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))
     if not old_version:
         settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
+        settings.setValue('cache_MNcount', cache.get('MN_count'))
         
     
     

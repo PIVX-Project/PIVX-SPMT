@@ -42,7 +42,8 @@ DefaultCache = {
     "votingDelayCheck": False,
     "votingDelayNeg": 0,
     "votingDelayPos": 300,
-    "selectedRPC_index": 0
+    "selectedRPC_index": 0,
+    "MN_count": 1
     }
         
         

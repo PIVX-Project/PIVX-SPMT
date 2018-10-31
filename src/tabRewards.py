@@ -57,6 +57,9 @@ class TabRewards():
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
         
+        # show UTXOs from DB
+        self.display_mn_utxos() 
+        
 
 
         
@@ -176,7 +179,7 @@ class TabRewards():
         with self.Lock:
             self.apiConnected = False
             # clear rewards DB
-            printDbg("Clearing REWARDS table")
+            printDbg("Updating rewards...")
             self.caller.parent.db.clearTable('REWARDS')
             self.utxoLoaded = False
 
@@ -218,7 +221,7 @@ class TabRewards():
                         utxo['raw_tx'] = rawtx
                         self.caller.parent.db.addReward(utxo)                
             
-            printDbg("table REWARDS updated")
+            printDbg("--# REWARDS table updated")
             self.utxoLoaded = True
             self.caller.sig_UTXOsLoaded.emit()
     

@@ -41,6 +41,9 @@ class MainWindow(QWidget):
     # signal: UTXO list has been reloaded (emitted by load_utxos_thread in tabRewards)
     sig_UTXOsLoaded = pyqtSignal()
     
+    # signal: Proposals list has been reloaded (emitted by loadProposals_thread in tabGovernance)
+    sig_ProposalsLoaded = pyqtSignal()
+    
     def __init__(self, parent, masternode_list, imgDir):
         super(QWidget, self).__init__(parent)
         self.parent = parent
@@ -197,6 +200,7 @@ class MainWindow(QWidget):
         self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
         self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
         self.sig_UTXOsLoaded.connect(self.t_rewards.display_mn_utxos)
+        self.sig_ProposalsLoaded.connect(self.t_governance.displayProposals)
             
             
             
@@ -411,14 +415,11 @@ class MainWindow(QWidget):
         # tabRewards
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
-            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
-            # reload UTXOs from DB
-            self.t_rewards.display_mn_utxos()           
+            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))          
 
         # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
-            # reload proposal list
-            self.t_governance.onRefreshProposals()
+            # update selectedMNlabel (since we might have edited them)
             self.t_governance.updateSelectedMNlabel()
             
             

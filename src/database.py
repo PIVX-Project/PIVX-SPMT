@@ -5,6 +5,7 @@ import sqlite3
 import threading
 
 from constants import user_dir, database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
+from proposals import Proposal, vote_type, vote_index
 from misc import printDbg, getCallerName, getFunctionName, printException, add_defaultKeys_to_dict
 
 
@@ -142,6 +143,22 @@ class Database():
                            " tx_hash TEXT, tx_ouput_n INTEGER,"
                            " value INTEGER, confirmations INTEGER, script TEXT, raw_tx TEXT, mn_name TEXT,"
                            " PRIMARY KEY (tx_hash, tx_ouput_n))")
+            
+            # Tables for Governance Objects
+            cursor.execute("CREATE TABLE IF NOT EXISTS PROPOSALS("
+                           " name TEXT, url TEXT, hash TEXT PRIMARY KEY, feeHash TEXT,"
+                           " blockStart INTEGER, blockEnd INTEGER, totalPayCount INTEGER,"
+                           " remainingPayCount INTEGER, paymentAddress TEXT,"
+                           " yeas INTEGER, nays INTEGER, abstains INTEGER, "
+                           " totalPayment REAL, monthlyPayment REAL)")
+            
+            #cursor.execute("CREATE TABLE IF NOT EXISTS PROJECTED_PROPOSALS("
+            #               " name TEXT, hash TEXT PRIMARY KEY, "
+            #               " allotted REAL, votes INTEGER, totaAllotted REAL)")
+            
+            cursor.execute("CREATE TABLE IF NOT EXISTS MY_VOTES("
+                           " mn_name TEXT, p_hash, vote INTEGER, timeslip INTEGER, "
+                           " PRIMARY KEY (mn_name, p_hash))")
 
             
         except Exception as e:
@@ -429,7 +446,7 @@ class Database():
                            )
             
         except Exception as e:
-            err_msg = 'error adding reward UTXO to to DB'
+            err_msg = 'error adding reward UTXO to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e)
 
         finally:
@@ -490,4 +507,120 @@ class Database():
         
         return self.rewards_from_rows(rows)
 
+
+
+
+    '''
+    Proposals methods
+    '''
+    def myVotes_from_rows(self, rows):
+        myVotes = []
+        
+        for row in rows:
+            # fetch vote item
+            vote = {}
+            vote["mn_name"] = row[0]
+            vote["p_hash"] = row[1]
+            vote["vote"] = vote_type[str(row[2])]
+            vote["time"] = row[3]
+            # add to list
+            myVotes.append(vote)
+            
+        return myVotes
+    
+
+
+    
+    def proposals_from_rows(self, rows):
+        proposals = []
+        
+        for row in rows:
+            # fetch proposal item
+            p = Proposal(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                         row[7], row[8], row[9], row[10], row[11], row[12], row[13])
+            # add to list
+            proposals.append(p)
+            
+        return proposals
+    
+
+
+    
+    def addMyVote(self, mn_name, p_hash, vote):
+        try:
+            cursor = self.getCursor()
+            
+            cursor.execute("INSERT OR REPLACE INTO MY_VOTES "
+                           "VALUES (?, ?, ?, ?)",
+                           (mn_name, p_hash, vote_index[vote["Vote"]], vote["nTime"])
+                           )
+            
+        except Exception as e:
+            err_msg = 'error adding my votes to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+
+        finally:
+            self.releaseCursor()
+            
+            
+            
+            
+    def addProposal(self, p):
+        try:
+            cursor = self.getCursor()
+            
+            cursor.execute("INSERT OR REPLACE INTO PROPOSALS "
+                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (p.name, p.URL, p.Hash, p.FeeHash, p.BlockStart, p.BlockEnd, 
+                            p.TotalPayCount, p.RemainingPayCount, p.PaymentAddress, 
+                            p.Yeas, p.Nays, p.Abstains, p.ToalPayment, p.MonthlyPayment)
+                           )
+            
+        except Exception as e:
+            err_msg = 'error adding proposal to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+
+        finally:
+            self.releaseCursor()
+
+    
+    
+    
+    
+    def getMyVotes(self, p_hash=None):
+        try:
+            cursor = self.getCursor()
+
+            if p_hash is None:
+                cursor.execute("SELECT * FROM MY_VOTES")
+            else:
+                cursor.execute("SELECT * FROM MY_VOTES WHERE p_hash = ?", (p_hash,))
+            rows = cursor.fetchall()
+            
+        except Exception as e:
+            err_msg = 'error getting myVotes from DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            rows = []       
+        finally:
+            self.releaseCursor() 
+        
+        return self.myVotes_from_rows(rows)
+    
+            
+            
+            
+    def getProposalsList(self):
+        try:
+            cursor = self.getCursor()
+            cursor.execute("SELECT * FROM PROPOSALS")
+            rows = cursor.fetchall()
+            
+        except Exception as e:
+            err_msg = 'error getting proposals from DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            rows = []       
+        finally:
+            self.releaseCursor() 
+        
+        return self.proposals_from_rows(rows)
 
