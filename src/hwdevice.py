@@ -127,99 +127,52 @@ class HWdevice(QObject):
     
     
     
-    
+    @process_ledger_exceptions
+    def append_inputs_to_TX(self, utxo, bip32_path):
+        self.amount += int(utxo['value'])
+        raw_tx = bytearray.fromhex(utxo['raw_tx'])
+        
+        # parse the raw transaction, so that we can extract the UTXO locking script we refer to
+        prev_transaction = bitcoinTransaction(raw_tx)
+
+        utxo_tx_index = utxo['tx_ouput_n']
+        if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
+            raise Exception('Incorrect value of outputIndex for UTXO %s-%d' % 
+                            (utxo['raw_tx'], utxo['tx_ouput_n']))
+        
+        trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
+        self.trusted_inputs.append(trusted_input)
+        
+        # Hash check
+        curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
+        pubkey_hash = bin_hash160(curr_pubkey)
+        pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
+        if pubkey_hash != pubkey_hash_from_script:
+            text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match."
+            text += "Your signed transaction will not be validated by the network.\n"
+            text += "pubkey_hash: %s\n" % pubkey_hash.hex()
+            text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
+            printDbg(text)
+
+        self.arg_inputs.append({
+            'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
+            'pubkey': curr_pubkey,
+            'bip32_path': bip32_path,
+            'outputIndex': utxo['tx_ouput_n'],
+            'txid': utxo['tx_hash']
+        })
+        
+        
+
+
     @process_ledger_exceptions
     def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
-        with self.lock:
-            # For each UTXO create a Ledger 'trusted input'
-            self.trusted_inputs = []
-            #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
-            self.arg_inputs = []
-            self.amount = 0
-        
-            num_of_sigs = len(utxos_to_spend)
-            curr_utxo_checked = 0
-            for idx, utxo in enumerate(utxos_to_spend):
-                
-                self.amount += int(utxo['value'])
-                raw_tx = bytearray.fromhex(utxo['raw_tx'])
-                
-                # parse the raw transaction, so that we can extract the UTXO locking script we refer to
-                prev_transaction = bitcoinTransaction(raw_tx)
-    
-                utxo_tx_index = utxo['tx_ouput_n']
-                if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
-                    raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
-                
-                
-                trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
-                
-                self.trusted_inputs.append(trusted_input)
-               
-                # Hash check
-                curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
-                pubkey_hash = bin_hash160(curr_pubkey)
-                pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
-                if pubkey_hash != pubkey_hash_from_script:
-                    text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match."
-                    text += "Your signed transaction will not be validated by the network.\n"
-                    text += "pubkey_hash: %s\n" % pubkey_hash.hex()
-                    text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
-                    printDbg(text)
-    
-                self.arg_inputs.append({
-                    'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
-                    'pubkey': curr_pubkey,
-                    'bip32_path': bip32_path,
-                    'outputIndex': utxo['tx_ouput_n'],
-                    'txid': utxo['tx_hash']
-                })
-                
-                # completion percent emitted
-                curr_utxo_checked += 1
-                completion = int(95*curr_utxo_checked / num_of_sigs)
-                self.tx_progress.emit(completion)
-    
-            self.amount -= int(tx_fee)
-            self.amount = int(self.amount)
-            arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
-            self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
-            self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
-            
-            # completion percent emitted
-            self.tx_progress.emit(99)
-
-            for o in arg_outputs:
-                output = bitcoinOutput()
-                output.script = compose_tx_locking_script(o['address'])
-                output.amount = int.to_bytes(o['valueSat'], 8, byteorder='little')
-                self.new_transaction.outputs.append(output)
-            
-            # completion percent emitted
-            self.tx_progress.emit(100)
-            
-            # join all outputs - will be used by Ledger for signing transaction
-            self.all_outputs_raw = self.new_transaction.serializeOutputs()
-    
-            self.mBox2 = QMessageBox(caller)
-            self.messageText = "<p>Confirm transaction on your device, with the following details:</p>"
-            #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-            self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
-            self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-            if useSwiftX:
-                self.messageText += "<p>Fees (SwiftX flat rate):<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-            else:
-                self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-            messageText = self.messageText + "Signature Progress: 0 %" 
-            self.mBox2.setText(messageText)
-            self.mBox2.setText(messageText)
-            self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
-            self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
-            self.mBox2.setStandardButtons(QMessageBox.NoButton)
-            self.mBox2.setMaximumWidth(500)
-            self.mBox2.show()
-        
-        ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
+        rewardsArray = []
+        mnode = {}
+        mnode['path'] = bip32_path
+        mnode['utxos'] = utxos_to_spend
+        rewardsArray.append(mnode)
+        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
         
         
         
@@ -234,41 +187,9 @@ class HWdevice(QObject):
             num_of_sigs = sum([len(mnode['utxos']) for mnode in rewardsArray])
             curr_utxo_checked = 0
             
-            for i, mnode in enumerate(rewardsArray):
-                for idx, utxo in enumerate(mnode['utxos']):
-                                       
-                    self.amount += int(utxo['value'])
-                    raw_tx = bytearray.fromhex(utxo['raw_tx'])
-                
-                    # parse the raw transaction, so that we can extract the UTXO locking script we refer to
-                    prev_transaction = bitcoinTransaction(raw_tx)
-    
-                    utxo_tx_index = utxo['tx_ouput_n']
-                    if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
-                        raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))  
-
-                    trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
-                    self.trusted_inputs.append(trusted_input)
-               
-                    # Hash check
-                    curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(mnode['path'])['publicKey'])
-                    pubkey_hash = bin_hash160(curr_pubkey)
-                    pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
-                    if pubkey_hash != pubkey_hash_from_script:
-                        text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match."
-                        text += "Your signed transaction will not be validated by the network.\n"
-                        text += "pubkey_hash: %s\n" % pubkey_hash.hex()
-                        text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
-                        printDbg(text)
-    
-                    self.arg_inputs.append({
-                        'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
-                        'pubkey': curr_pubkey,
-                        'bip32_path': mnode['path'],
-                        'outputIndex': utxo['tx_ouput_n'],
-                        'txid': utxo['tx_hash']
-                    })
-                    
+            for mnode in rewardsArray:
+                for utxo in mnode['utxos']:
+                    self.append_inputs_to_TX(utxo, mnode['path'])
                     # completion percent emitted
                     curr_utxo_checked += 1
                     completion = int(95*curr_utxo_checked / num_of_sigs)

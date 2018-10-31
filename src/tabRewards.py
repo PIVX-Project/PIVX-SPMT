@@ -426,8 +426,10 @@ class TabRewards():
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
-                        # remove spent rewards
+                        # remove spent rewards from DB
                         self.removeSpentRewards()
+                        # reload utxos
+                        self.display_mn_utxos()
                         self.onCancel()
                         
                     else:

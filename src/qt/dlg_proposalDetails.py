@@ -12,6 +12,10 @@ class ProposalDetails_dlg(QDialog):
     def __init__(self, main_wnd, proposal):
         QDialog.__init__(self, parent=main_wnd)
         self.data = proposal
+        myVotes = main_wnd.caller.parent.db.getMyVotes(proposal.Hash)
+        self.myYeas = [[v["mn_name"], v["time"]] for v in myVotes if v["vote"] == "YES"]
+        self.myAbstains = [[v["mn_name"], v["time"]] for v in myVotes if v["vote"] == "ABSTAIN"]
+        self.myNays = [[v["mn_name"], v["time"]] for v in myVotes if v["vote"] == "NO"]
         self.setWindowTitle('Proposal Details')
         self.setupUI()
         
@@ -77,13 +81,13 @@ class Ui_proposalDetailsDlg(object):
         votes += "<span style='color: red'>%d NAYS</span>" % PropDetailsDlg.data.Nays
         body.addRow(QLabel("<b>Votes: </b>"), QLabel(votes))
         my_yeas = ["%s <em style='color: green'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
-                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyYeas]
+                                                        gmtime(x[1]))) for x in PropDetailsDlg.myYeas]
         body.addRow(QLabel("<b>My Yeas: </b>"), self.scroll(my_yeas))
         my_abstains = ["%s <em style='color: orange'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
-                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyAbstains]
+                                                        gmtime(x[1]))) for x in PropDetailsDlg.myAbstains]
         body.addRow(QLabel("<b>My Abstains: </b>"), self.scroll(my_abstains))
         my_nays = ["%s <em style='color: red'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S', 
-                                                        gmtime(x[1][1]))) for x in PropDetailsDlg.data.MyNays]
+                                                        gmtime(x[1]))) for x in PropDetailsDlg.myNays]
         body.addRow(QLabel("<b>My Nays: </b>"), self.scroll(my_nays))
         layout.addLayout(body)
         self.okButton = QPushButton('OK')
