@@ -4,7 +4,7 @@ import random
 import time
 
 from PyQt5.Qt import QFont, QDesktopServices, QUrl, QApplication
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
     QMessageBox, QScrollArea, QLabel
 
@@ -43,8 +43,8 @@ class TabGovernance():
         self.ui.voteAbstain_btn.clicked.connect(lambda: self.onVote(0))
         self.ui.voteNo_btn.clicked.connect(lambda: self.onVote(2))
         
-        # show proposals from DB
-        self.displayProposals()
+        # Connect Signals
+        self.caller.sig_ProposalsLoaded.connect(self.displayProposals)
         
     
     
@@ -74,7 +74,7 @@ class TabGovernance():
 
     
     
-        
+
     def displayProposals(self):
         # clear box
         self.ui.proposalBox.setRowCount(0)
@@ -181,7 +181,7 @@ class TabGovernance():
     
     
     
-    @pyqtSlot(object) 
+ 
     def loadProposals_thread(self, ctrl):
         if not self.caller.rpcConnected:
             printException(getCallerName(), getFunctionName(), "RPC server not connected", "")
@@ -229,14 +229,14 @@ class TabGovernance():
      
             
     
-    @pyqtSlot()
+
     def onRefreshProposals(self):
         self.ui.resetStatusLabel()
         ThreadFuns.runInThread(self.loadProposals_thread, (),)
         
     
     
-    @pyqtSlot()
+
     def onToggleExpiring(self):
         if self.ui.toggleExpiring_btn.text() == "Hide Expiring":
             # Hide expiring proposals
@@ -259,7 +259,7 @@ class TabGovernance():
     
     
         
-    @pyqtSlot(str)
+
     def onVote(self, vote_code):
         if len(self.selectedProposals) == 0:
             message = "NO PROPOSAL SELECTED. Select proposals from the list."
@@ -336,7 +336,7 @@ class TabGovernance():
     
     
     
-    @pyqtSlot(object, str)
+
     def vote_thread(self, ctrl, vote_code):
         # vote_code index for ["yes", "abstain", "no"]
         if not isinstance(vote_code, int) or vote_code not in range(3):

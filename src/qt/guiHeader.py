@@ -12,8 +12,8 @@ from PyQt5.Qt import QSizePolicy
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
         # --- 1) Check Box
         self.centralBox = QGridLayout()
         self.centralBox.setContentsMargins(0, 0, 0, 0)
@@ -68,12 +68,12 @@ class GuiHeader(QWidget):
         self.hwLed.setToolTip("Status: %s" % caller.hwStatusMess)
         self.hwLed.setPixmap(caller.ledGrayH_icon)
         self.centralBox.addWidget(self.hwLed, 1, 3)
-        layout.addLayout(self.centralBox)
-        layout.addStretch(1)
+        self.layout.addLayout(self.centralBox)
+        self.layout.addStretch(1)
         # --- 3) SPMT logo
         spmtLogo = QLabel()
         spmtLogo_file = os.path.join(caller.imgDir, 'spmtLogo_horiz.png')
         spmtLogo.setPixmap(QPixmap(spmtLogo_file).scaledToHeight(55, Qt.SmoothTransformation))
-        layout.addWidget(spmtLogo)
-        self.setLayout(layout)
+        self.layout.addWidget(spmtLogo)
+        self.setLayout(self.layout)
         

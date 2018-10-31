@@ -6,7 +6,7 @@ from time import strftime, gmtime
 import threading
 import sys
 
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QThread, QSettings
+from PyQt5.QtCore import pyqtSignal, Qt, QThread, QSettings
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
     QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
@@ -135,8 +135,10 @@ class MainWindow(QWidget):
 
         ###-- Set Layout
         self.setLayout(self.layout)
+        
         ###-- Init Settings
         self.initSettings()
+        
         ###-- Connect buttons/signals
         self.connButtons()
         
@@ -155,15 +157,13 @@ class MainWindow(QWidget):
                
         
     
-        
-    @pyqtSlot(str)    
+  
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
         
     
     
-    @pyqtSlot(str)
     def clearHWstatus(self, message):
         self.hwStatus = 1
         self.hwStatusMess = 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.'
@@ -173,7 +173,7 @@ class MainWindow(QWidget):
         
         
             
-    @pyqtSlot()
+
     def clearRPCstatus(self):
         self.rpcConnected = False
         self.header.lastPingBox.setHidden(False)
@@ -194,13 +194,9 @@ class MainWindow(QWidget):
         self.sig_clearRPCstatus.connect(self.clearRPCstatus)
         self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
         self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
-        self.hwdevice.sig_ledger_disconnected.connect(self.clearHWstatus)
-        self.hwdevice.sigTxdone.connect(self.t_rewards.FinishSend)
-        self.hwdevice.sigTxabort.connect(self.t_rewards.onCancel)
-        self.hwdevice.tx_progress.connect(self.t_rewards.updateProgressPercent)
+        self.hwdevice.sig_ledger_disconnected.connect(self.clearHWstatus)        
         self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
-        self.sig_UTXOsLoaded.connect(self.t_rewards.display_mn_utxos)
-        self.sig_ProposalsLoaded.connect(self.t_governance.displayProposals)
+
             
             
             
@@ -326,8 +322,7 @@ class MainWindow(QWidget):
         
         
         
-    
-    @pyqtSlot()        
+            
     def onCheckHw(self):
         printDbg("Checking for HW device...")
         self.updateHWstatus(None)
@@ -336,13 +331,12 @@ class MainWindow(QWidget):
 
         
     
-    @pyqtSlot()
     def onCheckRpc(self):
         self.runInThread(self.updateRPCstatus, (True,),) 
         
         
         
-    @pyqtSlot()
+
     def onCheckVersion(self):
         printDbg("Checking SPMT version...")
         self.versionLabel.setText("--")      
@@ -370,7 +364,7 @@ class MainWindow(QWidget):
             
             
             
-    @pyqtSlot(int)
+
     def onChangeSelectedRPC(self, i):
         # Don't update when we are clearing the box
         if not self.updatingRPCbox:
@@ -382,14 +376,14 @@ class MainWindow(QWidget):
         
         
         
-    @pyqtSlot()
+
     def onCleanConsole(self):
         self.consoleArea.clear()
         
       
       
       
-    @pyqtSlot()
+
     def onSaveConsole(self):
         timestamp = strftime('%Y-%m-%d_%H-%M-%S', gmtime(now()))
         options = QFileDialog.Options()
@@ -410,22 +404,26 @@ class MainWindow(QWidget):
             
             
             
-    @pyqtSlot()
+
     def onTabChange(self):
         # tabRewards
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
-            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))          
+            self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
+            # show UTXOs from DB
+            self.t_rewards.display_mn_utxos()           
 
         # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
             # update selectedMNlabel (since we might have edited them)
             self.t_governance.updateSelectedMNlabel()
+            # show proposals from DB
+            self.t_governance.displayProposals()
             
             
         
 
-    @pyqtSlot()
+
     def onToggleConsole(self):
         if self.btn_consoleToggle.text() == 'Hide':
             self.btn_consoleToggle.setText('Show')
@@ -462,7 +460,8 @@ class MainWindow(QWidget):
         
         
     
-    @pyqtSlot(int, bool)
+
+
     def showRPCstatus(self, server_index, fDebug):
         # Update displayed status only if selected server is not changed
         if server_index == self.header.rpcClientsBox.currentIndex():
@@ -557,7 +556,7 @@ class MainWindow(QWidget):
         
 
 
-    #@pyqtSlot()   
+  
     def updateRPClist(self):
         # Clear old stuff
         self.updatingRPCbox = True

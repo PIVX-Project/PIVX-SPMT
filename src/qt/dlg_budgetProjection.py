@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QAbstractItemView, QHeaderView, \
     QTableWidgetItem, QPushButton, QLabel, QGroupBox, QHBoxLayout, QFormLayout
 

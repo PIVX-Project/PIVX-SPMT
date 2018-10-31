@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from ipaddress import ip_address
 
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from misc import printDbg, printOK, is_hex, appendMasternode, myPopUp, myPopUp_sb
@@ -49,7 +48,7 @@ class TabMNConf():
     
           
                 
-    @pyqtSlot(object, int, int)            
+           
     def findSpath(self, ctrl, starting_spath, spath_count):
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
@@ -62,7 +61,7 @@ class TabMNConf():
         
                 
                 
-    @pyqtSlot()            
+           
     def findSpath_done(self):
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
@@ -88,7 +87,7 @@ class TabMNConf():
 
     
     
-    @pyqtSlot()
+
     def findPubKey(self):
         printDbg("Computing public key...")
         currSpath = self.ui.edt_spath.value()
@@ -140,7 +139,7 @@ class TabMNConf():
         
         
         
-    @pyqtSlot()
+
     def onCancelMNConfig(self):
         self.caller.tabs.setCurrentIndex(0)
         self.caller.tabs.removeTab(1)
@@ -148,7 +147,7 @@ class TabMNConf():
         
         
         
-    @pyqtSlot()
+
     def onChangeTestnet(self):
         if self.isTestnet():
             self.ui.edt_masternodePort.setValue(51474)
@@ -158,7 +157,7 @@ class TabMNConf():
      
      
             
-    @pyqtSlot()
+
     def onEditTx(self):
         if not self.ui.edt_txid.isEnabled():
             self.ui.btn_editTxid.setText("OK")
@@ -177,7 +176,7 @@ class TabMNConf():
             
     
         
-    @pyqtSlot()
+
     def onFindSpathAndPrivKey(self):
         self.ui.edt_spath.setValue(0)
         self.ui.edt_pubKey.setText('')
@@ -186,7 +185,7 @@ class TabMNConf():
             
             
             
-    @pyqtSlot()
+
     def onLookupTx(self):
         # address check
         currAddr = self.ui.edt_address.text().strip()
@@ -210,7 +209,7 @@ class TabMNConf():
         
         
         
-    @pyqtSlot()
+
     def onGenerateMNkey(self):
         printDbg("Generate MNkey pressed")
         reply = QMessageBox.Yes
@@ -228,7 +227,7 @@ class TabMNConf():
         
         
         
-    @pyqtSlot()            
+           
     def onSaveMNConf(self):
         try:
             if self.ui.edt_pubKey.text() == "" or self.ui.edt_txid.text() == "" or self.ui.edt_mnPrivKey.text() == "":
@@ -294,7 +293,7 @@ class TabMNConf():
     
     
     
-    @pyqtSlot()     
+     
     def spathToAddress(self):
         printOK("spathToAddress pressed") 
         currHwAcc = self.ui.edt_hwAccount.value()

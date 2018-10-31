@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel,\
     QListWidget, QFrame, QFormLayout, QComboBox, QLineEdit, QListWidgetItem,\
     QWidget, QPushButton, QMessageBox
@@ -94,7 +93,7 @@ class ConfigureRPCservers_dlg(QDialog):
         self.ui.host_edt.setText(server['host'])
         
     
-    @pyqtSlot(int)
+
     def onAddServer(self, index=None):
         # Save current index (None for new entry)
         self.changing_index = index
@@ -112,7 +111,7 @@ class ConfigureRPCservers_dlg(QDialog):
             self.loadEditFrame(index)
         
     
-    @pyqtSlot()
+
     def onCancel(self):
         # Show 'Add' and 'Close' buttons and enable serversBox
         self.ui.addServer_btn.show()
@@ -124,13 +123,13 @@ class ConfigureRPCservers_dlg(QDialog):
         self.clearEditFrame()
     
     
-    @pyqtSlot()
+
     def onClose(self):
         # close dialog
         self.close()
         
         
-    @pyqtSlot(int)
+
     def onRemoveServer(self, index):
         mess = "Are you sure you want to remove server with index %d (%s) from list?" % (
             index, self.main_wnd.mainWindow.rpcServersList[index].get('host'))
@@ -140,8 +139,7 @@ class ConfigureRPCservers_dlg(QDialog):
             self.main_wnd.db.removeRPCServer(index)
 
     
-    
-    @pyqtSlot()
+
     def onSave(self):
         # Get new config data
         protocol = "http" if self.ui.protocol_select.currentIndex() == 0 else "https"

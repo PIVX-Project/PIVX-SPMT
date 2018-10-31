@@ -6,7 +6,7 @@ import bitcoin
 import time
 
 from PyQt5.Qt import QObject
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 
 from constants import MPATH
 from misc import printOK, printDbg, printException, getCallerName, getFunctionName, ipport

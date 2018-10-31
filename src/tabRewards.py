@@ -4,7 +4,7 @@ import threading
 import simplejson as json
 
 from PyQt5.Qt import QApplication, pyqtSignal
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 
@@ -57,14 +57,16 @@ class TabRewards():
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
         
-        # show UTXOs from DB
-        self.display_mn_utxos() 
+        # Connect Signals
+        self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
+        self.caller.hwdevice.sigTxabort.connect(self.onCancel)
+        self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+        self.caller.sig_UTXOsLoaded.connect(self.display_mn_utxos)
         
 
 
         
-        
-    @pyqtSlot()
+
     def display_mn_utxos(self):
         if self.curr_name is None:
             return
@@ -227,7 +229,7 @@ class TabRewards():
     
     
     
-    #@pyqtSlot()
+
     def onCancel(self):
         self.ui.rewardsList.box.clearSelection()
         self.selectedRewards = None
@@ -249,7 +251,7 @@ class TabRewards():
     
     
         
-    @pyqtSlot()
+
     def onChangeSelectedMN(self):
         
         self.curr_name = None
@@ -267,21 +269,21 @@ class TabRewards():
       
         
         
-    @pyqtSlot()
+
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
         self.updateSelection() 
 
 
             
-    @pyqtSlot()
+
     def onDeselectAllRewards(self):
         self.ui.rewardsList.box.clearSelection()
         self.updateSelection()
     
     
     
-    @pyqtSlot()
+
     def onReloadUTXOs(self):
         if not self.Lock.locked():
             self.ui.resetStatusLabel()
@@ -290,7 +292,7 @@ class TabRewards():
             
             
             
-    @pyqtSlot()
+
     def onSendRewards(self):
         self.dest_addr = self.ui.destinationLine.text().strip() 
     
@@ -357,7 +359,7 @@ class TabRewards():
                     
             
             
-    @pyqtSlot()
+
     def onToggleCollateral(self):
         if self.ui.rewardsList.box.collateralRow is not None:
             if not self.ui.collateralHidden:
@@ -393,8 +395,7 @@ class TabRewards():
             
             
 
-    # Activated by signal sigTxdone from hwdevice       
-    #@pyqtSlot(bytearray, str)            
+    # Activated by signal sigTxdone from hwdevice                  
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         if not self.txFinished:
@@ -450,7 +451,7 @@ class TabRewards():
         
         
         
-    @pyqtSlot()
+
     def updateFee(self):
         if self.useSwiftX():
             self.ui.feeLine.setValue(0.01)
@@ -462,9 +463,8 @@ class TabRewards():
         
              
     # Activated by signal tx_progress from hwdevice
-    #@pyqtSlot(str)
     def updateProgressPercent(self, percent):
-        self.ui.loadingLinePercent.setValue(int(percent))
+        self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
         
  

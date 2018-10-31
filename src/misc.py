@@ -100,31 +100,34 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         
         
         
-def clean_v4_migration(db):
-    try:
-        rpc_file = os.path.join(user_dir, 'rpcServer.json')
-        cache_file = os.path.join(user_dir, 'cache.json')
-        mn_file = os.path.join(user_dir, 'masternodes.json')
-        
-        if os.path.exists(rpc_file) or os.path.exists(cache_file) or os.path.exists(mn_file):
-            printDbg("Clean migration to v0.4.0 data storage")
-        
-        if os.path.exists(rpc_file):
-            # If RPC file exists
-            printDbg("found old rpcServer.json file")
+def clean_v4_migration(wnd):
+    rpc_file = os.path.join(user_dir, 'rpcServer.json')
+    cache_file = os.path.join(user_dir, 'cache.json')
+    mn_file = os.path.join(user_dir, 'masternodes.json')
+    messTitle = "Clean migration to v0.4.0 data storage"
+    
+    if os.path.exists(rpc_file) or os.path.exists(cache_file) or os.path.exists(mn_file):
+        printDbg(messTitle)
+    
+    if os.path.exists(rpc_file):
+        # If RPC file exists
+        try:
             with open(rpc_file) as data_file:
                 rpc_config = json.load(data_file)
             # copy to database
             rpc_host = "%s:%d" % (rpc_config['rpc_ip'], rpc_config['rpc_port'])
-            db.editRPCServer("http", rpc_host, rpc_config['rpc_user'], rpc_config['rpc_password'], 0)
+            wnd.db.editRPCServer("http", rpc_host, rpc_config['rpc_user'], rpc_config['rpc_password'], 0)
             printDbg("...saved to Database")
             # and delete old file
             os.remove(rpc_file)
             printDbg("old rpcServer.json file deleted")
-        
-        if os.path.exists(cache_file):
-            # If cache file exists
-            printDbg("found old cache.json file")
+        except Exception as e:
+            mess = "Error importing old rpc_config file"
+            printException(getCallerName(), getFunctionName(), mess, e)
+    
+    if os.path.exists(cache_file):
+        # If cache file exists
+        try:
             with open(cache_file) as data_file:
                 cache = json.load(data_file)
             # copy to Settings
@@ -133,23 +136,25 @@ def clean_v4_migration(db):
             # and delete old file
             os.remove(cache_file)
             printDbg("old cache.json file deleted")
-        
-        if os.path.exists(mn_file):
-            # If mn file exists
-            printDbg("found old masternodes.json file")
+        except Exception as e:
+            mess = "Error importing old cache file"
+            printException(getCallerName(), getFunctionName(), mess, e)
+    
+    if os.path.exists(mn_file):
+        # If mn file exists
+        try:
             with open(mn_file) as data_file:
                 mnList = json.load(data_file)
             # add to database
             for mn in mnList:
-                db.addMasternode(mn)
+                wnd.db.addMasternode(mn)
             printDbg("...saved to Database")
             # and delete old file
             os.remove(mn_file)
-            printDbg("old masternodes.json file deleted")    
-        
-    except Exception as e:
-        printDbg(e)
-        
+            printDbg("old masternodes.json file deleted")   
+        except Exception as e:
+            mess = "Error importing old masternodes_config file"
+            printException(getCallerName(), getFunctionName(), mess, e)    
         
         
         
@@ -442,24 +447,22 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
 def saveCacheSettings(cache, old_version=False):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
-    settings.setValue('cache_winWidth', cache.get('window_width'))
-    settings.setValue('cache_winHeight', cache.get('window_height'))
-    if old_version:
-        settings.setValue('cache_splitterX', cache.get('splitter_sizes')[0])
-        settings.setValue('cache_splitterY', cache.get('splitter_sizes')[1])
-    else:
-        settings.setValue('cache_splitterX', cache.get('splitter_x'))
-        settings.setValue('cache_splitterY', cache.get('splitter_y'))
-    settings.setValue('cache_mnOrder', json.dumps(cache.get('mnList_order')))
-    settings.setValue('cache_consoleHidden', cache.get('console_hidden'))   
     settings.setValue('cache_useSwiftX', cache.get('useSwiftX'))
-    settings.setValue('cache_votingMNs', json.dumps(cache.get('votingMasternodes')))
     settings.setValue('cache_vdCheck', cache.get('votingDelayCheck'))
     settings.setValue('cache_vdNeg', cache.get('votingDelayNeg'))
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))
-    if not old_version:
-        settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
-        settings.setValue('cache_MNcount', cache.get('MN_count'))
+    # that's enough for clean_v4_migration
+    if old_version:
+        return
+    settings.setValue('cache_winWidth', cache.get('window_width'))
+    settings.setValue('cache_winHeight', cache.get('window_height'))
+    settings.setValue('cache_splitterX', cache.get('splitter_x'))
+    settings.setValue('cache_splitterY', cache.get('splitter_y'))
+    settings.setValue('cache_mnOrder', json.dumps(cache.get('mnList_order')))
+    settings.setValue('cache_consoleHidden', cache.get('console_hidden'))    
+    settings.setValue('cache_votingMNs', json.dumps(cache.get('votingMasternodes'))) 
+    settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
+    settings.setValue('cache_MNcount', cache.get('MN_count'))
         
     
     

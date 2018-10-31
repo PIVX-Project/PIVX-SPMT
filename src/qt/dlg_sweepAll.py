@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import simplejson as json
 
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
     QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
     QApplication, QProgressBar, QCheckBox
@@ -118,7 +118,6 @@ class SweepAll_dlg(QDialog):
 
     
     
-    @pyqtSlot()
     def onButtonCancel(self):
         self.AbortSend()
         self.close()
@@ -126,7 +125,7 @@ class SweepAll_dlg(QDialog):
         
         
 
-    @pyqtSlot()
+
     def onButtonSend(self):
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
@@ -195,7 +194,6 @@ class SweepAll_dlg(QDialog):
     
     
     # Activated by signal sigTxdone from hwdevice       
-    #@pyqtSlot(bytearray, str)  
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         QApplication.processEvents()
@@ -248,7 +246,7 @@ class SweepAll_dlg(QDialog):
 
     
     
-    @pyqtSlot()
+
     def updateFee(self):
         if self.useSwiftX():
             self.ui.feeLine.setValue(0.01)
@@ -260,7 +258,6 @@ class SweepAll_dlg(QDialog):
                 
                 
     # Activated by signal tx_progress from hwdevice
-    #@pyqtSlot(str)
     def updateProgressPercent(self, percent):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()

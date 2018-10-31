@@ -4,7 +4,6 @@ import simplejson as json
 import time
 
 from PyQt5.Qt import QApplication
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 from apiClient import ApiClient
@@ -101,7 +100,7 @@ class TabMain():
             
             
             
-    @pyqtSlot()
+
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
@@ -122,7 +121,7 @@ class TabMain():
     
         
         
-    @pyqtSlot()
+
     def onDisplayStatusDetails(self, masternode_alias, statusData):
         try:
             ui = MnStatus_dlg(self.ui, masternode_alias, statusData)
@@ -135,7 +134,7 @@ class TabMain():
         
         
         
-    @pyqtSlot()     
+    
     def onEditMN(self, data=None):       
         if not data:
             target = self.ui.sender()
@@ -152,7 +151,7 @@ class TabMain():
                 
                 
     
-    @pyqtSlot()
+
     def onNewMasternode(self):
         self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
         self.caller.tabMNConf.clearConfigForm()
@@ -161,7 +160,7 @@ class TabMain():
     
                 
                 
-    @pyqtSlot()    
+   
     def onRemoveMN(self, data=None):
         if not data:    
             target = self.ui.sender()
@@ -181,7 +180,7 @@ class TabMain():
             
     
     
-    @pyqtSlot()
+
     def onRewardsMN(self, data=None):
         if not data:    
             target = self.ui.sender()
@@ -191,7 +190,7 @@ class TabMain():
             self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)   
     
            
-    @pyqtSlot()
+
     def onStartAllMN(self):
         printOK("Start-All pressed")
         # Check RPC & dongle
@@ -222,7 +221,7 @@ class TabMain():
         
     
         
-    @pyqtSlot()
+
     def onStartMN(self, data=None):
         # Check RPC & dongle  
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
@@ -253,7 +252,7 @@ class TabMain():
             
             
     
-    @pyqtSlot()
+
     def onSweepAllRewards(self):
         try:
             self.sweepAllDlg.showDialog()
@@ -266,8 +265,7 @@ class TabMain():
             
             
             
-    # Activated by signal 'sigdone' from masternode       
-         
+    # Activated by signal 'sigdone' from masternode            
     def sendBroadcast(self, text):
         if text == "None":
             self.sendBroadcastCheck()

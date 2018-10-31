@@ -52,7 +52,7 @@ class App(QMainWindow):
         self.db.open()
         
         # Clean v4 migration (read data from old files and delete them)
-        clean_v4_migration(self.db)
+        clean_v4_migration(self)
         
         # Check for startup args (clear data)
         if start_args.clearAppData:

@@ -3,7 +3,7 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import threading
 
-from PyQt5.QtCore import pyqtSlot, QSettings
+from PyQt5.QtCore import QSettings
 
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 from misc import getCallerName, getFunctionName, printException, printDbg, now, timeThis
