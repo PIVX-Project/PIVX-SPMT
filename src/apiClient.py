@@ -6,17 +6,6 @@ import requests
 from misc import getCallerName, getFunctionName, printException, printDbg
 
 api_keys = ["b62b40b5091e", "f1d66708a077", "ed85c85c0126", "ccc60d06f737"]
-
-class DisconnectedException(Exception):
-    def __init__(self, message, apiClient):
-        # Call the base class constructor
-        super().__init__(message)
-        # clear client
-        try:
-            apiClient.client.close()
-            apiClient.client = requests.session()
-        except Exception:
-            pass
         
 
 def process_api_exceptions(func):
@@ -25,14 +14,11 @@ def process_api_exceptions(func):
         apiClient = args[0]
         try:
             return func(*args, **kwargs)
-        
-        except DisconnectedException as e:
-            raise e
-            
+                   
         except Exception as e:
             message = "API Client exception"
             printException(getCallerName(True), getFunctionName(True), message, str(e))
-            raise DisconnectedException(message, apiClient)
+            return None
         
     return process_api_exceptions_int       
         
@@ -44,7 +30,6 @@ class ApiClient:
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {}
         
-        
 
     def checkResponse(self, parameters):
         key = choice(api_keys)
@@ -53,9 +38,7 @@ class ApiClient:
         if resp.status_code == 200:
             data = resp.json()
             return data
-        else:
-            raise DisconnectedException("Wrong Response", self)
-            return None    
+        return None
     
     
     
@@ -76,14 +59,16 @@ class ApiClient:
         return self.checkResponse(self.parameters)
     
     
-        
-    @process_api_exceptions
     def getStatus(self):
         status_code = 0
         self.parameters = {}
         self.parameters['q'] = 'getblockcount'
-        resp = requests.get(self.url, self.parameters)
-        status_code = resp.status_code
+        try:
+            resp = requests.get(self.url, self.parameters)
+            status_code = resp.status_code
+        except Exception as e:
+            printException(getCallerName(True), getFunctionName(True), "API ERR", str(e))
+        
         return status_code
             
     

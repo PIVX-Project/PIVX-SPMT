@@ -34,6 +34,7 @@ class RpcWatchdog(QObject):
                 # first time we get connection reload UTXOs and Proposals
                 if not self.control_tab.t_rewards.utxoLoaded:
                     self.control_tab.t_rewards.load_utxos_thread(None)
+
                 if not self.control_tab.t_governance.proposalsLoaded:
                     self.control_tab.t_governance.loadProposals_thread(None)
                     

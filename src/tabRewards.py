@@ -192,7 +192,7 @@ class TabRewards():
 
             api_status = self.caller.apiClient.getStatus()
             if  api_status != 200:
-                printDbg("Wrong response from API client. Status: %s" % status)
+                printDbg("Wrong response from API client. Status: %s" % api_status)
                 return
 
             self.apiConnected = True
