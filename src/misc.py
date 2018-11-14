@@ -126,18 +126,12 @@ def clean_v4_migration(wnd):
             printException(getCallerName(), getFunctionName(), mess, e)
     
     if os.path.exists(cache_file):
-        # If cache file exists
+        # If cache file exists, delete it
         try:
-            with open(cache_file) as data_file:
-                cache = json.load(data_file)
-            # copy to Settings
-            saveCacheSettings(cache, True)
-            printDbg("...saved to Settings")
-            # and delete old file
             os.remove(cache_file)
             printDbg("old cache.json file deleted")
         except Exception as e:
-            mess = "Error importing old cache file"
+            mess = "Error deleting old cache file"
             printException(getCallerName(), getFunctionName(), mess, e)
     
     if os.path.exists(mn_file):
@@ -444,16 +438,13 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
 
     
 
-def saveCacheSettings(cache, old_version=False):
+def saveCacheSettings(cache):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
     settings.setValue('cache_useSwiftX', cache.get('useSwiftX'))
     settings.setValue('cache_vdCheck', cache.get('votingDelayCheck'))
     settings.setValue('cache_vdNeg', cache.get('votingDelayNeg'))
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))
-    # that's enough for clean_v4_migration
-    if old_version:
-        return
     settings.setValue('cache_winWidth', cache.get('window_width'))
     settings.setValue('cache_winHeight', cache.get('window_height'))
     settings.setValue('cache_splitterX', cache.get('splitter_x'))
