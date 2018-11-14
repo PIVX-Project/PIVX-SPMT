@@ -63,7 +63,7 @@ class SweepAll_dlg(QDialog):
     def display_utxos(self):
         rewards = self.main_tab.caller.parent.db.getRewardsList()
         self.rewardsArray = []
-        for mn in self.main_tab.caller.masternode_list:
+        for mn in [x for x in self.main_tab.caller.masternode_list if x['isHardware']]:
             x = {}
             x['name'] = mn['name']
             x['addr'] = mn['collateral'].get('address')
