@@ -183,6 +183,7 @@ class TabRewards():
             # clear rewards DB
             printDbg("Updating rewards...")
             self.caller.parent.db.clearTable('REWARDS')
+            self.caller.parent.db.clearTable('MY_VOTES')
             self.utxoLoaded = False
 
             # If rpc is not connected warn and return.
