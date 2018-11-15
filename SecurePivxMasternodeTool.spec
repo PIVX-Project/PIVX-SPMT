@@ -84,9 +84,10 @@ app_path = os.path.join(dist_path, 'app')
 os.chdir(dist_path)
 
 # Copy Readme Files
-from shutil import copyfile
+from shutil import copyfile, copytree
 print('Copying README.md')
 copyfile(os.path.join(base_dir, 'README.md'), 'README.md')
+copytree(os.path.join(base_dir, 'docs'), 'docs')
 
 
 if os_type == 'win32':
