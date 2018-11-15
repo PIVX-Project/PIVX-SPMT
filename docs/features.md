@@ -203,7 +203,7 @@ Set the seconds for the lower bound <em><b>LB</b></em> and the upper bound <em><
 
 <br>
 
-### <a name="features5"></a>Resetting Application Data
+### <a name="features8"></a>Resetting Application Data
 To reset application data, the SPMT can be started from the command line with one of more of the following flags:
 - `--clearAppData` : to clear user preferences such as window dimensions, pre-compiled fields, etc...
 - `--clearMnData` : to remove all masternode's entries from the database
