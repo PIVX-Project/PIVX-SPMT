@@ -1,5 +1,5 @@
 {
  "number": "0.3.99",
- "tag": "n",
- "comments": ["update specfile"]
+ "tag": "o",
+ "comments": ["DB signals fix"]
  }

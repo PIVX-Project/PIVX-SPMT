@@ -189,13 +189,14 @@ class Database():
     General methods
     '''  
     def clearTable(self,  table_name):
+        cleared_RPC = False
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM %s" % table_name)
             # in case, reload default RPC and emit changed signal
             if table_name == 'CUSTOM_RPC_SERVERS':
                 self.initTable_RPC(cursor)
-                self.app.sig_changed_rpcServers.emit()
+                cleared_RPC = True
             
         except Exception as e:
             err_msg = 'error clearing %s in database' % table_name
@@ -203,6 +204,8 @@ class Database():
    
         finally:
             self.releaseCursor()
+            if cleared_RPC:
+                self.app.sig_changed_rpcServers.emit()
                 
         
         
@@ -211,6 +214,7 @@ class Database():
     RPC servers methods
     '''
     def addRPCServer(self, protocol, host, user, passwd):
+        added_RPC = False
         try:
             cursor = self.getCursor()
 
@@ -218,19 +222,21 @@ class Database():
                            "VALUES (?, ?, ?, ?)",
                            (protocol, host, user, passwd)
                            )
-            
-            self.app.sig_changed_rpcServers.emit()
+            added_RPC = True
             
         except Exception as e:
             err_msg = 'error adding RPC server entry to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)      
         finally:
             self.releaseCursor()
+            if added_RPC:
+                self.app.sig_changed_rpcServers.emit()
         
         
         
         
     def editRPCServer(self, protocol, host, user, passwd, id):
+        changed_RPC = False
         try:
             cursor = self.getCursor()
 
@@ -239,14 +245,15 @@ class Database():
                            "WHERE id = ?",
                            (protocol, host, user, passwd, id)
                            )
-            
-            self.app.sig_changed_rpcServers.emit()
+            changed_RPC = True
                     
         except Exception as e:
             err_msg = 'error editing RPC server entry to DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)       
         finally:
-            self.releaseCursor()   
+            self.releaseCursor()
+            if changed_RPC:
+                self.app.sig_changed_rpcServers.emit()   
         
         
         
@@ -287,12 +294,12 @@ class Database():
             
     
     def removeRPCServer(self, index):
+        removed_RPC = False
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM RPC_SERVERS"
                            " WHERE id=?", (index,))
-            
-            self.app.sig_changed_rpcServers.emit()
+            removed_RPC = True
             
         except Exception as e:
             err_msg = 'error removing RPC servers from database'
@@ -300,6 +307,8 @@ class Database():
    
         finally:
             self.releaseCursor()
+            if removed_RPC:
+                self.app.sig_changed_rpcServers.emit()
             
 
             
