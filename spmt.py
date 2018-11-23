@@ -3,7 +3,6 @@
 import os
 import sys
 import time
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
       
     
 if __name__ == '__main__':
@@ -24,6 +23,7 @@ if __name__ == '__main__':
     
     if getattr( sys, 'frozen', False ) :
         # running in a bundle
+        sys.path.append(os.path.join(sys._MEIPASS, 'src'))
         imgDir = os.path.join(sys._MEIPASS, 'img')
         
         # if linux export qt plugins path
@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     else:
         # running live
+        sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
         imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
         
     from PyQt5.QtWidgets import QApplication
