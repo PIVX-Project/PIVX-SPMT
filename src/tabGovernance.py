@@ -359,23 +359,25 @@ class TabGovernance():
                     # Get mnPrivKey
                     currNode = next(x for x in self.caller.masternode_list if x['name']==mn[1])
                     if currNode is None:
-                        raise Exception("currNode not found for current voting masternode %s" % mn[1])
+                        printDbg("currNode not found for current voting masternode %s" % mn[1])
+                        self.clear()
+                        raise Exception()
                     mnPrivKey = currNode['mnPrivKey']
-                    
+
                     # Add random delay offset
                     if self.ui.randomDelayCheck.isChecked():
                         minuns_max = int(self.ui.randomDelayNeg_edt.value())
                         plus_max = int(self.ui.randomDelayPos_edt.value())
                         delay_secs = random.randint(-minuns_max, plus_max)
                         sig_time +=  delay_secs
-                        
+
                     # Print Debug line to console
                     mess = "Processing '%s' vote on behalf of masternode [%s]" % (self.vote_codes[vote_code], mn[1])
                     mess += " for the proposal {%s}" % prop.name
                     if self.ui.randomDelayCheck.isChecked():
                         mess += " with offset of %d seconds" % delay_secs
                     printDbg(mess)
-                    
+
                     # Serialize vote
                     serialize_for_sig = mn[0][:64] + '-' + str(currNode['collateral'].get('txidn'))
                     serialize_for_sig += prop.Hash + str(vote_code) + str(sig_time)                  

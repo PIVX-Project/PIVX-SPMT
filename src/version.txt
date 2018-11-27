@@ -1,5 +1,5 @@
 {
  "number": "0.4.0",
- "tag": "c",
- "comments": ["OSX fix: sys._MEIPASS in bundle"]
+ "tag": "d",
+ "comments": ["bug tabGovernance"]
  }
