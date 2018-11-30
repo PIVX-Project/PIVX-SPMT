@@ -87,7 +87,11 @@ class Masternode(QObject):
         try:
             # block_hash = hash(currBlock-12)
             currBlock = self.rpcClient.getBlockCount()
+            if currBlock is None:
+                raise Exception('Unable to get current block number')
             block_hash = self.rpcClient.getBlockHash(currBlock - 12)
+            if block_hash is None:
+                raise Exception('Unable to get blockhash for block %d' % currBlock - 12)
             
             printDbg("Current block from PIVX client: %s" % str(currBlock))
             printDbg("Hash of 12 blocks ago: %s" % block_hash)
@@ -105,7 +109,7 @@ class Masternode(QObject):
             
         except Exception as e:
             err_msg = "error in startMessage"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e)
             return
                 
         work_sig_time = self.sig_time.to_bytes(8, byteorder='big')[::-1].hex()
