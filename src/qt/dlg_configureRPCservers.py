@@ -136,7 +136,8 @@ class ConfigureRPCservers_dlg(QDialog):
         ans = myPopUp(self, QMessageBox.Question, 'SPMT - remove server', mess)
         if ans == QMessageBox.Yes:
             # Remove entry from database
-            self.main_wnd.db.removeRPCServer(index)
+            id = self.main_wnd.mainWindow.rpcServersList[index].get('id')
+            self.main_wnd.db.removeRPCServer(id)
 
     
 

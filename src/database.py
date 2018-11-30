@@ -293,12 +293,12 @@ class Database():
         
             
     
-    def removeRPCServer(self, index):
+    def removeRPCServer(self, id):
         removed_RPC = False
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM RPC_SERVERS"
-                           " WHERE id=?", (index,))
+            cursor.execute("DELETE FROM CUSTOM_RPC_SERVERS"
+                           " WHERE id=?", (id,))
             removed_RPC = True
             
         except Exception as e:
