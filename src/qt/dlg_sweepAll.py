@@ -77,7 +77,11 @@ class SweepAll_dlg(QDialog):
         
         # update fee per Kb
         if self.main_tab.caller.rpcConnected:
-            self.feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()  
+            self.feePerKb = self.main_tab.caller.rpcClient.getFeePerKb()
+            if self.feePerKb is None:
+                self.feePerKb = MINIMUM_FEE
+        else:
+            self.feePerKb = MINIMUM_FEE
         
         def item(value):
             item = QTableWidgetItem(value)
@@ -211,6 +215,8 @@ class SweepAll_dlg(QDialog):
                 
                 else:
                     decodedTx = self.main_tab.caller.rpcClient.decodeRawTransaction(tx_hex)
+                    if decodedTx is None:
+                        raise Exception("Unable to decode TX - connection to RPC server lost.")
                     destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                     amount = decodedTx.get("vout")[0].get("value")
                     message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
@@ -223,6 +229,8 @@ class SweepAll_dlg(QDialog):
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:
                         txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
+                        if txid is None:
+                            raise Exception("Unable to send TX - connection to RPC server lost.")
                         mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
@@ -235,7 +243,7 @@ class SweepAll_dlg(QDialog):
                     
             except Exception as e:
                 err_msg = "Exception in FinishSend"
-                printException(getCallerName(), getFunctionName(), err_msg, e.args)
+                printException(getCallerName(), getFunctionName(), err_msg, e)
     
     
     

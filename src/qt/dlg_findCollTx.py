@@ -83,7 +83,6 @@ class FindCollTx_dlg(QDialog):
                     self.apiConnected = True
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
                     utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
-                    printDbg("loading utxos\nblockCount=%s\n%s" % (str(self.blockCount), str(self.utxos)))
                     self.utxos = [utxo for utxo in utxos if round(int(utxo.get('value', 0))/1e8, 8) == 10000.00000000 ]
 
                 except Exception as e:

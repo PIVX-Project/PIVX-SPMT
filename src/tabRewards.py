@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from apiClient import ApiClient
 from constants import MPATH, MINIMUM_FEE
 from hwdevice import DisconnectedException
-from misc import printDbg, printException, getCallerName, getFunctionName, persistCacheSetting, myPopUp, myPopUp_sb
+from misc import printDbg, printError, printException, getCallerName, getFunctionName, persistCacheSetting, myPopUp, myPopUp_sb
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
@@ -74,6 +74,10 @@ class TabRewards():
         # update fee
         if self.caller.rpcConnected:
             self.feePerKb = self.caller.rpcClient.getFeePerKb()
+            if self.feePerKb is None:
+                self.feePerKb = MINIMUM_FEE
+        else:
+            self.feePerKb = MINIMUM_FEE
         
         rewards = self.caller.parent.db.getRewardsList(self.curr_name)
         self.updateTotalBalance(rewards)
@@ -188,16 +192,15 @@ class TabRewards():
 
             # If rpc is not connected warn and return.
             if not self.caller.rpcConnected:
-                printDbg('PIVX daemon not connected - Unable to update UTXO list')
+                printError('PIVX daemon not connected - Unable to update UTXO list')
                 return
 
             api_status = self.caller.apiClient.getStatus()
             if  api_status != 200:
-                printDbg("Wrong response from API client. Status: %s" % api_status)
+                printError("Wrong response from API client. Status: %s" % api_status)
                 return
 
             self.apiConnected = True
-            self.blockCount = self.caller.rpcClient.getBlockCount()
 
             for mn in self.caller.masternode_list:
                 # Load UTXOs from API client
@@ -205,7 +208,7 @@ class TabRewards():
                     mn['collateral'].get('address'))['unspent_outputs']
 
                 if rewards is None:
-                    printDbg('Error occurred while calling getaddressutxos method.')
+                    printError('API client not responding.')
                     return
 
                 # for each UTXO
@@ -215,7 +218,7 @@ class TabRewards():
  
                     # Don't save UTXO if raw TX is unavailable
                     if rawtx is None:
-                        printDbg("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
+                        printError("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
                         continue
 
                     # Add mn_name and raw_tx to UTXO and save it to DB
@@ -412,6 +415,8 @@ class TabRewards():
                 
                 else:
                     decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
+                    if decodedTx is None:
+                        raise Exception("Unable to decode TX - connection to RPC server lost.")
                     destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                     amount = decodedTx.get("vout")[0].get("value")
                     message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
@@ -424,6 +429,9 @@ class TabRewards():
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
+                        if txid is None:
+                            raise Exception("Unable to send TX - connection to RPC server lost.")
+                        
                         mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)

@@ -343,13 +343,24 @@ def printDbg_msg(what):
     return log_line
 
 
+def printError_msg(what):
+    what = clean_for_html(what)
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
+    log_line = '<b style="color: yellow">{}</b> : <em style="color: red">{}</em><br>'.format(timestamp, what)
+    return log_line
+
+
 
 def printDbg(what):
     log_line = printDbg_msg(what)
     append_to_logfile(log_line)
     print(log_line)
     
-    
+
+def printError(what):
+    log_line = printError_msg(what)
+    append_to_logfile(log_line)
+    print(log_line)
     
     
 def printException_msg(
