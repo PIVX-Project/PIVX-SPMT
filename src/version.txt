@@ -1,5 +1,5 @@
 {
  "number": "0.4.0",
- "tag": "d",
- "comments": ["bug tabGovernance"]
+ "tag": "e",
+ "comments": ["bugfixes"]
  }

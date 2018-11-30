@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
+    
+import ssl
 import threading
 
 from PyQt5.QtCore import QSettings
@@ -32,9 +39,15 @@ class RpcClient:
         self.lock = threading.RLock()
 
         self.rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
+        
+        host, port = rpc_host.split(":")
+        if rpc_protocol == "https":
+            self.httpConnection  = httplib.HTTPSConnection(host, port, timeout=5, context=ssl._create_unverified_context())
+        else:
+            self.httpConnection  = httplib.HTTPConnection(host, port, timeout=5)
 
         with self.lock:
-            self.conn = AuthServiceProxy(self.rpc_url, timeout=500)
+            self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
     
     
     @process_RPC_exceptions
