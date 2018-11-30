@@ -75,26 +75,20 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
     try:
         o = urlparse(urlstring)
         if o.scheme is None or o.scheme == '':
-            action_msg = "Wrong protocol. Set either http or https."
-            raise
+            raise Exception("Wrong protocol. Set either http or https.")
         if o.netloc is None or o.netloc == '':
-            action_msg = "Malformed host network location part"
-            raise
+            raise Exception("Malformed host network location part.")
         if o.port is None or o.port == '':
-            action_msg = "Wrong IP port number"
-            raise
+            raise  Exception("Wrong IP port number")
         if o.username is None:
-            action_msg = "Malformed username"
-            raise
+            raise Exception("Malformed username")
         if  o.password is None:
-            action_msg = "Malformed password"
-            raise
+            raise Exception("Malformed password")
         return True
     
     except Exception as e:
-        print(e)
         error_msg = "Unable to parse URL"
-        printException(getCallerName(), getFunctionName(), action_msg, error_msg)
+        printException(getCallerName(), getFunctionName(), error_msg, e)
         return False
         
         
