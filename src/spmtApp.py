@@ -62,6 +62,11 @@ class App(QMainWindow):
             self.db.clearTable('CUSTOM_RPC_SERVERS')
         if start_args.clearMnData:
             self.db.clearTable('MASTERNODES')
+        if start_args.clearRewards:
+            self.db.clearTable('REWARDS')
+        if start_args.clearGovernanceData:
+            self.db.clearTable('PROPOSALS')
+            self.db.clearTable('MY_VOTES')
             
         # Read Masternode List
         masternode_list = self.db.getMasternodeList()

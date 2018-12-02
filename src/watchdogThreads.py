@@ -26,11 +26,13 @@ class RpcWatchdog(QObject):
     def run(self):    
         while not self.shutdown_flag.is_set():
             # update status without printing on debug
-            self.control_tab.updateRPCstatus(self.ctrl_obj, self.firstLoop)
+            self.control_tab.updateRPCstatus(self.ctrl_obj, False)
             
             if not self.control_tab.rpcConnected:
                 sleep(self.timer_off)
+                
             else:
+                
                 # first time we get connection reload UTXOs and Proposals
                 if not self.control_tab.t_rewards.utxoLoaded:
                     self.control_tab.t_rewards.load_utxos_thread(None)
@@ -39,9 +41,6 @@ class RpcWatchdog(QObject):
                     self.control_tab.t_governance.loadProposals_thread(None)
                     
                 sleep(self.timer_on)
-                
-            if self.firstLoop:
-                self.firstLoop = False
             
         printOK("Exiting Rpc Watchdog Thread")
         
