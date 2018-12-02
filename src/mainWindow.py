@@ -410,15 +410,12 @@ class MainWindow(QWidget):
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
             self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
-            # show UTXOs from DB
-            self.t_rewards.display_mn_utxos()           
+          
 
         # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
             # update selectedMNlabel (since we might have edited them)
             self.t_governance.updateSelectedMNlabel()
-            # show proposals from DB
-            self.t_governance.displayProposals()
             
             
         

@@ -45,6 +45,9 @@ class TabRewards():
         # init first selected MN
         self.loadMnSelect()         # loads masternodes list in MnSelect and display utxos
         self.updateFee()
+
+        # show UTXOs from DB
+        self.display_mn_utxos() 
         
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
@@ -81,6 +84,11 @@ class TabRewards():
         
         rewards = self.caller.parent.db.getRewardsList(self.curr_name)
         self.updateTotalBalance(rewards)
+        
+        # if DB is empty we never saved anything
+        if len(rewards) == 0:
+            self.ui.resetStatusLabel('<b style="color:red">Reload Rewards</b>')
+            return
         
         if rewards is not None:
             def item(value):
@@ -257,7 +265,6 @@ class TabRewards():
         
 
     def onChangeSelectedMN(self):
-        
         self.curr_name = None
         if self.ui.mnSelect.currentIndex() >= 0:
             self.ui.resetStatusLabel()

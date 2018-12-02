@@ -27,6 +27,8 @@ class SweepAll_dlg(QDialog):
         self.setupUI() 
         # Connect GUI buttons
         self.connectButtons()
+        # Connect reloadUTXO signal
+        self.main_tab.caller.sig_UTXOsLoaded.connect(self.display_utxos)
         
     
     # Called each time before exec_ in showDialog
@@ -36,8 +38,10 @@ class SweepAll_dlg(QDialog):
         # load useSwiftX check from cache
         if self.main_tab.caller.parent.cache.get("useSwiftX"):
             self.ui.swiftxCheck.setChecked(True)
-        # update fee and show UTXO list
-        self.display_utxos()
+        # Reload UTXOs
+        ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
+        
+        
 
 
 

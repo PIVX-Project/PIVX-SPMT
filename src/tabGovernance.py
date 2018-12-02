@@ -32,6 +32,9 @@ class TabGovernance():
         self.updateSelectedMNlabel()
         self.caller.tabGovernance = self.ui
         
+        # show proposals from DB
+        self.displayProposals()
+        
         # Connect GUI buttons
         self.vote_codes = ["abstains", "yes", "no"]
         self.ui.refreshProposals_btn.clicked.connect(lambda: self.onRefreshProposals())
@@ -83,12 +86,9 @@ class TabGovernance():
         
         # get Proposals from database
         proposals = self.caller.parent.db.getProposalsList()
-        # if DB is empty we're not connected or something funky is going on
+        # if DB is empty we never saved anything
         if len(proposals) == 0:
-            if not self.caller.rpcConnected:
-                self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
-            else:
-                self.ui.resetStatusLabel('<b style="color:red">No proposal found</b>')
+            self.ui.resetStatusLabel('<b style="color:red">Reload Proposals</b>')
             return
         
         # we're good - hide statusLabel

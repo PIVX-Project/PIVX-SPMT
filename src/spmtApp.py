@@ -163,6 +163,12 @@ class App(QMainWindow):
         # persist cache
         saveCacheSettings(self.cache)
         
+        # Clear Rewards and Governance DB
+        self.db.clearTable('REWARDS')
+        self.db.clearTable('PROPOSALS')
+        self.db.clearTable('MY_VOTES')
+        
+        
         # close database
         self.db.close()
         
