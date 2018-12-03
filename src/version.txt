@@ -1,5 +1,5 @@
 {
  "number": "0.4.0",
- "tag": "e",
- "comments": ["bugfixes"]
+ "tag": "f",
+ "comments": ["better UTXO fetching"]
  }

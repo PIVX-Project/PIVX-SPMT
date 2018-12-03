@@ -254,6 +254,9 @@ class TabMain():
     
 
     def onSweepAllRewards(self):
+        if not self.caller.rpcConnected or self.caller.hwStatus != 2:
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
+            return None
         try:
             self.sweepAllDlg.showDialog()
                       

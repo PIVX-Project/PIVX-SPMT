@@ -27,12 +27,16 @@ class SweepAll_dlg(QDialog):
         self.setupUI() 
         # Connect GUI buttons
         self.connectButtons()
+         # Connect reloadUTXO signal
+        self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
         # Connect reloadUTXO signal
         self.main_tab.caller.sig_UTXOsLoaded.connect(self.display_utxos)
         
     
     # Called each time before exec_ in showDialog
     def load_data(self):
+        # clear table
+        self.ui.tableW.setRowCount(0)
         # load last used destination from cache
         self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
         # load useSwiftX check from cache
@@ -189,7 +193,7 @@ class SweepAll_dlg(QDialog):
                 
         except Exception as e:
             err_msg = "Exception in onButtonSend"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, e)
            
             
     
@@ -204,32 +208,32 @@ class SweepAll_dlg(QDialog):
     # Activated by signal sigTxdone from hwdevice       
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
-        QApplication.processEvents()
         if not self.txFinished:
             try:
                 self.txFinished = True
-                self.close()
                 tx_hex = serialized_tx.hex()
                 printDbg("Raw signed transaction: " + tx_hex)
                 printDbg("Amount to send :" + amount_to_send)
                 
                 if len(tx_hex) > 90000:
                     mess = "Transaction's length exceeds 90000 bytes. Select less UTXOs and try again."
-                    myPopUp_sb(self.main_tab.caller, "warn", 'transaction Warning', mess)
+                    myPopUp_sb(self.main_tab.caller, "crit", 'transaction Warning', mess)
                 
                 else:
                     decodedTx = self.main_tab.caller.rpcClient.decodeRawTransaction(tx_hex)
-                    if decodedTx is None:
-                        raise Exception("Unable to decode TX - connection to RPC server lost.")
-                    destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
-                    amount = decodedTx.get("vout")[0].get("value")
-                    message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
-                    message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
-                    message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    
+                    if decodedTx is not None:
+                        destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
+                        amount = decodedTx.get("vout")[0].get("value")
+                        message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
+                        message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
+                        message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                    else:
+                        message = '<p>Unable to decode TX- Broadcast anyway?</p>'
+
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
                     mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                        
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:
                         txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
@@ -248,6 +252,9 @@ class SweepAll_dlg(QDialog):
             except Exception as e:
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e)
+                
+            finally:
+                self.accept()
     
     
     
@@ -265,7 +272,15 @@ class SweepAll_dlg(QDialog):
             self.ui.feeLine.setEnabled(False)
         else:
             self.ui.feeLine.setValue(self.suggestedFee)
-            self.ui.feeLine.setEnabled(True)            
+            self.ui.feeLine.setEnabled(True)
+
+
+    
+    def update_loading_utxos(self, percent):
+        self.ui.lblMessage.setVisible(True)
+        self.ui.lblMessage.setText("Loading rewards...%d%%" % percent)
+                
+         
                 
                 
                 
@@ -331,10 +346,8 @@ class Ui_SweepAllDlg(object):
         self.loadingLine.hide()
         self.loadingLinePercent.hide()
         myForm.addRow(QLabel("Total Rewards: "), hBox)
-        hBox = QHBoxLayout()
         self.noOfUtxosLine = QLabel("<b>0</b>")
-        hBox.addWidget(self.noOfUtxosLine)
-        myForm.addRow(QLabel("Total number of UTXOs: "), hBox)
+        myForm.addRow(QLabel("Total number of UTXOs: "), self.noOfUtxosLine)
         hBox = QHBoxLayout()
         self.edt_destination = QLineEdit()
         self.edt_destination.setToolTip("PIVX address to transfer rewards to")

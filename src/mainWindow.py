@@ -38,6 +38,9 @@ class MainWindow(QWidget):
     # signal: RPC list has been reloaded (emitted by updateRPClist)
     sig_RPClistReloaded = pyqtSignal()
     
+    # signal: UTXO list loading percent (emitted by load_utxos_thread in tabRewards)
+    sig_UTXOsLoading = pyqtSignal(int)
+    
     # signal: UTXO list has been reloaded (emitted by load_utxos_thread in tabRewards)
     sig_UTXOsLoaded = pyqtSignal()
     

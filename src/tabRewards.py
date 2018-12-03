@@ -64,6 +64,7 @@ class TabRewards():
         self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
         self.caller.hwdevice.sigTxabort.connect(self.onCancel)
         self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+        self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
         self.caller.sig_UTXOsLoaded.connect(self.display_mn_utxos)
         
 
@@ -210,6 +211,8 @@ class TabRewards():
 
             self.apiConnected = True
 
+            total_num_of_utxos = 0
+            mn_rewards = {}
             for mn in self.caller.masternode_list:
                 # Load UTXOs from API client
                 rewards = self.caller.apiClient.getAddressUtxos(
@@ -218,27 +221,40 @@ class TabRewards():
                 if rewards is None:
                     printError('API client not responding.')
                     return
+                
+                mn_rewards[mn['name']] = rewards
+                total_num_of_utxos += len(rewards)
 
-                # for each UTXO
-                for utxo in rewards:
-                    # get raw TX from RPC client
-                    rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
- 
-                    # Don't save UTXO if raw TX is unavailable
-                    if rawtx is None:
-                        printError("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
-                        continue
+            printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
+            curr_utxo = 0
+            percent = 0
 
-                    # Add mn_name and raw_tx to UTXO and save it to DB
-                    else:
-                        utxo['mn_name'] = mn['name']
-                        utxo['raw_tx'] = rawtx
-                        self.caller.parent.db.addReward(utxo)                
-            
+            for mn in mn_rewards:
+               # for each UTXO
+               for utxo in mn_rewards[mn]:
+                   percent = int(100*curr_utxo / total_num_of_utxos)
+                   # get raw TX from RPC client
+                   rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+
+                   # Don't save UTXO if raw TX is unavailable
+                   if rawtx is None:
+                       printError("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
+                       continue
+
+                   # Add mn_name and raw_tx to UTXO and save it to DB
+                   else:
+                       utxo['mn_name'] = mn
+                       utxo['raw_tx'] = rawtx
+                       self.caller.parent.db.addReward(utxo)
+                       
+                   # emit percent
+                   self.caller.sig_UTXOsLoading.emit(percent)
+                   curr_utxo += 1
+                                 
+            self.caller.sig_UTXOsLoading.emit(100)
             printDbg("--# REWARDS table updated")
             self.utxoLoaded = True
             self.caller.sig_UTXOsLoaded.emit()
-    
     
     
 
@@ -422,23 +438,24 @@ class TabRewards():
                 
                 else:
                     decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
-                    if decodedTx is None:
-                        raise Exception("Unable to decode TX - connection to RPC server lost.")
-                    destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
-                    amount = decodedTx.get("vout")[0].get("value")
-                    message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
-                    message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
-                    message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    
+                    if decodedTx is not None:
+                        destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
+                        amount = decodedTx.get("vout")[0].get("value")
+                        message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
+                        message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
+                        message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                    else:
+                        message = '<p>Unable to decode TX- Broadcast anyway?</p>'
+                        
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
                     mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:                
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
                         if txid is None:
                             raise Exception("Unable to send TX - connection to RPC server lost.")
-                        
                         mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
@@ -508,6 +525,9 @@ class TabRewards():
         self.updateFee()
 
     
+    
+    def update_loading_utxos(self, percent):
+        self.ui.resetStatusLabel('<em><b style="color:purple">Checking explorer... %d%%</b></em>' % percent)
                 
 
     
