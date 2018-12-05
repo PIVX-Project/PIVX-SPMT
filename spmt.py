@@ -16,15 +16,10 @@ if __name__ == '__main__':
                     help='clear all previously saved masternodes')
     parser.add_argument('--clearRpcData', dest='clearRpcData', action='store_true',
                     help='clear all previously saved custom RPC servers')
-    parser.add_argument('--clearRewards', dest='clearRewards', action='store_true',
-                    help='clear all previously saved masternode rewards')
-    parser.add_argument('--clearGovernanceData', dest='clearGovernanceData', action='store_true',
-                    help='clear all previously saved proposals and votes')
+
     parser.set_defaults(clearAppData=False)
     parser.set_defaults(clearMnData=False)
     parser.set_defaults(clearRpcData=False)
-    parser.set_defaults(clearRewards=False)
-    parser.set_defaults(clearGovernanceData=False)
     args = parser.parse_args()
     
     if getattr( sys, 'frozen', False ) :
