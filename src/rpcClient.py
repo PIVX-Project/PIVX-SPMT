@@ -139,7 +139,6 @@ class RpcClient:
     @process_RPC_exceptions            
     def getMasternodes(self):
         mnList = {}
-        mnList['last_update'] = now()
         score = []
         masternodes = []
         with self.lock:

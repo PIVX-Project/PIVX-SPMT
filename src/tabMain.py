@@ -20,7 +20,6 @@ class TabMain():
     def __init__(self, caller):
         self.caller = caller
         self.all_masternodes = {}
-        self.all_masternodes['last_update'] = 0
         self.mnToStartList = []
         self.ui = TabMain_gui(caller)
         self.caller.tabMain = self.ui
@@ -325,8 +324,6 @@ class TabMain():
                 
                 
     def updateAllMasternodes_thread(self, ctrl):
-        # update only after 30 secs
-        if now()-self.all_masternodes['last_update'] > 30:   
-            self.all_masternodes = self.caller.rpcClient.getMasternodes()
+        self.all_masternodes = self.caller.rpcClient.getMasternodes()
 
             
