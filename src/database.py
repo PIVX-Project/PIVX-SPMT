@@ -89,7 +89,7 @@ class Database():
 
         
         
-    def releaseCursor(self, rollingBack=False):
+    def releaseCursor(self, rollingBack=False, vacuum=False):
         if self.isOpen:
             try:
                 if self.conn is not None:
@@ -99,6 +99,8 @@ class Database():
                     
                     else:
                         self.conn.commit()
+                        if vacuum:
+                            self.conn.execute('vacuum')
                     
                     # close connection
                     self.conn.close()
@@ -203,7 +205,7 @@ class Database():
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
    
         finally:
-            self.releaseCursor()
+            self.releaseCursor(vacuum=True)
             if cleared_RPC:
                 self.app.sig_changed_rpcServers.emit()
                 
@@ -306,7 +308,7 @@ class Database():
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
    
         finally:
-            self.releaseCursor()
+            self.releaseCursor(vacuum=True)
             if removed_RPC:
                 self.app.sig_changed_rpcServers.emit()
             
@@ -417,7 +419,7 @@ class Database():
             err_msg = 'error deleting masternode from DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
-            self.releaseCursor() 
+            self.releaseCursor(vacuum=True) 
     
     
     
@@ -473,7 +475,7 @@ class Database():
             err_msg = 'error deleting UTXO from DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
-            self.releaseCursor() 
+            self.releaseCursor(vacuum=True) 
             
     
     
