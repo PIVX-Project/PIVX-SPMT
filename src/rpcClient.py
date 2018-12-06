@@ -25,6 +25,11 @@ def process_RPC_exceptions(func):
         except Exception as e:
             message = "Exception in RPC client"
             printException(getCallerName(True), getFunctionName(True), message, e)
+            try:
+                args[0].httpConnection.close()
+            except Exception as e:
+                printDbg(e)
+                pass
 
         
     return process_RPC_exceptions_int
@@ -42,11 +47,12 @@ class RpcClient:
         
         host, port = rpc_host.split(":")
         if rpc_protocol == "https":
-            self.httpConnection  = httplib.HTTPSConnection(host, port, timeout=5, context=ssl._create_unverified_context())
+            self.httpConnection  = httplib.HTTPSConnection(host, port, timeout=20, context=ssl._create_unverified_context())
         else:
-            self.httpConnection  = httplib.HTTPConnection(host, port, timeout=5)
+            self.httpConnection  = httplib.HTTPConnection(host, port, timeout=20)
 
         with self.lock:
+            self.httpConnection.connect()
             self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
     
     
