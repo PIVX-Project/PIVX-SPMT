@@ -164,6 +164,10 @@ class App(QMainWindow):
         saveCacheSettings(self.cache)
         
         # Clear Rewards and Governance DB
+        try:
+            self.db.open()
+        except Exception:
+            pass
         self.db.clearTable('REWARDS')
         self.db.clearTable('PROPOSALS')
         self.db.clearTable('MY_VOTES')
