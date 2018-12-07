@@ -111,7 +111,7 @@ class MainWindow(QWidget):
         self.myWSReceiver2.moveToThread(self.consoleLogThread2)
         self.consoleLogThread2.started.connect(self.myWSReceiver2.run)
         self.consoleLogThread2.start()
-        printDbg("Console Log thread 2 started")       
+        printDbg("Console Log thread 2 started")
         
         ###-- Initialize tabs
         self.tabs = QTabWidget()

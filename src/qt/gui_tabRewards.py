@@ -57,6 +57,7 @@ class TabRewards_gui(QWidget):
         ## --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()
         self.rewardsList.statusLabel = QLabel()
+        self.rewardsList.statusLabel.setMinimumWidth(116)
         self.resetStatusLabel()
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
@@ -146,11 +147,11 @@ class TabRewards_gui(QWidget):
         
         
     def resetStatusLabel(self, message=None):
-        self.rewardsList.statusLabel.setVisible(True)
         if message is None:
             self.rewardsList.statusLabel.setText('<em><b style="color:purple">Checking explorer...</b></em>')
         else:
             self.rewardsList.statusLabel.setText(message)
+        self.rewardsList.statusLabel.setVisible(True)
             
             
             

@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView
     QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar,\
     QFormLayout, QSpinBox, QMessageBox, QScrollArea, QDialog
 
-
 class TabGovernance_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
@@ -23,10 +22,7 @@ class TabGovernance_gui(QWidget):
         
         
     def initLayout(self):
-        layout = QVBoxLayout()
-        #layout.setContentsMargins(10, 10, 10, 10)
-        #layout.setSpacing(13)
-        #layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        layout = QVBoxLayout(self)
         
         ## -- ROW 1
         row = QHBoxLayout()
@@ -38,7 +34,8 @@ class TabGovernance_gui(QWidget):
         self.selectedMNlabel = QLabel("<em>0 masternodes selected for voting</em")
         row.addWidget(self.selectedMNlabel)
         row.addStretch(1)
-        self.statusLabel = QLabel()
+        self.statusLabel = QLabel("")
+        self.statusLabel.setMinimumWidth(116)
         self.resetStatusLabel()
         row.addWidget(self.statusLabel)
         row.addStretch(1)
@@ -132,8 +129,6 @@ class TabGovernance_gui(QWidget):
         self.voteNo_btn.setToolTip("Vote NO on selected proposals")
         row.addWidget(self.voteNo_btn)
         layout.addLayout(row)
-
-        self.setLayout(layout)
     
     
     
@@ -207,11 +202,11 @@ class TabGovernance_gui(QWidget):
     
     
     def resetStatusLabel(self, message=None):
-        self.statusLabel.setVisible(True)
         if message is None:
             self.statusLabel.setText('<em><b style="color:purple">Loading proposals...</b></em>')
         else:
             self.statusLabel.setText(message)
+        self.statusLabel.setVisible(True)
         
         
         

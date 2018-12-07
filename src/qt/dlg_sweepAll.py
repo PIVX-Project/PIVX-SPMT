@@ -365,7 +365,6 @@ class Ui_SweepAllDlg(object):
         hBox.addWidget(QLabel("Use SwiftX"))
         hBox.addWidget(self.swiftxCheck)
         myForm.addRow(QLabel("Destination Address"), hBox)       
-        myForm.addRow(hBox)
         layout.addLayout(myForm)
         hBox = QHBoxLayout()
         self.buttonCancel = QPushButton("Cancel")
