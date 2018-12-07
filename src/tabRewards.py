@@ -448,7 +448,8 @@ class TabRewards():
                         message = '<p>Unable to decode TX- Broadcast anyway?</p>'
                         
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
-                    mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
+                    if decodedTx is not None:
+                        mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     
                     reply = mess1.exec_()

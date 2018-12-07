@@ -386,7 +386,7 @@ class HWdevice(QObject):
         
         
         
-        
+    @process_ledger_exceptions
     def signTxSign(self, ctrl):
         self.tx_raw = None
         with self.lock:
