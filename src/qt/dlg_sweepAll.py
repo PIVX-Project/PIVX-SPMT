@@ -254,7 +254,7 @@ class SweepAll_dlg(QDialog):
                 printException(getCallerName(), getFunctionName(), err_msg, e)
                 
             finally:
-                self.accept()
+                self.close()
     
     
     
