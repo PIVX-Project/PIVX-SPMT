@@ -137,6 +137,9 @@ class App(QMainWindow):
         
         
     def closeEvent(self, *args, **kwargs):
+        # Restore output stream
+        sys.stdout = sys.__stdout__
+
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         self.mainWindow.myRpcWd.shutdown_flag.set()
@@ -178,10 +181,6 @@ class App(QMainWindow):
         
         # Adios
         print("Bye Bye.")
-        
-        # Restore output streams
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
         
         # Return
         return QMainWindow.closeEvent(self, *args, **kwargs)

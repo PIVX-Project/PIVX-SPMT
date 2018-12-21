@@ -83,11 +83,9 @@ class MainWindow(QWidget):
         ##-- init Api Client
         self.apiClient = ApiClient()
  
-        ###-- Create Queues and redirect stdout and stderr
+        ###-- Create Queues and redirect stdout
         self.queue = Queue()
-        self.queue2 = Queue()
         sys.stdout = WriteStream(self.queue)
-        sys.stderr = WriteStream(self.queue2)
 
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -104,14 +102,6 @@ class MainWindow(QWidget):
         self.consoleLogThread.started.connect(self.myWSReceiver.run)
         self.consoleLogThread.start()
         printDbg("Console Log thread started")
-        ###-- Create the thread to update console log for stderr
-        self.consoleLogThread2 = QThread()
-        self.myWSReceiver2 = WriteStreamReceiver(self.queue2)
-        self.myWSReceiver2.mysignal.connect(self.append_to_console)
-        self.myWSReceiver2.moveToThread(self.consoleLogThread2)
-        self.consoleLogThread2.started.connect(self.myWSReceiver2.run)
-        self.consoleLogThread2.start()
-        printDbg("Console Log thread 2 started")
         
         ###-- Initialize tabs
         self.tabs = QTabWidget()

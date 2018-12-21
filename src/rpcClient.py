@@ -51,9 +51,9 @@ class RpcClient:
         else:
             self.httpConnection  = httplib.HTTPConnection(host, port, timeout=20)
 
-        with self.lock:
-            self.httpConnection.connect()
-            self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
+        self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
+        self.httpConnection.connect()
+        
     
     
     @process_RPC_exceptions
