@@ -51,3 +51,6 @@ For an overview of how "traditional" masternodes work (without hardware wallets)
 
 For a self-hosted masternode setup with SPMT check the following guide:<br>
 [Self-hosted MN from scratch (by TheEconomist)](https://forum.pivx.org/t/setting-up-a-self-hosted-mn-from-scratch-automatic-backup-crash-notification-spmt-tool/4229)
+
+For an ODROID XU4 masternode setup with SPMT, check the following video tutorial:<br>
+[How to setup a PIVX Masternode using SPMT and a Nano Ledger on an ODROID XU4 (by Cryptoshock LLC)](https://www.youtube.com/watch?v=lbIYh1upJJ8)
