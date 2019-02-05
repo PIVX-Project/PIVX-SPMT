@@ -1,5 +1,5 @@
 {
- "number": "0.4.1",
- "tag": "b",
+ "number": "0.4.2",
+ "tag": "a",
  "comments": ["stderr"]
  }
