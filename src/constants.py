@@ -42,13 +42,19 @@ DefaultCache = {
     "votingDelayCheck": False,
     "votingDelayNeg": 0,
     "votingDelayPos": 300,
+    "selectedHW_index": 0,
     "selectedRPC_index": 0,
     "MN_count": 1
     }
-        
-        
+
+
 trusted_RPC_Servers = [
     ["https", "amsterdam.randomzebra.party:8080", "spmtUser_ams", "WUss6sr8956S5Paex254"],
     ["https", "losangeles.randomzebra.party:8080", "spmtUser_la", "8X88u7TuefPm7mQaJY52"],
     ["https", "singapore.randomzebra.party:8080", "spmtUser_sing", "ZyD936tm9dvqmMP8A777"]]
-        
+
+
+HW_devices = [
+    "Ledger Nano S",
+    "Trezor"
+]

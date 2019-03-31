@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComboBox, QWidget
 
-from constants import trusted_RPC_Servers
+from constants import HW_devices
 from PyQt5.Qt import QSizePolicy
 
 class GuiHeader(QWidget):
@@ -32,7 +32,7 @@ class GuiHeader(QWidget):
         self.centralBox.addWidget(self.rpcLed, 0, 3)
         self.lastPingBox = QWidget()
         sp_retain = QSizePolicy()
-        sp_retain.setRetainSizeWhenHidden(True) 
+        sp_retain.setRetainSizeWhenHidden(True)
         self.lastPingBox.setSizePolicy(sp_retain)
         self.lastPingBox.setContentsMargins(0, 0, 0, 0)
         lastPingBoxLayout = QHBoxLayout()
@@ -58,11 +58,10 @@ class GuiHeader(QWidget):
         self.centralBox.addWidget(label3, 1, 0)
         self.hwDevices = QComboBox()
         self.hwDevices.setToolTip("Select hardware device")
-        hwDevices = ["Ledger Nano S"]
-        self.hwDevices.addItems(hwDevices)
-        self.centralBox.addWidget(self.hwDevices, 1, 1) 
+        self.hwDevices.addItems(HW_devices)
+        self.centralBox.addWidget(self.hwDevices, 1, 1)
         self.button_checkHw = QPushButton("Connect")
-        self.button_checkHw.setToolTip("try to connect to hardware device") 
+        self.button_checkHw.setToolTip("try to connect to hardware device")
         self.centralBox.addWidget(self.button_checkHw, 1, 2)
         self.hwLed = QLabel()
         self.hwLed.setToolTip("Status: %s" % caller.hwStatusMess)
@@ -76,4 +75,3 @@ class GuiHeader(QWidget):
         spmtLogo.setPixmap(QPixmap(spmtLogo_file).scaledToHeight(55, Qt.SmoothTransformation))
         self.layout.addWidget(spmtLogo)
         self.setLayout(self.layout)
-        

@@ -1,64 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from bitcoin import bin_hash160
-from btchip.btchip import btchip, getDongle, BTChipException
-from btchip.btchipUtils import compress_public_key, bitcoinTransaction, bitcoinInput, bitcoinOutput
-import threading
-from time import sleep
 
 from PyQt5.Qt import QObject
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox, QApplication
+from PyQt5.QtCore import pyqtSignal
 
-from constants import MPATH
-from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString
-from pivx_hashlib import pubkey_to_address, single_sha256
-from threads import ThreadFuns
-from utils import extract_pkh_from_locking_script, compose_tx_locking_script
-
-
-class DisconnectedException(Exception):
-    def __init__(self, message, hwDevice, statusmess):
-        # Call the base class constructor
-        super().__init__(message)
-        # clear ledger
-        hwDevice.clearDevice(statusmess)
-
-
-def process_ledger_exceptions(func):
-
-    def process_ledger_exceptions_int(*args, **kwargs):
-        hwDevice = args[0]
-        try:
-            return func(*args, **kwargs)
-        
-        except BTChipException as e:
-            printDbg('Error while communicating with Ledger hardware wallet.')
-            e.message = 'Error while communicating with Ledger hardware wallet.'
-            if (e.sw in (0x6f01, 0x6d00, 0x6700, 0x6faa)):
-                e.message = 'Make sure the PIVX app is open on your Ledger device.'
-                e.message += '<br>If there is a program (such as Ledger Bitcoin Wallet) interfering with the USB communication, close it first.'
-            elif (e.sw == 0x6982):
-                e.message = 'Enter the PIN on your Ledger device.'
-            statusmess = e.message
-            printException(getCallerName(True), getFunctionName(True), e.message, e.args)
-            raise DisconnectedException(e.message, hwDevice, statusmess)
-            
-        except Exception as e:
-            e.message = "Ledger - generic exception"
-            if str(e.args[0]) == 'read error':
-                e.message = 'Read Error. Click "Connect" to reconnect HW device'
-            printException(getCallerName(True), getFunctionName(True), e.message, str(e))
-            statusmess = e.message
-            raise DisconnectedException(e.message, hwDevice, statusmess)
-        
-    return process_ledger_exceptions_int
-
-
-
+from constants import HW_devices
+from ledgerClient import LedgerApi
 
 class HWdevice(QObject):
-    
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
     # signal: sigtx (thread) is done - emitted by signTxFinish
@@ -69,376 +18,102 @@ class HWdevice(QObject):
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
     sig_progress = pyqtSignal(int)
-    # signal: sig_ledger_disconnected -emitted with DisconnectedException
-    sig_ledger_disconnected = pyqtSignal(str)
-    
+    # signal: sig_disconnected -emitted with DisconnectedException
+    sig_disconnected = pyqtSignal(str)
+
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        # Device Lock for threads
-        self.lock = threading.RLock()
         self.status = 0
-        self.dongle = None
-        printDbg("Creating HW device class")
-        # Connect signal
-        self.sig_progress.connect(self.updateSigProgress)
-        
-        
-    @process_ledger_exceptions
-    def initDevice(self):
-        with self.lock:
-            self.status = 0
-            self.clearDevice()
-            self.dongle = getDongle(False)
-            printOK('Ledger Nano S drivers found')
-            self.chip = btchip(self.dongle)
-            printDbg("Ledger Initialized")
-            ver = self.chip.getFirmwareVersion()
-            printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
-            # Check device is unlocked
-            bip32_path = MPATH + "%d'/0/%d" % (0, 0)
-            self.status = 1
-            firstKey = self.chip.getWalletPublicKey(bip32_path)
-            self.status = 2
-  
-          
-    
+
+    def initDevice(self, hw_index):
+        print("Not even here?")
+        if hw_index >= len(HW_devices):
+            raise Exception("Invalid HW index")
+
+        # Select API
+        if hw_index == 0:
+            self.api = LedgerApi()
+        else:
+            raise Exception("Invalid index!")
+            #self.api = TrezorApi()
+
+        # Init device & connect signals
+        print("About to...")
+        self.api.initDevice()
+        self.sig1done = self.api.sig1done
+        self.sigTxdone = self.api.sigTxdone
+        self.sigTxabort = self.api.sigTxabort
+        self.tx_progress = self.api.tx_progress
+        self.sig_progress = self.api.sig_progress
+        self.sig_disconnected = self.api.sig_disconnected
+
+
+
     def clearDevice(self, message=''):
-        self.status = 1
-        if hasattr(self, 'dongle') and self.dongle is not None:
-            with self.lock:
-                self.dongle.close()
-                self.dongle = None
-        
-        self.sig_ledger_disconnected.emit(message)
-                
+        self.status = 0
+        self.api.clearDevice(message)
 
-        
-    
-    # Status codes:
-    # 0 - not connected
-    # 1 - not in pivx app
-    # 2 - fine
+
+
     def getStatus(self):
-        messages = {
-            0: 'Device not initialized.',
-            1: 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
-            2: 'Hardware device connected.'}
-        return self.status, messages[self.status]
-    
-    
-    
-    @process_ledger_exceptions
+        return self.api.getStatus()
+
+
+
     def append_inputs_to_TX(self, utxo, bip32_path):
-        self.amount += int(utxo['value'])
-        raw_tx = bytearray.fromhex(utxo['raw_tx'])
-        
-        # parse the raw transaction, so that we can extract the UTXO locking script we refer to
-        prev_transaction = bitcoinTransaction(raw_tx)
-
-        utxo_tx_index = utxo['tx_ouput_n']
-        if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
-            raise Exception('Incorrect value of outputIndex for UTXO %s-%d' % 
-                            (utxo['raw_tx'], utxo['tx_ouput_n']))
-        
-        trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
-        self.trusted_inputs.append(trusted_input)
-        
-        # Hash check
-        curr_pubkey = compress_public_key(self.chip.getWalletPublicKey(bip32_path)['publicKey'])
-        pubkey_hash = bin_hash160(curr_pubkey)
-        pubkey_hash_from_script = extract_pkh_from_locking_script(prev_transaction.outputs[utxo_tx_index].script)
-        if pubkey_hash != pubkey_hash_from_script:
-            text = "Error: The hashes for the public key for the BIP32 path, and the UTXO locking script do not match."
-            text += "Your signed transaction will not be validated by the network.\n"
-            text += "pubkey_hash: %s\n" % pubkey_hash.hex()
-            text += "pubkey_hash_from_script: %s\n" % pubkey_hash_from_script.hex()
-            printDbg(text)
-
-        self.arg_inputs.append({
-            'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
-            'pubkey': curr_pubkey,
-            'bip32_path': bip32_path,
-            'outputIndex': utxo['tx_ouput_n'],
-            'txid': utxo['tx_hash']
-        })
-        
-        
+        self.api.append_inputs_to_TX(utxo, bip32_path)
 
 
-    @process_ledger_exceptions
+
     def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
-        rewardsArray = []
-        mnode = {}
-        mnode['path'] = bip32_path
-        mnode['utxos'] = utxos_to_spend
-        rewardsArray.append(mnode)
-        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
-        
-        
-        
-    @process_ledger_exceptions
+        self.api.prepare_transfer_tx(caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX)
+
+
+
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False):
-        with self.lock:
-            # For each UTXO create a Ledger 'trusted input'
-            self.trusted_inputs = []
-            #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
-            self.arg_inputs = []
-            self.amount = 0
-            num_of_sigs = sum([len(mnode['utxos']) for mnode in rewardsArray])
-            curr_utxo_checked = 0
-            
-            for mnode in rewardsArray:
-                for utxo in mnode['utxos']:
-                    self.append_inputs_to_TX(utxo, mnode['path'])
-                    # completion percent emitted
-                    curr_utxo_checked += 1
-                    completion = int(95*curr_utxo_checked / num_of_sigs)
-                    self.tx_progress.emit(completion)
-    
-            self.amount -= int(tx_fee)
-            self.amount = int(self.amount)
-            arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
-            self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
-            self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
-            
-            self.tx_progress.emit(99)
-            
-            for o in arg_outputs:
-                output = bitcoinOutput()
-                output.script = compose_tx_locking_script(o['address'])
-                output.amount = int.to_bytes(o['valueSat'], 8, byteorder='little')
-                self.new_transaction.outputs.append(output)
-    
-            self.tx_progress.emit(100)
-        
-            # join all outputs - will be used by Ledger for signing transaction
-            self.all_outputs_raw = self.new_transaction.serializeOutputs()
-    
-            self.mBox2 = QMessageBox(caller)
-            self.messageText = "<p>Confirm transaction on your device, with the following details:</p>"
-            #messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-            self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
-            self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-            if useSwiftX:
-                self.messageText += "<p>Fees (SwiftX flat rate):<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-            else:
-                self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-            messageText = self.messageText + "Signature Progress: 0 %" 
-            self.mBox2.setText(messageText)
-            self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
-            self.mBox2.setWindowTitle("CHECK YOUR LEDGER")
-            self.mBox2.setStandardButtons(QMessageBox.NoButton)
-            self.mBox2.setMaximumWidth(500)
-            self.mBox2.show()
-                
-        ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
-        
-    
-    
+        self.api.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
+
+
+
     def scanForAddress(self, account, spath, isTestnet=False):
-        curr_addr = None
-        curr_path = MPATH + "%d'/0/%d" % (account, spath)
-        printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
-        
-        with self.lock:
-            if not isTestnet:
-                curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
-            else:
-                pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()
-                curr_addr = pubkey_to_address(pubkey, isTestnet)
+        return self.api.scanForAddress(account, spath, isTestnet)
 
-        return curr_addr
-    
-    
-    
-    
+
+
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
-        found = False
-        spath = -1       
-        printOK("Scanning for Bip32 path of address: %s" % address)
-        
-        for i in range(starting_spath, starting_spath+spath_count):
-            curr_path = MPATH + "%d'/0/%d" % (account, i)
-            printDbg("checking path... %s" % curr_path)
-            with self.lock: 
-                if not isTestnet:
-                    curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
-                else:
-                    pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()          
-                    curr_addr = pubkey_to_address(pubkey, isTestnet)
-                             
-                if curr_addr == address:
-                    found = True
-                    spath = i
-                    break
-                
-                sleep(0.01)
-            
-        return (found, spath)
-            
-            
-            
-    
+        return self.api.scanForBip32(account, address, starting_spath, spath_count, isTestnet)
+
+
+
     def scanForPubKey(self, account, spath):
-        result = None
-        printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
-        curr_path = MPATH + "%d'/0/%d" % (account, spath)
-        with self.lock:
-            nodeData = self.chip.getWalletPublicKey(curr_path)
-            result = compress_public_key(nodeData.get('publicKey')).hex()
-        
-        return result
-    
-    
-    
-    
-    @process_ledger_exceptions        
+        return self.api.scanForPubKey(account, spath)
+
+
+
     def signMess(self, caller, path, message):
-        # Ledger doesn't accept characters other that ascii printable:
-        # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
-        message = message.encode('ascii', 'ignore')
-        message_sha = splitString(single_sha256(message).hex(),32);
-        
-        # Connection pop-up
-        mBox  = QMessageBox(caller.ui)
-        warningText = "Another application (such as Ledger Wallet app) has probably taken over "
-        warningText += "the communication with the Ledger device.<br><br>To continue, close that application and "
-        warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
-        mBox.setText(warningText)
-        mBox.setWindowTitle("WARNING")
-        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
-        
-        # Ask confirmation
-        with self.lock:
-            info = self.chip.signMessagePrepare(path, message)
-
-            while info['confirmationNeeded'] and info['confirmationType'] == 34:
-                ans = mBox.exec_()        
-                
-                if ans == QMessageBox.Abort:
-                    raise Exception("Reconnect HW device")
-                
-                # we need to reconnect the device
-                self.initDevice()
-                info = self.chip.signMessagePrepare(path, message)
-
-            printOK('Signing Message')
-            self.mBox = QMessageBox(caller.ui)
-            messageText = "Check display of your hardware device\n\n" + "- masternode message hash:\n\n%s\n\n-path:\t%s\n" % (message_sha, path)
-            self.mBox.setText(messageText)
-            self.mBox.setIconPixmap(caller.ui.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
-            self.mBox.setWindowTitle("CHECK YOUR LEDGER")
-            self.mBox.setStandardButtons(QMessageBox.NoButton)
-            self.mBox.show()
-            
-        # Sign message
-        ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
+        self.api.signMess(caller, path, message)
 
 
 
-    
-    @process_ledger_exceptions
     def signMessageSign(self, ctrl):
-        self.signature = None
-        with self.lock:
-            try:
-                self.signature = self.chip.signMessageSign()
-            except:
-                pass
+        self.api.signMessageSign(ctrl)
 
-    
-    
-    
-           
+
+
     def signMessageFinish(self):
-        with self.lock:
-            self.mBox.accept()
-        if self.signature != None:
-            if len(self.signature) > 4:
-                rLength = self.signature[3]
-                r = self.signature[4 : 4 + rLength]
-                if len(self.signature) > 4 + rLength + 1:               
-                    sLength = self.signature[4 + rLength + 1]
-                    if len(self.signature) > 4 + rLength + 2: 
-                        s = self.signature[4 + rLength + 2:]
-                        if rLength == 33:
-                            r = r[1:]
-                        if sLength == 33:
-                            s = s[1:]
-            
-                        work = bytes(chr(27 + 4 + (self.signature[0] & 0x01)), "utf-8") + r + s
-                        printOK("Message signed")
-                        sig1 = work.hex()
-                    else:
-                        printDbg('client.signMessageSign() returned invalid response (code 3): ' + self.signature.hex())
-                        sig1 = "None"
-                else:
-                    printDbg('client.signMessageSign() returned invalid response (code 2): ' + self.signature.hex())
-                    sig1 = "None"
-            else:
-                printDbg('client.signMessageSign() returned invalid response (code 1): ' + self.signature.hex())
-                sig1 = "None"
-        else:
-            printOK("Signature refused by the user")
-            sig1 = "None"
-        
-        self.sig1done.emit(sig1)
-        
-        
-        
-    @process_ledger_exceptions
+        self.api.signMessageFinish()
+
+
+
     def signTxSign(self, ctrl):
-        self.tx_raw = None
-        with self.lock:
-            starting = True
-            curr_input_signed = 0
-            # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
-            for idx, new_input in enumerate(self.arg_inputs):
-                   
-                self.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
-                 
-                self.chip.finalizeInputFull(self.all_outputs_raw)
-                
-                sig = self.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
-                
-                new_input['signature'] = sig
-                inputTx = bitcoinInput()
-                inputTx.prevOut = bytearray.fromhex(new_input['txid'])[::-1] + int.to_bytes(new_input['outputIndex'], 4, byteorder='little')
-                
-                inputTx.script = bytearray([len(sig)]) + sig + bytearray([0x21]) + new_input['pubkey']
+        self.api.signTxSign(ctrl)
 
-                inputTx.sequence = bytearray([0xFF, 0xFF, 0xFF, 0xFF])
-                
-                self.new_transaction.inputs.append(inputTx)
 
-                starting = False
-                
-                # signature percent emitted
-                curr_input_signed += 1
-                completion = int(100*curr_input_signed / len(self.arg_inputs))
-                self.sig_progress.emit(completion)
-                
-            self.new_transaction.lockTime = bytearray([0, 0, 0, 0])
-            self.tx_raw = bytearray(self.new_transaction.serialize())
-            self.sig_progress.emit(100)
 
-    
-    
-            
     def signTxFinish(self):
-        self.mBox2.accept()
-        
-        if self.tx_raw is not None:
-            # Signal to be catched by FinishSend on TabRewards / dlg_sewwpAll
-            self.sigTxdone.emit(self.tx_raw, str(round(self.amount / 1e8, 8)))
-        else:
-            printOK("Transaction refused by the user")
-            self.sigTxabort.emit()
+        self.api.signTxFinish()
 
-                    
-    
-    
+
+
     def updateSigProgress(self, percent):
-        messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>" 
-        self.mBox2.setText(messageText)
-        QApplication.processEvents()
+        self.api.updateSigProgress(percent)
