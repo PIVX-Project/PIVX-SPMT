@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSignal
 
 from constants import HW_devices
 from ledgerClient import LedgerApi
+from trezorClient import TrezorApi
 
 class HWdevice(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
@@ -26,7 +27,6 @@ class HWdevice(QObject):
         self.status = 0
 
     def initDevice(self, hw_index):
-        print("Not even here?")
         if hw_index >= len(HW_devices):
             raise Exception("Invalid HW index")
 
@@ -34,11 +34,9 @@ class HWdevice(QObject):
         if hw_index == 0:
             self.api = LedgerApi()
         else:
-            raise Exception("Invalid index!")
-            #self.api = TrezorApi()
+            self.api = TrezorApi()
 
         # Init device & connect signals
-        print("About to...")
         self.api.initDevice()
         self.sig1done = self.api.sig1done
         self.sigTxdone = self.api.sigTxdone

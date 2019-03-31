@@ -7,7 +7,7 @@ WIF_PREFIX = 212 # 212 = d4
 MAGIC_BYTE = 30
 TESTNET_WIF_PREFIX = 239
 TESTNET_MAGIC_BYTE = 139
-DEFAULT_PROTOCOL_VERSION = 70913
+DEFAULT_PROTOCOL_VERSION = 70915
 MINIMUM_FEE = 0.0001    # minimum PIV/kB
 starting_width = 933
 starting_height = 666
@@ -55,6 +55,6 @@ trusted_RPC_Servers = [
 
 
 HW_devices = [
-    "Ledger Nano S",
-    "Trezor"
+    "LEDGER Nano S",
+    "TREZOR Model T"
 ]
