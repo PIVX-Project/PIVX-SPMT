@@ -14,7 +14,7 @@ vote_type = {
     }
 
 class Proposal():
-    def __init__(self, name, URL, Hash, FeeHash, BlockStart, BlockEnd, TotalPayCount, RemainingPayCount, 
+    def __init__(self, name, URL, Hash, FeeHash, BlockStart, BlockEnd, TotalPayCount, RemainingPayCount,
                  PayMentAddress, Yeas, Nays, Abstains, TotalPayment, MonthlyPayment):
         self.name = name
         self.URL = URL if URL.startswith('http') or URL.startswith('https') else 'http://'+URL
@@ -24,7 +24,7 @@ class Proposal():
         self.BlockEnd = int(BlockEnd)
         self.TotalPayCount = int(TotalPayCount)
         self.RemainingPayCount = int(RemainingPayCount)
-        self.PaymentAddress = PayMentAddress        
+        self.PaymentAddress = PayMentAddress
         self.Yeas = int(Yeas)
         self.Nays = int(Nays)
         self.Abstains = int(Abstains)
@@ -34,12 +34,3 @@ class Proposal():
         self.MyYeas = []
         self.MyAbstains = []
         self.MyNays = []
-
-
-#class ProjectedProposal():
-#    def __init__(self, name, Hash, Allotted, Votes, TotalAllotted):
-#        self.name = name
-#        self.Hash = Hash
-#        self.Allotted = Allotted
-#        self.Votes = Votes
-#        self.TotalAllotted = TotalAllotted

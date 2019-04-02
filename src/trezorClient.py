@@ -78,6 +78,7 @@ class TrezorApi(QObject):
             self.client = None
 
 
+
     # Status codes:
     # 0 - not connected
     # 1 - not initialized

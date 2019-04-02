@@ -22,6 +22,7 @@ class ServiceExit(Exception):
     pass
 
 
+
 def service_shutdown(signum, frame):
     print('Caught signal %d' % signum)
     raise ServiceExit
@@ -76,6 +77,7 @@ class App(QMainWindow):
         self.initUI(masternode_list, imgDir)
 
 
+
     def initUI(self, masternode_list, imgDir):
         # Set title and geometry
         self.setWindowTitle(self.title)
@@ -122,6 +124,7 @@ class App(QMainWindow):
             return json['name'].lower()
         except KeyError:
             return 0
+
 
 
     def extract_order(self, json):
@@ -196,13 +199,11 @@ class App(QMainWindow):
 
 
 
-
     def onEditRPCServer(self):
         # Create Dialog
         ui = ConfigureRPCservers_dlg(self)
         if ui.exec():
             printDbg("Configuring RPC Servers...")
-
 
 
 
