@@ -10,7 +10,7 @@ from PyQt5.Qt import QObject
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
-from constants import MPATH
+from constants import MPATH_LEDGER as MPATH
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString, DisconnectedException
 from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
@@ -71,6 +71,8 @@ class LedgerApi(QObject):
         # Connect signal
         self.sig_progress.connect(self.updateSigProgress)
 
+
+
     @process_ledger_exceptions
     def initDevice(self):
         print("Initializing Ledger")
@@ -89,6 +91,8 @@ class LedgerApi(QObject):
             firstKey = self.chip.getWalletPublicKey(bip32_path)
             self.status = 2
 
+
+
     def clearDevice(self, message=''):
         self.status = 1
         if hasattr(self, 'dongle') and self.dongle is not None:
@@ -97,6 +101,8 @@ class LedgerApi(QObject):
                 self.dongle = None
 
         self.sig_disconnected.emit(message)
+
+
 
     # Status codes:
     # 0 - not connected
@@ -108,6 +114,8 @@ class LedgerApi(QObject):
             1: 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
             2: 'Hardware device connected.'}
         return self.status, messages[self.status]
+
+
 
     @process_ledger_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path):
@@ -144,14 +152,18 @@ class LedgerApi(QObject):
             'txid': utxo['tx_hash']
         })
 
+
+
     @process_ledger_exceptions
-    def prepare_transfer_tx(self, caller, bip32_path, utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
+    def prepare_transfer_tx(self, caller, hwpath, utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
         rewardsArray = []
         mnode = {}
-        mnode['path'] = bip32_path
+        mnode['path'] = MPATH + hwpath
         mnode['utxos'] = utxos_to_spend
         rewardsArray.append(mnode)
         self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
+
+
 
     @process_ledger_exceptions
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False):
@@ -210,10 +222,11 @@ class LedgerApi(QObject):
 
         ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
 
+
+
     def scanForAddress(self, account, spath, isTestnet=False):
         curr_addr = None
         curr_path = MPATH + "%d'/0/%d" % (account, spath)
-        printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
 
         with self.lock:
             if not isTestnet:
@@ -224,10 +237,11 @@ class LedgerApi(QObject):
 
         return curr_addr
 
+
+
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
         found = False
         spath = -1
-        printOK("Scanning for Bip32 path of address: %s" % address)
 
         for i in range(starting_spath, starting_spath + spath_count):
             curr_path = MPATH + "%d'/0/%d" % (account, i)
@@ -248,9 +262,10 @@ class LedgerApi(QObject):
 
         return (found, spath)
 
+
+
     def scanForPubKey(self, account, spath):
         result = None
-        printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
         curr_path = MPATH + "%d'/0/%d" % (account, spath)
         with self.lock:
             nodeData = self.chip.getWalletPublicKey(curr_path)
@@ -258,8 +273,11 @@ class LedgerApi(QObject):
 
         return result
 
+
+
     @process_ledger_exceptions
-    def signMess(self, caller, path, message):
+    def signMess(self, caller, hwpath, message):
+        path = MPATH + hwpath
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
@@ -301,6 +319,8 @@ class LedgerApi(QObject):
         # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
 
+
+
     @process_ledger_exceptions
     def signMessageSign(self, ctrl):
         self.signature = None
@@ -309,6 +329,8 @@ class LedgerApi(QObject):
                 self.signature = self.chip.signMessageSign()
             except:
                 pass
+
+
 
     def signMessageFinish(self):
         with self.lock:
@@ -343,6 +365,8 @@ class LedgerApi(QObject):
             sig1 = "None"
 
         self.sig1done.emit(sig1)
+
+
 
     @process_ledger_exceptions
     def signTxSign(self, ctrl):
@@ -380,6 +404,8 @@ class LedgerApi(QObject):
             self.tx_raw = bytearray(self.new_transaction.serialize())
             self.sig_progress.emit(100)
 
+
+
     def signTxFinish(self):
         self.mBox2.accept()
 
@@ -389,6 +415,8 @@ class LedgerApi(QObject):
         else:
             printOK("Transaction refused by the user")
             self.sigTxabort.emit()
+
+
 
     def updateSigProgress(self, percent):
         messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"

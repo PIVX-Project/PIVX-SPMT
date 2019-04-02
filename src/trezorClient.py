@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import threading
+from time import sleep
 
 from PyQt5.Qt import QObject
 from PyQt5.QtCore import pyqtSignal
 
 from trezorlib import btc
 from trezorlib.client import TrezorClient
+from trezorlib.tools import parse_path
 from trezorlib.transport import get_transport
 from trezorlib.ui import ClickUI
 
+from constants import MPATH_TREZOR as MPATH
 from misc import getCallerName, getFunctionName, printException, printDbg, \
     DisconnectedException, printOK
 
@@ -42,6 +45,7 @@ class TrezorApi(QObject):
     sig_disconnected = pyqtSignal(str)
 
 
+
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         # Device Lock for threads
@@ -51,6 +55,7 @@ class TrezorApi(QObject):
         printDbg("Creating HW device class")
         # Connect signal
         #self.sig_progress.connect(self.updateSigProgress)
+
 
 
     @process_trezor_exceptions
@@ -89,3 +94,46 @@ class TrezorApi(QObject):
             1: 'Error setting up Trezor Client',
             2: 'Hardware device connected.'}
         return self.status, messages[self.status]
+
+
+
+    def scanForAddress(self, account, spath, isTestnet=False):
+        curr_addr = None
+        curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
+
+        with self.lock:
+            if not isTestnet:
+                curr_addr = btc.get_address(self.client, 'PIVX', curr_path, False)
+            else:
+                curr_addr = btc.get_address(self.client, 'PIVX Testnet', curr_path, False)
+
+        return curr_addr
+
+
+
+    def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
+        found = False
+        spath = -1
+
+        for i in range(starting_spath, starting_spath + spath_count):
+            printDbg("checking path... %s%d'/0/%d" % (MPATH, account, i))
+            curr_addr = self.scanForAddress(account, i, isTestnet)
+            if curr_addr == address:
+                found = True
+                spath = i
+                break
+
+            sleep(0.01)
+
+        return (found, spath)
+
+
+
+    def scanForPubKey(self, account, spath):
+        result = None
+        curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
+
+        with self.lock:
+            result = btc.get_public_node(self.client, curr_path)
+
+        return result.node.public_key.hex()

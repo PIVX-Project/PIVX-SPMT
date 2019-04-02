@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 
-from constants import MPATH, MINIMUM_FEE
+from constants import MINIMUM_FEE
 from misc import printDbg, printError, printException, getCallerName, getFunctionName, \
     persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException
 from qt.gui_tabRewards import TabRewards_gui
@@ -176,8 +176,8 @@ class TabRewards():
                 txidn = x['collateral'].get('txidn')
                 hwAcc = x['hwAcc']
                 spath = x['collateral'].get('spath')
-                path = MPATH + "%d'/0/%d" % (hwAcc, spath)
-                self.ui.mnSelect.addItem(name, [address, txid, txidn, path])
+                hwpath = "%d'/0/%d" % (hwAcc, spath)
+                self.ui.mnSelect.addItem(name, [address, txid, txidn, hwpath])
 
         # restore previous index
         if index < self.ui.mnSelect.count():
@@ -286,7 +286,7 @@ class TabRewards():
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
             self.curr_txidn = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[2]
-            self.curr_path = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3]
+            self.curr_hwpath = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3]
             self.ui.rewardsList.box.collateralRow = None
             self.onCancel()
             self.display_mn_utxos()
@@ -368,7 +368,7 @@ class TabRewards():
 
             try:
                 self.txFinished = False
-                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_path, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX())
+                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_hwpath, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX())
 
             except DisconnectedException as e:
                 self.caller.hwStatus = 0

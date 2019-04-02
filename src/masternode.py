@@ -8,7 +8,6 @@ import time
 from PyQt5.Qt import QObject
 from PyQt5.QtCore import pyqtSignal
 
-from constants import MPATH
 from misc import printOK, printDbg, printException, getCallerName, getFunctionName, ipport
 from pivx_hashlib import wif_to_privkey
 from utils import ecdsa_sign, num_to_varint, ipmap, serialize_input_str
@@ -33,7 +32,7 @@ class Masternode(QObject):
         self.mnPubKey = bitcoin.privkey_to_pubkey(self.mnPrivKey)
         self.hwAcc = hwAcc
         self.spath = collateral['spath']
-        self.nodePath = MPATH + "%d'/0/%d" % (self.hwAcc, self.spath)
+        self.nodePath = "%d'/0/%d" % (self.hwAcc, self.spath)
         self.collateral = collateral
         Masternode.mnCount += 1
         printOK("Initializing MNode with collateral: %s" % self.nodePath)

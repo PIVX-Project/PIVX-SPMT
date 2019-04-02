@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSignal
 
 from constants import HW_devices
 from ledgerClient import LedgerApi
+from misc import printOK
 from trezorClient import TrezorApi
 
 class HWdevice(QObject):
@@ -74,16 +75,19 @@ class HWdevice(QObject):
 
 
     def scanForAddress(self, account, spath, isTestnet=False):
+        printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
         return self.api.scanForAddress(account, spath, isTestnet)
 
 
 
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
+        printOK("Scanning for Bip32 path of address: %s" % address)
         return self.api.scanForBip32(account, address, starting_spath, spath_count, isTestnet)
 
 
 
     def scanForPubKey(self, account, spath):
+        printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
         return self.api.scanForPubKey(account, spath)
 
 

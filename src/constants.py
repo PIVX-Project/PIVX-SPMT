@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import os
 
-MPATH = "44'/77'/"
+MPATH_LEDGER = "44'/77'/"
+MPATH_TREZOR = "44'/119'/"
 WIF_PREFIX = 212 # 212 = d4
 MAGIC_BYTE = 30
 TESTNET_WIF_PREFIX = 239

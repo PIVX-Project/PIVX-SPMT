@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
     QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
     QApplication, QProgressBar, QCheckBox
 
-from constants import MPATH, MINIMUM_FEE
+from constants import MINIMUM_FEE
 from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, \
     myPopUp_sb, DisconnectedException
 from threads import ThreadFuns
@@ -75,7 +75,7 @@ class SweepAll_dlg(QDialog):
             x = {}
             x['name'] = mn['name']
             x['addr'] = mn['collateral'].get('address')
-            x['path'] = MPATH + "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
+            x['path'] = "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
             x['utxos'] = [r for r in rewards
                           if r['mn_name'] == x['name']                      # this mn's UTXOs
                           and r['tx_hash'] != mn['collateral'].get('txid')  # except the collateral
