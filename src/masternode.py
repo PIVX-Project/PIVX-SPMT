@@ -21,7 +21,7 @@ class Masternode(QObject):
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
 
-    def __init__(self, caller, name, ip, port, mnPrivKey, hwAcc, collateral = {}, *args, **kwargs):
+    def __init__(self, caller, name, ip, port, mnPrivKey, hwAcc, collateral = {}, isTestnet=False, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.caller = caller
         self.name = name
@@ -34,6 +34,7 @@ class Masternode(QObject):
         self.spath = collateral['spath']
         self.nodePath = "%d'/0/%d" % (self.hwAcc, self.spath)
         self.collateral = collateral
+        self.isTestnet = isTestnet
         Masternode.mnCount += 1
         printOK("Initializing MNode with collateral: %s" % self.nodePath)
 
@@ -49,7 +50,7 @@ class Masternode(QObject):
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
         printDbg("SerializedData: MY_IP:%s" % serializedData.split(':')[1])
         try:
-            device.signMess(self.caller, self.nodePath, serializedData)
+            device.signMess(self.caller, self.nodePath, serializedData, self.isTestnet)
             #wait for signal when device.sig1 is ready then --> finalizeStartMessage
         except Exception as e:
             err_msg = "error in signature1"
@@ -74,7 +75,7 @@ class Masternode(QObject):
 
     def finalizeStartMessage(self, text):
         sig1 = text
-        if sig1=="None":
+        if sig1 == "None":
             # Signature refused by the user
             self.sigdone.emit("None")
             return

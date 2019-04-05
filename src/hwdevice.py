@@ -86,24 +86,14 @@ class HWdevice(QObject):
 
 
 
-    def scanForPubKey(self, account, spath):
+    def scanForPubKey(self, account, spath, isTestnet=False):
         printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
-        return self.api.scanForPubKey(account, spath)
+        return self.api.scanForPubKey(account, spath, isTestnet)
 
 
 
-    def signMess(self, caller, path, message):
-        self.api.signMess(caller, path, message)
-
-
-
-    def signMessageSign(self, ctrl):
-        self.api.signMessageSign(ctrl)
-
-
-
-    def signMessageFinish(self):
-        self.api.signMessageFinish()
+    def signMess(self, caller, path, message, isTestnet=False):
+        self.api.signMess(caller, path, message, isTestnet)
 
 
 

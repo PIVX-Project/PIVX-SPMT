@@ -88,7 +88,7 @@ class MainWindow(QWidget):
 
         ###-- Create Queues and redirect stdout
         self.queue = Queue()
-        #sys.stdout = WriteStream(self.queue)
+        sys.stdout = WriteStream(self.queue)
 
         ###-- Init last logs
         logFile = open(log_File, 'w+')
@@ -155,7 +155,6 @@ class MainWindow(QWidget):
 
 
 
-
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
@@ -198,7 +197,6 @@ class MainWindow(QWidget):
 
 
 
-
     def getRPCserver(self):
         itemData = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())
         rpc_index  = self.header.rpcClientsBox.currentIndex()
@@ -213,7 +211,6 @@ class MainWindow(QWidget):
 
     def getServerListIndex(self, server):
         return self.header.rpcClientsBox.findData(server)
-
 
 
 
@@ -259,7 +256,6 @@ class MainWindow(QWidget):
         ###-- Hide console if it was previously hidden
         if self.parent.cache.get("console_hidden"):
             self.onToggleConsole()
-
 
 
 
@@ -321,12 +317,10 @@ class MainWindow(QWidget):
 
 
 
-
     def onCheckHw(self):
         printDbg("Checking for HW device...")
         self.updateHWstatus(None)
         self.showHWstatus()
-
 
 
 
@@ -335,11 +329,11 @@ class MainWindow(QWidget):
 
 
 
-
     def onCheckVersion(self):
         printDbg("Checking SPMT version...")
         self.versionLabel.setText("--")
         self.runInThread(self.checkVersion, (), self.updateVersion)
+
 
 
     def checkVersion(self, ctrl):
@@ -354,6 +348,7 @@ class MainWindow(QWidget):
             self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
         else:
             self.versionMess = "You have the latest version of SPMT"
+
 
 
     def updateVersion(self):
@@ -372,7 +367,6 @@ class MainWindow(QWidget):
 
 
 
-
     def onChangeSelectedRPC(self, i):
         # Don't update when we are clearing the box
         if not self.updatingRPCbox:
@@ -383,12 +377,8 @@ class MainWindow(QWidget):
 
 
 
-
-
     def onCleanConsole(self):
         self.consoleArea.clear()
-
-
 
 
 
@@ -411,21 +401,16 @@ class MainWindow(QWidget):
 
 
 
-
-
     def onTabChange(self):
         # tabRewards
         if self.tabs.currentWidget() == self.tabRewards:
             # reload last used address
             self.tabRewards.destinationLine.setText(self.parent.cache.get("lastAddress"))
 
-
         # tabGovernace
         if self.tabs.currentWidget() == self.tabGovernance:
             # update selectedMNlabel (since we might have edited them)
             self.t_governance.updateSelectedMNlabel()
-
-
 
 
 
@@ -443,7 +428,6 @@ class MainWindow(QWidget):
 
 
 
-
     def saveMNListOrder(self):
         # Update mnList order to cache settings and sort
         mnOrder = {}
@@ -458,12 +442,9 @@ class MainWindow(QWidget):
 
 
 
-
     def showHWstatus(self):
         self.updateHWleds()
         myPopUp_sb(self, "info", 'SPMT - hw check', "%s" % self.hwStatusMess)
-
-
 
 
 
@@ -473,8 +454,6 @@ class MainWindow(QWidget):
             self.updateRPCled(fDebug)
             if fDebug:
                 myPopUp_sb(self, "info", 'SPMT - rpc check', "%s" % self.rpcStatusMess)
-
-
 
 
 
@@ -489,7 +468,6 @@ class MainWindow(QWidget):
 
 
 
-
     def updateHWstatus(self, ctrl):
         # re-initialize device
         try:
@@ -500,8 +478,6 @@ class MainWindow(QWidget):
             pass
 
         printDbg("status:%s - mess: %s" % (self.hwStatus, self.hwStatusMess))
-
-
 
 
 
@@ -539,7 +515,6 @@ class MainWindow(QWidget):
 
 
 
-
     def updateRPCled(self, fDebug=False):
         if self.rpcConnected:
             self.header.rpcLed.setPixmap(self.ledPurpleH_icon)
@@ -558,7 +533,6 @@ class MainWindow(QWidget):
         self.header.rpcLed.setToolTip(self.rpcStatusMess)
         self.updateLastBlockLabel()
         self.updateLastBlockPing()
-
 
 
 
@@ -626,5 +600,3 @@ class MainWindow(QWidget):
             self.rpcResponseTime = rpcResponseTime
 
         self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)
-
-

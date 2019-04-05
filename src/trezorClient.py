@@ -4,17 +4,20 @@ import threading
 from time import sleep
 
 from PyQt5.Qt import QObject
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
 
-from trezorlib import btc
+from trezorlib import btc, exceptions
 from trezorlib.client import TrezorClient
 from trezorlib.tools import parse_path
 from trezorlib.transport import get_transport
 from trezorlib.ui import ClickUI
 
-from constants import MPATH_TREZOR as MPATH
+from constants import MPATH_TREZOR as MPATH, MPATH_TESTNET
 from misc import getCallerName, getFunctionName, printException, printDbg, \
-    DisconnectedException, printOK
+    DisconnectedException, printOK, splitString
+from threads import ThreadFuns
+
 
 
 def  process_trezor_exceptions(func):
@@ -99,12 +102,13 @@ class TrezorApi(QObject):
 
     def scanForAddress(self, account, spath, isTestnet=False):
         curr_addr = None
-        curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
 
         with self.lock:
             if not isTestnet:
+                curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
                 curr_addr = btc.get_address(self.client, 'PIVX', curr_path, False)
             else:
+                curr_path = parse_path(MPATH_TESTNET + "%d'/0/%d" % (account, spath))
                 curr_addr = btc.get_address(self.client, 'PIVX Testnet', curr_path, False)
 
         return curr_addr
@@ -116,7 +120,7 @@ class TrezorApi(QObject):
         spath = -1
 
         for i in range(starting_spath, starting_spath + spath_count):
-            printDbg("checking path... %s%d'/0/%d" % (MPATH, account, i))
+            printDbg("checking path... %d'/0/%d" % (account, i))
             curr_addr = self.scanForAddress(account, i, isTestnet)
             if curr_addr == address:
                 found = True
@@ -129,11 +133,61 @@ class TrezorApi(QObject):
 
 
 
-    def scanForPubKey(self, account, spath):
+    def scanForPubKey(self, account, spath, isTestnet=False):
         result = None
-        curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
+        hwpath = "%d'/0/%d" % (account, spath)
+        if isTestnet:
+            path = MPATH_TESTNET + hwpath
+        else:
+            path = MPATH + hwpath
 
+        curr_path = parse_path(path)
         with self.lock:
             result = btc.get_public_node(self.client, curr_path)
 
         return result.node.public_key.hex()
+
+
+    def signMess(self, caller, hwpath, message, isTestnet=False):
+        if isTestnet:
+            path = MPATH_TESTNET + hwpath
+        else:
+            path = MPATH + hwpath
+
+        # Connection pop-up
+        self.mBox = QMessageBox(caller.ui)
+        messageText = "Check display of your hardware device\n\n- masternode message:\n\n%s\n\n-path:\t%s\n" % (
+            splitString(message, 32), path)
+        self.mBox.setText(messageText)
+        self.mBox.setIconPixmap(caller.ui.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
+        self.mBox.setWindowTitle("CHECK YOUR TREZOR")
+        self.mBox.setStandardButtons(QMessageBox.NoButton)
+        self.mBox.show()
+
+        # Sign message
+        ThreadFuns.runInThread(self.signMessageSign, (path, message), self.signMessageFinish)
+
+
+
+    @process_trezor_exceptions
+    def signMessageSign(self, ctrl, path, mess):
+        self.signature = None
+        with self.lock:
+            try:
+                bip32_path = parse_path(path)
+                signed_mess = btc.sign_message(self.client, 'PIVX', bip32_path, mess)
+                self.signature = signed_mess.signature
+            except exceptions.Cancelled:
+                pass
+
+
+
+    def signMessageFinish(self):
+        with self.lock:
+            self.mBox.accept()
+        if self.signature is None:
+            printOK("Signature refused by the user")
+            self.sig1done.emit("None")
+        else:
+            self.sig1done.emit(self.signature.hex())
+
