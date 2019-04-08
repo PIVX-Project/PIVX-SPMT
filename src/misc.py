@@ -419,6 +419,7 @@ def readCacheSettings():
         cache["selectedHW_index"] = settings.value('cache_HWindex', DefaultCache["selectedHW_index"], type=int)
         cache["selectedRPC_index"] = settings.value('cache_RPCindex', DefaultCache["selectedRPC_index"], type=int)
         cache["MN_count"] = settings.value('cache_MNcount', DefaultCache["MN_count"], type=int)
+        cache["isTestnetRPC"] = settings.value('cache_isTestnetRPC', DefaultCache["isTestnetRPC"], type=bool)
         add_defaultKeys_to_dict(cache, DefaultCache)
         return cache
     except:
@@ -461,6 +462,7 @@ def saveCacheSettings(cache):
     settings.setValue('cache_HWindex', cache.get('selectedHW_index'))
     settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
     settings.setValue('cache_MNcount', cache.get('MN_count'))
+    settings.setValue('cache_isTestnetRPC', cache.get('isTestnetRPC'))
 
 
 

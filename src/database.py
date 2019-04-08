@@ -140,9 +140,9 @@ class Database():
 
             # Tables for Rewards
             cursor.execute("CREATE TABLE IF NOT EXISTS REWARDS("
-                           " tx_hash TEXT, tx_ouput_n INTEGER,"
-                           " value INTEGER, confirmations INTEGER, script TEXT, raw_tx TEXT, mn_name TEXT,"
-                           " PRIMARY KEY (tx_hash, tx_ouput_n))")
+                           " txid TEXT, vout INTEGER,"
+                           " satoshis INTEGER, confirmations INTEGER, script TEXT, raw_tx TEXT, mn_name TEXT,"
+                           " PRIMARY KEY (txid, vout))")
 
             # Tables for Governance Objects
             cursor.execute("CREATE TABLE IF NOT EXISTS PROPOSALS("
@@ -429,9 +429,9 @@ class Database():
         for row in rows:
             # fetch masternode item
             utxo = {}
-            utxo['tx_hash'] = row[0]
-            utxo['tx_ouput_n'] = row[1]
-            utxo['value'] = row[2]
+            utxo['txid'] = row[0]
+            utxo['vout'] = row[1]
+            utxo['satoshis'] = row[2]
             utxo['confirmations'] = row[3]
             utxo['script'] = row[4]
             utxo['raw_tx'] = row[5]
@@ -449,7 +449,7 @@ class Database():
 
             cursor.execute("INSERT INTO REWARDS "
                            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                           (utxo['tx_hash'], utxo['tx_ouput_n'], utxo['value'],
+                           (utxo['txid'], utxo['vout'], utxo['satoshis'],
                             utxo['confirmations'], utxo['script'], utxo['raw_tx'], utxo['mn_name'])
                            )
 
@@ -465,7 +465,7 @@ class Database():
     def deleteReward(self, txid, txidn):
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM REWARDS WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
+            cursor.execute("DELETE FROM REWARDS WHERE txid = ? AND vout = ?", (txid, txidn))
 
         except Exception as e:
             err_msg = 'error deleting UTXO from DB'
@@ -480,7 +480,7 @@ class Database():
             cursor = self.getCursor()
 
             cursor.execute("SELECT * FROM REWARDS"
-                           " WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
+                           " WHERE txid = ? AND vout = ?", (txid, txidn))
             rows = cursor.fetchall()
 
         except Exception as e:

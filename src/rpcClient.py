@@ -256,6 +256,7 @@ class RpcClient:
         n = 0
         response_time = None
         with self.lock:
+            isTestnet = self.conn.getinfo()['testnet']
             n, response_time = timeThis(self.conn.getblockcount)
             if n is None:
                 n = 0
@@ -264,7 +265,7 @@ class RpcClient:
             status = True
             statusMess = "Connected to PIVX Blockchain"
 
-        return status, statusMess, n, response_time
+        return status, statusMess, n, response_time, isTestnet
 
 
 

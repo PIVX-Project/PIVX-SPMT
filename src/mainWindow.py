@@ -65,6 +65,8 @@ class MainWindow(QWidget):
         self.updatingRPCbox = False
         self.rpcStatusMess = "Not Connected"
         self.isBlockchainSynced = False
+        # Changes when an RPC client is connected (affecting API client)
+        self.isTestnetRPC = self.parent.cache['isTestnetRPC']
 
         ###-- Load icons & images
         self.loadIcons()
@@ -74,7 +76,7 @@ class MainWindow(QWidget):
         self.initConsole()
         self.layout.addWidget(self.header)
 
-        ##-- Load RPC Servers list (init selection)
+        ##-- Load RPC Servers list (init selection and self.isTestnet)
         self.updateRPClist()
 
         ##-- Init HW selection
@@ -84,7 +86,7 @@ class MainWindow(QWidget):
         self.hwdevice = HWdevice()
 
         ##-- init Api Client
-        self.apiClient = ApiClient()
+        self.apiClient = ApiClient(self.isTestnetRPC)
 
         ###-- Create Queues and redirect stdout
         self.queue = Queue()
@@ -372,7 +374,6 @@ class MainWindow(QWidget):
         if not self.updatingRPCbox:
             # persist setting
             self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
-
             self.runInThread(self.updateRPCstatus, (True,), )
 
 
@@ -562,6 +563,7 @@ class MainWindow(QWidget):
         if self.parent.cache['selectedRPC_index'] >= self.header.rpcClientsBox.count():
             # (if manually removed from the config files) replace default index
             self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', DefaultCache["selectedRPC_index"])
+
         self.header.rpcClientsBox.setCurrentIndex(self.parent.cache['selectedRPC_index'])
         self.updatingRPCbox = False
         # reload servers in configure dialog
@@ -579,7 +581,7 @@ class MainWindow(QWidget):
         if fDebug:
             printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
 
-        status, statusMess, lastBlock, r_time1 = rpcClient.getStatus()
+        status, statusMess, lastBlock, r_time1, isTestnet = rpcClient.getStatus()
 
         isBlockchainSynced, r_time2  = rpcClient.isBlockchainSynced()
 
@@ -598,5 +600,9 @@ class MainWindow(QWidget):
             self.rpcStatusMess = statusMess
             self.isBlockchainSynced = isBlockchainSynced
             self.rpcResponseTime = rpcResponseTime
-
+            # if testnet flag is changed, update api client and persist setting
+            if isTestnet != self.isTestnetRPC:
+                self.isTestnetRPC = isTestnet
+                self.parent.cache['isTestnetRPC'] = persistCacheSetting('isTestnetRPC', isTestnet)
+                self.apiClient = ApiClient(isTestnet)
         self.sig_RPCstatusUpdated.emit(rpc_index, fDebug)

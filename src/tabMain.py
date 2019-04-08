@@ -6,7 +6,6 @@ import time
 from PyQt5.Qt import QApplication
 from PyQt5.QtWidgets import QMessageBox
 
-from apiClient import ApiClient
 from masternode import Masternode
 from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
     now, removeMNfromList, myPopUp, myPopUp_sb

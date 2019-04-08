@@ -119,16 +119,16 @@ class LedgerApi(QObject):
 
     @process_ledger_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path):
-        self.amount += int(utxo['value'])
+        self.amount += int(utxo['satoshis'])
         raw_tx = bytearray.fromhex(utxo['raw_tx'])
 
         # parse the raw transaction, so that we can extract the UTXO locking script we refer to
         prev_transaction = bitcoinTransaction(raw_tx)
 
-        utxo_tx_index = utxo['tx_ouput_n']
+        utxo_tx_index = utxo['vout']
         if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
             raise Exception('Incorrect value of outputIndex for UTXO %s-%d' %
-                            (utxo['raw_tx'], utxo['tx_ouput_n']))
+                            (utxo['raw_tx'], utxo['vout']))
 
         trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
         self.trusted_inputs.append(trusted_input)
@@ -145,11 +145,11 @@ class LedgerApi(QObject):
             printDbg(text)
 
         self.arg_inputs.append({
-            'locking_script': prev_transaction.outputs[utxo['tx_ouput_n']].script,
+            'locking_script': prev_transaction.outputs[utxo['vout']].script,
             'pubkey': curr_pubkey,
             'bip32_path': bip32_path,
-            'outputIndex': utxo['tx_ouput_n'],
-            'txid': utxo['tx_hash']
+            'outputIndex': utxo['vout'],
+            'txid': utxo['txid']
         })
 
 

@@ -102,12 +102,12 @@ class TabRewards():
             self.ui.rewardsList.box.setRowCount(len(rewards))
             # Insert items
             for row, utxo in enumerate(rewards):
-                txId = utxo.get('tx_hash', None)
-                pivxAmount = round(int(utxo.get('value', 0))/1e8, 8)
+                txId = utxo.get('txid', None)
+                pivxAmount = round(int(utxo.get('satoshis', 0))/1e8, 8)
                 self.ui.rewardsList.box.setItem(row, 0, item(str(pivxAmount)))
                 self.ui.rewardsList.box.setItem(row, 1, item(str(utxo.get('confirmations', None))))
                 self.ui.rewardsList.box.setItem(row, 2, item(txId))
-                self.ui.rewardsList.box.setItem(row, 3, item(str(utxo.get('tx_ouput_n', None))))
+                self.ui.rewardsList.box.setItem(row, 3, item(str(utxo.get('vout', None))))
                 self.ui.rewardsList.box.showRow(row)
                 # MARK COLLATERAL UTXO
                 if txId == self.curr_txid:
@@ -133,11 +133,8 @@ class TabRewards():
             else:
                 if not self.caller.rpcConnected:
                     self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
-                elif self.apiConnected:
-                    self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
                 else:
-                    self.ui.resetStatusLabel('<b style="color:red">Unable to connect to API provider</b>')
-
+                    self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
 
 
 
@@ -190,7 +187,6 @@ class TabRewards():
 
     def load_utxos_thread(self, ctrl):
         with self.Lock:
-            self.apiConnected = False
             # clear rewards DB
             printDbg("Updating rewards...")
             self.caller.parent.db.clearTable('REWARDS')
@@ -202,19 +198,11 @@ class TabRewards():
                 printError('PIVX daemon not connected - Unable to update UTXO list')
                 return
 
-            api_status = self.caller.apiClient.getStatus()
-            if  api_status != 200:
-                printError("Wrong response from API client. Status: %s" % api_status)
-                return
-
-            self.apiConnected = True
-
             total_num_of_utxos = 0
             mn_rewards = {}
             for mn in self.caller.masternode_list:
                 # Load UTXOs from API client
-                rewards = self.caller.apiClient.getAddressUtxos(
-                    mn['collateral'].get('address'))['unspent_outputs']
+                rewards = self.caller.apiClient.getAddressUtxos(mn['collateral'].get('address'))
 
                 if rewards is None:
                     printError('API client not responding.')
@@ -232,11 +220,11 @@ class TabRewards():
                for utxo in mn_rewards[mn]:
                    percent = int(100*curr_utxo / total_num_of_utxos)
                    # get raw TX from RPC client
-                   rawtx = self.caller.rpcClient.getRawTransaction(utxo['tx_hash'])
+                   rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
 
                    # Don't save UTXO if raw TX is unavailable
                    if rawtx is None:
-                       printError("Unable to get raw TX with hash=%s from RPC server" % utxo['tx_hash'])
+                       printError("Unable to get raw TX with hash=%s from RPC server" % utxo['txid'])
                        continue
 
                    # Add mn_name and raw_tx to UTXO and save it to DB
@@ -415,7 +403,7 @@ class TabRewards():
 
     def removeSpentRewards(self):
         for utxo in self.selectedRewards:
-            self.caller.parent.db.deleteReward(utxo['tx_hash'], utxo['tx_ouput_n'])
+            self.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
 
 
 
@@ -508,7 +496,7 @@ class TabRewards():
         numOfInputs = len(self.selectedRewards)
         if numOfInputs:
             for i in range(0, numOfInputs):
-                total += int(self.selectedRewards[i].get('value'))
+                total += int(self.selectedRewards[i].get('satoshis'))
 
             # update suggested fee and selected rewards
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
@@ -534,7 +522,7 @@ class TabRewards():
         nAmount = 0
         if rewards is not None:
             for utxo in rewards:
-                nAmount = nAmount + utxo['value']
+                nAmount = nAmount + utxo['satoshis']
 
         totalBalance = str(round(nAmount/1e8, 8))
         self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % totalBalance)

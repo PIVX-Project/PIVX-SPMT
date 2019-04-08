@@ -46,7 +46,8 @@ DefaultCache = {
     "votingDelayPos": 300,
     "selectedHW_index": 0,
     "selectedRPC_index": 0,
-    "MN_count": 1
+    "MN_count": 1,
+    "isTestnetRPC": False
     }
 
 

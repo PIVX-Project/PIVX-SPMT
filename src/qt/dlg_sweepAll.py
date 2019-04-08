@@ -78,9 +78,9 @@ class SweepAll_dlg(QDialog):
             x['path'] = "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
             x['utxos'] = [r for r in rewards
                           if r['mn_name'] == x['name']                      # this mn's UTXOs
-                          and r['tx_hash'] != mn['collateral'].get('txid')  # except the collateral
+                          and r['txid'] != mn['collateral'].get('txid')  # except the collateral
                           and r['confirmations'] > 100]                     # and immature rewards
-            x['total_rewards'] = round(sum([reward['value'] for reward in x['utxos']])/1e8, 8)
+            x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']])/1e8, 8)
             self.rewardsArray.append(x)
 
         # update fee per Kb
@@ -261,7 +261,7 @@ class SweepAll_dlg(QDialog):
     def removeSpentRewards(self):
         for mn in self.rewardsArray:
             for utxo in mn['utxos']:
-                self.main_tab.caller.parent.db.deleteReward(utxo['tx_hash'], utxo['tx_ouput_n'])
+                self.main_tab.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
 
 
 
