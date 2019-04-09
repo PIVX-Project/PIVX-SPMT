@@ -149,7 +149,7 @@ class SweepAll_dlg(QDialog):
                 return None
 
             # Check destination Address
-            if not checkPivxAddr(self.dest_addr):
+            if not checkPivxAddr(self.dest_addr, self.main_tab.caller.isTestnetRPC):
                 myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
                 return None
 

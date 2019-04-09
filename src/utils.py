@@ -27,10 +27,12 @@ def b64encode(text):
 
 
 
-def checkPivxAddr(address):
+def checkPivxAddr(address, isTestnet=False):
     try:
         # check leading char 'D' or (for testnet) 'x' or 'y'
-        if address[0] not in ['D', 'x', 'y']:
+        if isTestnet and address[0] not in ['x', 'y']:
+            return False
+        if not isTestnet and address[0] != 'D':
             return False
 
         # decode and verify checksum

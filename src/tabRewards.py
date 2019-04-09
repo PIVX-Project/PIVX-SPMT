@@ -314,7 +314,7 @@ class TabRewards():
             return None
 
         # Check destination Address
-        if not checkPivxAddr(self.dest_addr):
+        if not checkPivxAddr(self.dest_addr, self.caller.isTestnetRPC):
             myPopUp_sb(self.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
             return None
 

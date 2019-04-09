@@ -279,8 +279,11 @@ class LedgerApi(QObject):
 
 
     @process_ledger_exceptions
-    def signMess(self, caller, hwpath, message):
-        path = MPATH + hwpath
+    def signMess(self, caller, hwpath, message, isTestnet=False):
+        if isTestnet:
+            path = MPATH_TESTNET + hwpath
+        else:
+            path = MPATH + hwpath
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
