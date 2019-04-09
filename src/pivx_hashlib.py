@@ -41,24 +41,6 @@ def pubkey_to_address(pubkey, isTestnet=False):
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
 
-
-
-def num_to_varint(a):
-    """
-    Based on project: https://github.com/chaeplin/dashmnb
-    """
-    x = int(a)
-    if x < 253:
-        return x.to_bytes(1, byteorder='big')
-    elif x < 65536:
-        return int(253).to_bytes(1, byteorder='big') +  x.to_bytes(2, byteorder='little')
-    elif x < 4294967296:
-        return int(254).to_bytes(1, byteorder='big') + x.to_bytes(4, byteorder='little')
-    else:
-        return int(255).to_bytes(1, byteorder='big') + x.to_bytes(8, byteorder='little')
-
-
-
 def wif_to_privkey(string):
     wif_compressed = 52 == len(string)
     pvkeyencoded = b58decode(string).hex()
