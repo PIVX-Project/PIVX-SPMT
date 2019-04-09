@@ -67,5 +67,5 @@ class BlockBookClient:
 
     @process_blockbook_exceptions
     def getBalance(self, address):
-        return self.checkResponse("address", address)
+        return self.checkResponse("address", address)["balance"]
 
