@@ -21,21 +21,19 @@ class RpcWatchdog(QObject):
         self.timer_on = timer_on        #delay when connected
         self.ctrl_obj = CtrlObject()
         self.ctrl_obj.finish = False
-        
-     
-    def run(self):    
+
+
+
+    def run(self):
         while not self.shutdown_flag.is_set():
             # update status without printing on debug
             self.control_tab.updateRPCstatus(self.ctrl_obj, False)
-            
+
             if not self.control_tab.rpcConnected:
                 sleep(self.timer_off)
-                
+
             else:
                 sleep(self.timer_on)
-            
+
         printOK("Exiting Rpc Watchdog Thread")
-        
-        
-            
-            
+

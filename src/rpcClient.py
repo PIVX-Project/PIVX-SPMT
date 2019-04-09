@@ -33,7 +33,6 @@ def process_RPC_exceptions(func):
 
 class RpcClient:
 
-    @process_RPC_exceptions
     def __init__(self, rpc_protocol, rpc_host, rpc_user, rpc_password):
         # Lock for threads
         self.lock = threading.RLock()

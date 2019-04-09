@@ -575,19 +575,21 @@ class MainWindow(QWidget):
         self.rpcClient = None
 
         rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
-        rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
-
         if fDebug:
             printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
+
+        try:
+            rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
+        except Exception as e:
+            printException(getCallerName(), getFunctionName(), "exception in updateRPCstatus", str(e))
+            return
 
         status, statusMess, lastBlock, r_time1, isTestnet = rpcClient.getStatus()
 
         isBlockchainSynced, r_time2  = rpcClient.isBlockchainSynced()
-
         rpcResponseTime = None
         if r_time1 is not None and r_time2 is not None:
             rpcResponseTime = round((r_time1+r_time2)/2, 3)
-
         # Update status and client only if selected server is not changed
         if rpc_index != self.header.rpcClientsBox.currentIndex():
             return
