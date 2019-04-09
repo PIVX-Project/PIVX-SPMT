@@ -140,9 +140,9 @@ class Database():
 
             # Tables for Rewards
             cursor.execute("CREATE TABLE IF NOT EXISTS REWARDS("
-                           " txid TEXT, vout INTEGER,"
+                           " tx_hash TEXT, tx_output_n INTEGER,"
                            " satoshis INTEGER, confirmations INTEGER, script TEXT, raw_tx TEXT, mn_name TEXT,"
-                           " PRIMARY KEY (txid, vout))")
+                           " PRIMARY KEY (tx_hash, tx_ouput_n))")
 
             # Tables for Governance Objects
             cursor.execute("CREATE TABLE IF NOT EXISTS PROPOSALS("
@@ -360,7 +360,7 @@ class Database():
             cursor = self.getCursor()
 
             cursor.execute("INSERT INTO MASTERNODES(name, ip, port, mnPrivKey,"
-                           " hwAcc, isTestnet, isHardware,  address, spath, pubkey, txid, txidn) "
+                           " hwAcc, isTestnet, isHardware,  address, spath, pubkey, tx_hash, tx_ouput_n) "
                            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                            (mn['name'], mn['ip'], mn['port'], mn['mnPrivKey'], mn['hwAcc'], mn['isTestnet'],
                             1 if mn['isHardware'] else 0,
@@ -385,7 +385,7 @@ class Database():
 
                 cursor.execute("UPDATE MASTERNODES "
                                "SET name = ?, ip = ?, port = ?, mnPrivKey = ?, hwAcc = ?, isTestnet = ?, isHardware = ?,"
-                               "    address = ?, spath = ?, pubkey = ?, txid = ?, txidn = ?"
+                               "    address = ?, spath = ?, pubkey = ?, tx_hash = ?, tx_ouput_n = ?"
                                "WHERE name = ?",
                                (mn['name'], mn['ip'], mn['port'], mn['mnPrivKey'], mn['hwAcc'], mn['isTestnet'],
                                 1 if mn['isHardware'] else 0,
@@ -465,7 +465,7 @@ class Database():
     def deleteReward(self, txid, txidn):
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM REWARDS WHERE txid = ? AND vout = ?", (txid, txidn))
+            cursor.execute("DELETE FROM REWARDS WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
 
         except Exception as e:
             err_msg = 'error deleting UTXO from DB'
@@ -480,7 +480,7 @@ class Database():
             cursor = self.getCursor()
 
             cursor.execute("SELECT * FROM REWARDS"
-                           " WHERE txid = ? AND vout = ?", (txid, txidn))
+                           " WHERE tx_hash = ? AND tx_ouput_n = ?", (txid, txidn))
             rows = cursor.fetchall()
 
         except Exception as e:
