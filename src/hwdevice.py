@@ -50,7 +50,12 @@ class HWdevice(QObject):
 
 
     def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
-        self.api.prepare_transfer_tx(caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX, isTestnet)
+        rewardsArray = []
+        mnode = {}
+        mnode['path'] = bip32_path
+        mnode['utxos'] = utxos_to_spend
+        rewardsArray.append(mnode)
+        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX, isTestnet)
 
 
 

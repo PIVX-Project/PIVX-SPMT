@@ -166,23 +166,28 @@ class SweepAll_dlg(QDialog):
 
                 # re-connect signals
                 try:
-                    self.main_tab.caller.hwdevice.sigTxdone.disconnect()
+                    self.main_tab.caller.hwdevice.api.sigTxdone.disconnect()
                 except:
                     pass
                 try:
-                    self.main_tab.caller.hwdevice.sigTxabort.disconnect()
+                    self.main_tab.caller.hwdevice.api.sigTxabort.disconnect()
                 except:
                     pass
                 try:
-                    self.main_tab.caller.hwdevice.tx_progress.disconnect()
+                    self.main_tab.caller.hwdevice.api.tx_progress.disconnect()
                 except:
                     pass
-                self.main_tab.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-                self.main_tab.caller.hwdevice.sigTxabort.connect(self.AbortSend)
-                self.main_tab.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
+                self.main_tab.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
+                self.main_tab.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
+                self.main_tab.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
 
                 self.txFinished = False
-                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller, self.rewardsArray, self.dest_addr, self.currFee, self.useSwiftX())
+                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller,
+                                                                       self.rewardsArray,
+                                                                       self.dest_addr,
+                                                                       self.currFee,
+                                                                       self.useSwiftX(),
+                                                                       self.main_tab.caller.isTestnetRPC)
             else:
                 myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
 

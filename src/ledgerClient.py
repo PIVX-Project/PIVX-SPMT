@@ -155,20 +155,6 @@ class LedgerApi(QObject):
 
 
     @process_ledger_exceptions
-    def prepare_transfer_tx(self, caller, hwpath, utxos_to_spend, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
-        rewardsArray = []
-        mnode = {}
-        if isTestnet:
-            mnode['path'] = MPATH_TESTNET + hwpath
-        else:
-            mnode['path'] = MPATH + hwpath
-        mnode['utxos'] = utxos_to_spend
-        rewardsArray.append(mnode)
-        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX, isTestnet)
-
-
-
-    @process_ledger_exceptions
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
         with self.lock:
             # For each UTXO create a Ledger 'trusted input'
@@ -180,6 +166,13 @@ class LedgerApi(QObject):
             curr_utxo_checked = 0
 
             for mnode in rewardsArray:
+                # Add proper HW path (for current device) on each utxo
+                if isTestnet:
+                    mnode['path'] = MPATH_TESTNET + mnode['path']
+                else:
+                    mnode['path'] = MPATH + mnode['path']
+
+                # Create a TX input with each utxo
                 for utxo in mnode['utxos']:
                     self.append_inputs_to_TX(utxo, mnode['path'])
                     # completion percent emitted
