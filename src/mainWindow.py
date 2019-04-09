@@ -83,7 +83,7 @@ class MainWindow(QWidget):
         self.header.hwDevices.setCurrentIndex(self.parent.cache['selectedHW_index'])
 
         ##-- init HW Client
-        self.hwdevice = HWdevice()
+        self.hwdevice = HWdevice(self)
 
         ##-- init Api Client
         self.apiClient = ApiClient(self.isTestnetRPC)
@@ -169,7 +169,7 @@ class MainWindow(QWidget):
         self.header.hwLed.setPixmap(self.ledGrayH_icon)
         if message != '':
             self.hwStatus = 1
-            myPopUp_sb(self, "crit", "Ledger Disconnected", message)
+            myPopUp_sb(self, "crit", "hw device Disconnected", message)
 
 
 
@@ -194,7 +194,6 @@ class MainWindow(QWidget):
         self.sig_clearRPCstatus.connect(self.clearRPCstatus)
         self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
         self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
-        self.hwdevice.sig_disconnected.connect(self.clearHWstatus)
         self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
 
 

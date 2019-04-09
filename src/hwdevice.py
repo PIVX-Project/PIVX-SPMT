@@ -12,19 +12,12 @@ from trezorClient import TrezorApi
 class HWdevice(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
-    # signal: sigtx (thread) is done - emitted by signTxFinish
-    sigTxdone = pyqtSignal(bytearray, str)
-    # signal: sigtx (thread) is done (aborted) - emitted by signTxFinish
-    sigTxabort = pyqtSignal()
-    # signal: tx_progress percent - emitted by perepare_transfer_tx_bulk
-    tx_progress = pyqtSignal(int)
-    # signal: sig_progress percent - emitted by signTxSign
-    sig_progress = pyqtSignal(int)
     # signal: sig_disconnected -emitted with DisconnectedException
     sig_disconnected = pyqtSignal(str)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, main_wnd, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        self.main_wnd = main_wnd
         self.status = 0
 
     def initDevice(self, hw_index):
@@ -40,11 +33,8 @@ class HWdevice(QObject):
         # Init device & connect signals
         self.api.initDevice()
         self.sig1done = self.api.sig1done
-        self.sigTxdone = self.api.sigTxdone
-        self.sigTxabort = self.api.sigTxabort
-        self.tx_progress = self.api.tx_progress
-        self.sig_progress = self.api.sig_progress
         self.sig_disconnected = self.api.sig_disconnected
+        self.sig_disconnected.connect(self.main_wnd.clearHWstatus)
 
 
 
@@ -59,18 +49,13 @@ class HWdevice(QObject):
 
 
 
-    def append_inputs_to_TX(self, utxo, bip32_path):
-        self.api.append_inputs_to_TX(utxo, bip32_path)
+    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
+        self.api.prepare_transfer_tx(caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX, isTestnet)
 
 
 
-    def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
-        self.api.prepare_transfer_tx(caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX)
-
-
-
-    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False):
-        self.api.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
+    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
+        self.api.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX, isTestnet)
 
 
 
@@ -105,7 +90,3 @@ class HWdevice(QObject):
     def signTxFinish(self):
         self.api.signTxFinish()
 
-
-
-    def updateSigProgress(self, percent):
-        self.api.updateSigProgress(percent)

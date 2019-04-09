@@ -10,7 +10,7 @@ from PyQt5.Qt import QObject
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
-from constants import MPATH_LEDGER as MPATH
+from constants import MPATH_LEDGER as MPATH, MPATH_TESTNET
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString, DisconnectedException
 from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
@@ -68,8 +68,7 @@ class LedgerApi(QObject):
         self.status = 0
         self.dongle = None
         printDbg("Creating HW device class")
-        # Connect signal
-        self.sig_progress.connect(self.updateSigProgress)
+
 
 
 
@@ -90,6 +89,7 @@ class LedgerApi(QObject):
             self.status = 1
             firstKey = self.chip.getWalletPublicKey(bip32_path)
             self.status = 2
+        self.sig_progress.connect(self.updateSigProgress)
 
 
 
@@ -155,18 +155,21 @@ class LedgerApi(QObject):
 
 
     @process_ledger_exceptions
-    def prepare_transfer_tx(self, caller, hwpath, utxos_to_spend, dest_address, tx_fee, useSwiftX=False):
+    def prepare_transfer_tx(self, caller, hwpath, utxos_to_spend, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
         rewardsArray = []
         mnode = {}
-        mnode['path'] = MPATH + hwpath
+        if isTestnet:
+            mnode['path'] = MPATH_TESTNET + hwpath
+        else:
+            mnode['path'] = MPATH + hwpath
         mnode['utxos'] = utxos_to_spend
         rewardsArray.append(mnode)
-        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX)
+        self.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX, isTestnet)
 
 
 
     @process_ledger_exceptions
-    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False):
+    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
         with self.lock:
             # For each UTXO create a Ledger 'trusted input'
             self.trusted_inputs = []

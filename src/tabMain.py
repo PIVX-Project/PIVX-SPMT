@@ -49,15 +49,14 @@ class TabMain():
     def displayMNStatus(self, currMN):
         statusData = None
         for mn in self.all_masternodes.get('masternodes'):
-            #if mn.get('addr') == currMN['collateral'].get('address'):
+            # find the balance of currMN and display it
             if mn.get('txhash') == currMN['collateral'].get('txid') and mn.get('outidx') == currMN['collateral'].get('txidn'):
                 statusData = mn
-                if statusData is not None:
-                    try:
-                        statusData['balance'] = self.caller.apiClient.getBalance(mn.get('addr'))
-                    except Exception as e:
-                        err_msg = "error getting balance of %s" % mn.get('addr')
-                        printException(getCallerName(), getFunctionName(), err_msg, e)
+                try:
+                    statusData['balance'] = self.caller.apiClient.getBalance(mn.get('addr'))
+                except Exception as e:
+                    err_msg = "error getting balance of %s" % mn.get('addr')
+                    printException(getCallerName(), getFunctionName(), err_msg, e)
 
         masternode_alias = currMN['name']
         self.ui.btn_details[masternode_alias].disconnect()

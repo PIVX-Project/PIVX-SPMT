@@ -59,9 +59,6 @@ class TabRewards():
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
 
         # Connect Signals
-        self.caller.hwdevice.sigTxdone.connect(self.FinishSend)
-        self.caller.hwdevice.sigTxabort.connect(self.onCancel)
-        self.caller.hwdevice.tx_progress.connect(self.updateProgressPercent)
         self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
         self.caller.sig_UTXOsLoaded.connect(self.display_mn_utxos)
 
@@ -219,7 +216,7 @@ class TabRewards():
                # for each UTXO
                for utxo in mn_rewards[mn]:
                    percent = int(100*curr_utxo / total_num_of_utxos)
-                   # get raw TX from RPC client
+                   # get raw TX from RPC client (used only by ledger / trezor has own api)
                    rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
 
                    # Don't save UTXO if raw TX is unavailable
@@ -337,7 +334,7 @@ class TabRewards():
                     return None
                 else:
                     ans2 = myPopUp(self.caller, "crit", 'SPMT - warning', warning3)
-                    if ans3 == QMessageBox.No:
+                    if ans2 == QMessageBox.No:
                         return None
 
         # LET'S GO
@@ -353,10 +350,26 @@ class TabRewards():
             self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())
 
             self.currFee = self.ui.feeLine.value() * 1e8
+            # re-connect signals
+            try:
+                self.caller.hwdevice.api.sigTxdone.disconnect()
+            except:
+                pass
+            try:
+                self.caller.hwdevice.api.sigTxabort.disconnect()
+            except:
+                pass
+            try:
+                self.caller.hwdevice.api.tx_progress.disconnect()
+            except:
+                pass
+            self.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
+            self.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
+            self.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
 
             try:
                 self.txFinished = False
-                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_hwpath, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX())
+                self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_hwpath, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX(), self.caller.isTestnetRPC)
 
             except DisconnectedException as e:
                 self.caller.hwStatus = 0
