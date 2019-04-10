@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, \
     QSizePolicy, QTableWidget, QAbstractScrollArea, QAbstractItemView, QTableWidgetItem, QHeaderView, QSpacerItem
 
-from misc import printDbg
+from misc import printDbg, printError
 from threads import ThreadFuns
 
 
@@ -15,10 +15,9 @@ class FindCollTx_dlg(QDialog):
         self.utxos = []
         self.blockCount = 0
         self.setupUI()
-        
-       
-       
-        
+
+
+
     def setupUI(self):
         Ui_FindCollateralTxDlg.setupUi(self, self)
         self.setWindowTitle('Find Collateral Tx')
@@ -26,9 +25,9 @@ class FindCollTx_dlg(QDialog):
         self.lblMessage.setVisible(False)
         self.lblMessage.setVisible(True)
         self.lblMessage.setText('Checking explorer...')
-        
-        
-        
+
+
+
     def load_data(self, pivx_addr):
         self.pivx_addr = pivx_addr
         ##--- PIVX Address
@@ -38,7 +37,6 @@ class FindCollTx_dlg(QDialog):
 
 
 
-    
     def display_utxos(self):
         def item(value):
             item = QTableWidgetItem(value)
@@ -48,58 +46,47 @@ class FindCollTx_dlg(QDialog):
 
         self.tableW.setRowCount(len(self.utxos))
         for row, utxo in enumerate(self.utxos):
-            pivxAmount = round(int(utxo.get('value', 0))/1e8, 8)
+            pivxAmount = round(int(utxo.get('satoshis', 0))/1e8, 8)
             self.tableW.setItem(row, 0, item(str(pivxAmount)))
             self.tableW.setItem(row, 1, item(str(utxo['confirmations'])))
-            self.tableW.setItem(row, 2, item(utxo.get('tx_hash', None)))
-            self.tableW.setItem(row, 3, item(str(utxo.get('tx_ouput_n', None))))
+            self.tableW.setItem(row, 2, item(utxo.get('txid', None)))
+            self.tableW.setItem(row, 3, item(str(utxo.get('vout', None))))
 
         if len(self.utxos):
             self.tableW.resizeColumnsToContents()
             self.lblMessage.setVisible(False)
             self.tableW.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-            
+
         else:
-            if self.apiConnected:
-                self.lblMessage.setText('<b style="color:red">Found no unspent transactions with 10000 PIVs '
-                                        'amount sent to address %s.</b> (or explorer offline - try manually)' %
-                                        self.pivx_addr)
-            else:
-                self.lblMessage.setText('<b style="color:purple">Unable to connect to API provider or RPC server.\nEnter tx manually</b>')
+            self.lblMessage.setText('<b style="color:purple">Unable to connect to API provider or RPC server.\nEnter tx manually</b>')
             self.lblMessage.setVisible(True)
-        
-        
-    
-    
+
+
+
     def load_utxos_thread(self, ctrl):
-        self.apiConnected = False
         try:
             if not self.mainTab.caller.rpcClient.getStatus():
                 printDbg('PIVX daemon not connected')
             else:
                 try:
-                    if self.mainTab.caller.apiClient.getStatus() != 200:
-                        return
-                    self.apiConnected = True
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
                     utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
-                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('value', 0))/1e8, 8) == 10000.00000000 ]
+                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('satoshis', 0))/1e8, 8) == 10000.00000000 ]
 
                 except Exception as e:
-                    self.errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                    print(self.errorMsg)
-                    
+                    errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
+                    printError(errorMsg)
+
         except Exception as e:
             pass
-        
-        
-        
+
+
 
     def getSelection(self):
         items = self.tableW.selectedItems()
         if len(items):
             row = items[0].row()
-            return self.utxos[row]['tx_hash'], self.utxos[row]['tx_ouput_n']
+            return self.utxos[row]['txid'], self.utxos[row]['vout']
         else:
             return None, 0
 

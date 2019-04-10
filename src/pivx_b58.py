@@ -11,7 +11,8 @@ _bord = lambda x: x
 
 
 def b58encode(v):
-    """ encode v, which is a string of bytes, to base58.
+    """
+    encode v, which is a string of bytes, to base58.
     """
     long_value = 0
     for (i, c) in enumerate(v[::-1]):

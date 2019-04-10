@@ -10,8 +10,10 @@ def double_sha256(data):
     return hashlib.sha256(hashlib.sha256(data).digest()).digest()
 
 
+
 def single_sha256(data):
     return hashlib.sha256(data).digest()
+
 
 
 def generate_privkey(isTestnet=False):
@@ -32,28 +34,18 @@ def generate_privkey(isTestnet=False):
 
 
 def pubkey_to_address(pubkey, isTestnet=False):
-    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
     pubkey_bin = bytes.fromhex(pubkey)
-    pub_hash = bitcoin.bin_hash160(pubkey_bin)
-    data = bytes([base58_pubkey]) + pub_hash
+    pkey_hash = bitcoin.bin_hash160(pubkey_bin)
+    return pubkeyhash_to_address(pkey_hash, isTestnet)
+
+
+
+def pubkeyhash_to_address(pkey_hash, isTestnet=False):
+    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
+    data = bytes([base58_pubkey]) + pkey_hash
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
 
-
-
-def num_to_varint(a):
-    """
-    Based on project: https://github.com/chaeplin/dashmnb
-    """
-    x = int(a)
-    if x < 253:
-        return x.to_bytes(1, byteorder='big')
-    elif x < 65536:
-        return int(253).to_bytes(1, byteorder='big') +  x.to_bytes(2, byteorder='little')
-    elif x < 4294967296:
-        return int(254).to_bytes(1, byteorder='big') + x.to_bytes(4, byteorder='little')
-    else:
-        return int(255).to_bytes(1, byteorder='big') + x.to_bytes(8, byteorder='little')
 
 
 
@@ -78,4 +70,3 @@ def wif_to_privkey(string):
 
     else:
         return None
-    

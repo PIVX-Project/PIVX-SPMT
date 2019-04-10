@@ -32,27 +32,27 @@ QT_MESSAGE_TYPE = {
     "warn": QMessageBox.Warning,
     "crit": QMessageBox.Critical,
     "quest": QMessageBox.Question
-    }    
-    
-        
+    }
+
+
 def appendMasternode(mainWnd, mn):
     printDbg("saving MN configuration for %s" % mn['name'])
-    
+
     # If we are changing a MN, remove previous entry:
     if not mainWnd.mnode_to_change is None:
         # remove from cache and QListWidget only
         removeMNfromList(mainWnd, mainWnd.mnode_to_change, removeFromDB=False)
-        
+
     # Append new mn to list
     mainWnd.masternode_list.append(mn)
-    
+
     # Save/edit DB
     mainWnd.parent.db.addMasternode(mn, mainWnd.mnode_to_change)
     mainWnd.mnode_to_change = None
-    
+
     # update list in rewards tab
     mainWnd.t_rewards.onChangedMNlist()
-    
+
     # Insert item in list of Main tab
     name = mn['name']
     namelist = [x['name'] for x in mainWnd.masternode_list]
@@ -65,7 +65,7 @@ def appendMasternode(mainWnd, mn):
     mainWnd.tabMain.btn_remove[name].clicked.connect(lambda: mainWnd.t_main.onRemoveMN())
     mainWnd.tabMain.btn_edit[name].clicked.connect(lambda: mainWnd.t_main.onEditMN())
     mainWnd.tabMain.btn_start[name].clicked.connect(lambda: mainWnd.t_main.onStartMN())
-    mainWnd.tabMain.btn_rewards[name].clicked.connect(lambda: mainWnd.t_main.onRewardsMN())   
+    mainWnd.tabMain.btn_rewards[name].clicked.connect(lambda: mainWnd.t_main.onRewardsMN())
     printDbg("saved")
 
 
@@ -85,24 +85,24 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         if  o.password is None:
             raise Exception("Malformed password")
         return True
-    
+
     except Exception as e:
         error_msg = "Unable to parse URL"
         printException(getCallerName(), getFunctionName(), error_msg, e)
         return False
-        
-        
-        
-        
+
+
+
+
 def clean_v4_migration(wnd):
     rpc_file = os.path.join(user_dir, 'rpcServer.json')
     cache_file = os.path.join(user_dir, 'cache.json')
     mn_file = os.path.join(user_dir, 'masternodes.json')
     messTitle = "Clean migration to v0.4.0 data storage"
-    
+
     if os.path.exists(rpc_file) or os.path.exists(cache_file) or os.path.exists(mn_file):
         printDbg(messTitle)
-    
+
     if os.path.exists(rpc_file):
         # If RPC file exists
         try:
@@ -118,7 +118,7 @@ def clean_v4_migration(wnd):
         except Exception as e:
             mess = "Error importing old rpc_config file"
             printException(getCallerName(), getFunctionName(), mess, e)
-    
+
     if os.path.exists(cache_file):
         # If cache file exists, delete it
         try:
@@ -127,7 +127,7 @@ def clean_v4_migration(wnd):
         except Exception as e:
             mess = "Error deleting old cache file"
             printException(getCallerName(), getFunctionName(), mess, e)
-    
+
     if os.path.exists(mn_file):
         # If mn file exists
         try:
@@ -139,13 +139,13 @@ def clean_v4_migration(wnd):
             printDbg("...saved to Database")
             # and delete old file
             os.remove(mn_file)
-            printDbg("old masternodes.json file deleted")   
+            printDbg("old masternodes.json file deleted")
         except Exception as e:
             mess = "Error importing old masternodes_config file"
-            printException(getCallerName(), getFunctionName(), mess, e)    
-        
-        
-        
+            printException(getCallerName(), getFunctionName(), mess, e)
+
+
+
 
 
 def clean_for_html(text):
@@ -177,8 +177,8 @@ def getFunctionName(inDecorator=False):
         return sys._getframe(1).f_code.co_name
     except Exception:
         return None
-    
-    
+
+
 def getRemoteSPMTversion():
     import requests
     try:
@@ -187,8 +187,8 @@ def getRemoteSPMTversion():
             data = resp.json()
             return data['number']
         else:
-            raise
-        
+            raise Exception
+
     except Exception:
         print("Invalid response getting version from GitHub\n")
         return "0.0.0"
@@ -199,7 +199,7 @@ def getSPMTVersion():
     version_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
     with open(version_file) as data_file:
-        data = json.load(data_file)       
+        data = json.load(data_file)
 
     return data
 
@@ -226,9 +226,9 @@ def ipport(ip, port):
             return "[" + ip + "]:" + port
         else:
             raise Exception("invalid IP version number")
-        
-        
-        
+
+
+
 def is_hex(s):
     try:
         int(s, 16)
@@ -239,35 +239,35 @@ def is_hex(s):
 
 
 def loadMNConfFile(fileName):
-    
+
     hot_masternodes = []
     try:
         with open(fileName) as f:
             for line in f:
                 confline = line.strip()
-                
+
                 # skip blank lines
                 if len(confline) == 0:
                     continue
-                
+
                 # skip comments
                 if confline[0] == '#':
                     continue
-                
+
                 configs = confline.split(' ')
                 # check number of keys
                 if len(configs) != 5:
                     printDbg("wrong number of parameters in masternode.conf")
                     return None
-                
+
                 new_mn = {}
                 new_mn['name'] = configs[0]
-                
+
                 ipaddr = configs[1].split(':')
                 if len(ipaddr) != 2:
                     printDbg("wrong ip:address in masternode.conf")
                     return None
-                
+
                 new_mn['ip'] = ipaddr[0]
                 new_mn['port'] = int(ipaddr[1])
                 new_mn['mnPrivKey'] = configs[2]
@@ -280,17 +280,17 @@ def loadMNConfFile(fileName):
                 collateral['txid'] = configs[3]
                 collateral['txidn'] = int(configs[4])
                 new_mn['collateral'] = collateral
-                
+
                 hot_masternodes.append(new_mn)
-        
+
         return hot_masternodes
-                
+
     except Exception as e:
         errorMsg = "error loading MN file"
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)
-            
-            
-            
+
+
+
 def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageBox.No):
     if messType in QT_MESSAGE_TYPE:
         type = QT_MESSAGE_TYPE[messType]
@@ -312,8 +312,8 @@ def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessag
     mess.setStandardButtons(singleButton | singleButton)
     return mess.exec_()
 
-    
-    
+
+
 def now():
     return int(time.time())
 
@@ -325,8 +325,8 @@ def persistCacheSetting(cache_key, cache_value):
     if not settings.contains(cache_key):
         printDbg("Cache key %s not found" % str(cache_key))
         printOK("Adding new cache key to settings...")
-        
-    if type(cache_value) in [list, dict]:    
+
+    if type(cache_value) in [list, dict]:
         settings.setValue(cache_key, json.dumps(cache_value))
     else:
         settings.setValue(cache_key, cache_value)
@@ -355,14 +355,14 @@ def printDbg(what):
     log_line = printDbg_msg(what)
     append_to_logfile(log_line)
     print(log_line)
-    
+
 
 def printError(what):
     log_line = printError_msg(what)
     append_to_logfile(log_line)
     print(log_line)
-    
-    
+
+
 def printException_msg(
         caller_name,
         function_name,
@@ -376,8 +376,8 @@ def printException_msg(
     msg += '<span style="color:red">'
     if errargs:
         msg += 'err: %s<br>' % str(errargs)
-        
-    msg += '===> %s</span><br>' % err_msg 
+
+    msg += '===> %s</span><br>' % err_msg
     return msg
 
 
@@ -389,14 +389,14 @@ def printException(caller_name,
     text = printException_msg(caller_name, function_name, err_msg, errargs)
     append_to_logfile(text)
     print(text)
-    
-    
+
+
 
 def printOK(what):
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
     append_to_logfile(msg)
     print(msg)
-    
+
 
 
 
@@ -416,15 +416,17 @@ def readCacheSettings():
         cache["votingDelayCheck"] = settings.value('cache_vdCheck', DefaultCache["votingDelayCheck"], type=bool)
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', DefaultCache["votingDelayNeg"], type=int)
         cache["votingDelayPos"] = settings.value('cache_vdPos', DefaultCache["votingDelayPos"], type=int)
+        cache["selectedHW_index"] = settings.value('cache_HWindex', DefaultCache["selectedHW_index"], type=int)
         cache["selectedRPC_index"] = settings.value('cache_RPCindex', DefaultCache["selectedRPC_index"], type=int)
         cache["MN_count"] = settings.value('cache_MNcount', DefaultCache["MN_count"], type=int)
+        cache["isTestnetRPC"] = settings.value('cache_isTestnetRPC', DefaultCache["isTestnetRPC"], type=bool)
         add_defaultKeys_to_dict(cache, DefaultCache)
         return cache
     except:
         return DefaultCache
-        
-      
-        
+
+
+
 def removeMNfromList(mainWnd, mn, removeFromDB=True):
     # remove from cache list
     mainWnd.masternode_list.remove(mn)
@@ -439,9 +441,9 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
     # if we are removing an already selected masternode
     if mn['name'] in [x[1] for x in mainWnd.t_governance.votingMasternodes]:
         mainWnd.t_governance.clear()
-    
 
-    
+
+
 
 def saveCacheSettings(cache):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
@@ -455,26 +457,28 @@ def saveCacheSettings(cache):
     settings.setValue('cache_splitterX', cache.get('splitter_x'))
     settings.setValue('cache_splitterY', cache.get('splitter_y'))
     settings.setValue('cache_mnOrder', json.dumps(cache.get('mnList_order')))
-    settings.setValue('cache_consoleHidden', cache.get('console_hidden'))    
-    settings.setValue('cache_votingMNs', json.dumps(cache.get('votingMasternodes'))) 
+    settings.setValue('cache_consoleHidden', cache.get('console_hidden'))
+    settings.setValue('cache_votingMNs', json.dumps(cache.get('votingMasternodes')))
+    settings.setValue('cache_HWindex', cache.get('selectedHW_index'))
     settings.setValue('cache_RPCindex', cache.get('selectedRPC_index'))
     settings.setValue('cache_MNcount', cache.get('MN_count'))
-        
-    
-    
-    
+    settings.setValue('cache_isTestnetRPC', cache.get('isTestnetRPC'))
+
+
+
+
 def sec_to_time(seconds):
     days = seconds//86400
     seconds -= days*86400
     hrs = seconds//3600
     seconds -= hrs*3600
     mins = seconds//60
-    seconds -= mins*60   
+    seconds -= mins*60
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
 
 
-      
-    
+
+
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
@@ -490,7 +494,7 @@ def timeThis(function, *args):
         return val, (end-start)
     except Exception:
         return None, None
-    
+
 
 
 
@@ -509,35 +513,43 @@ def updateSplash(label, i):
         label.setText(progressText)
     elif i==90:
         progressText = "SPMT ready"
-        label.setText(progressText)   
+        label.setText(progressText)
     elif i==99:
         time.sleep(0.1)
 
-    
-    
-    
+
+class DisconnectedException(Exception):
+    def __init__(self, message, hwDevice, statusmess):
+        # Call the base class constructor
+        super().__init__(message)
+        # clear device
+        hwDevice.clearDevice(statusmess)
+
+
+
+
 # Stream object to redirect sys.stdout and sys.stderr to a queue
 class WriteStream(object):
     def __init__(self, queue):
         self.queue = queue
-    
+
     def write(self, text):
         self.queue.put(text)
-        
+
     def flush(self):
         pass
-        
+
 
 
 # QObject (to be run in QThread) that blocks until data is available
 # and then emits a QtSignal to the main thread.
 class WriteStreamReceiver(QObject):
     mysignal = pyqtSignal(str)
-    
+
     def __init__(self, queue, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.queue = queue
-          
+
     def run(self):
         while True:
             text = self.queue.get()
