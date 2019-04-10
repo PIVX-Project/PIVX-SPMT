@@ -34,12 +34,20 @@ def generate_privkey(isTestnet=False):
 
 
 def pubkey_to_address(pubkey, isTestnet=False):
-    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
     pubkey_bin = bytes.fromhex(pubkey)
-    pub_hash = bitcoin.bin_hash160(pubkey_bin)
-    data = bytes([base58_pubkey]) + pub_hash
+    pkey_hash = bitcoin.bin_hash160(pubkey_bin)
+    return pubkeyhash_to_address(pkey_hash, isTestnet)
+
+
+
+def pubkeyhash_to_address(pkey_hash, isTestnet=False):
+    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
+    data = bytes([base58_pubkey]) + pkey_hash
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
+
+
+
 
 def wif_to_privkey(string):
     wif_compressed = 52 == len(string)

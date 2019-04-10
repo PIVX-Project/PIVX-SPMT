@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from constants import MINIMUM_FEE
 from misc import printDbg, printError, printException, getCallerName, getFunctionName, \
     persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException
+from pivx_parser import ParseTx
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from utils import checkPivxAddr
@@ -440,14 +441,16 @@ class TabRewards():
                     myPopUp_sb(self.caller, "crit", 'transaction Warning', mess)
 
                 else:
-                    decodedTx = self.caller.rpcClient.decodeRawTransaction(tx_hex)
-                    if decodedTx is not None:
+                    decodedTx = None
+                    try:
+                        decodedTx = ParseTx(tx_hex, self.caller.isTestnetRPC)
                         destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                         amount = decodedTx.get("vout")[0].get("value")
                         message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
                         message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
                         message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    else:
+                    except Exception as e:
+                        printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
                         message = '<p>Unable to decode TX- Broadcast anyway?</p>'
 
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)

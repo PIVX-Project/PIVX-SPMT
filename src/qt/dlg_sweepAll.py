@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
 from constants import MINIMUM_FEE
 from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, \
     myPopUp_sb, DisconnectedException
+from pivx_parser import ParseTx
 from threads import ThreadFuns
 from utils import checkPivxAddr
 
@@ -225,18 +226,21 @@ class SweepAll_dlg(QDialog):
                     myPopUp_sb(self.main_tab.caller, "crit", 'transaction Warning', mess)
 
                 else:
-                    decodedTx = self.main_tab.caller.rpcClient.decodeRawTransaction(tx_hex)
-                    if decodedTx is not None:
+                    decodedTx = None
+                    try:
+                        decodedTx = ParseTx(tx_hex, self.main_tab.caller.isTestnetRPC)
                         destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                         amount = decodedTx.get("vout")[0].get("value")
                         message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
                         message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
                         message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    else:
+                    except Exception as e:
+                        printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
                         message = '<p>Unable to decode TX- Broadcast anyway?</p>'
 
                     mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
-                    mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
+                    if decodedTx is not None:
+                        mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
                     reply = mess1.exec_()

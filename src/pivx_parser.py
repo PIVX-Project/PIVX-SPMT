@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+from utils import extract_pkh_from_locking_script
+from pivx_hashlib import pubkeyhash_to_address
 
 class HexParser():
     def __init__(self, hex_str):
@@ -47,17 +48,24 @@ def ParseTxInput(p):
     return vin
 
 
-def ParseTxOutput(p):
+def ParseTxOutput(p, isTestnet=False):
     vout = {}
-    vout["value"] = p.readInt(8, "little")/1e8
+    vout["value"] = p.readInt(8, "little")
     script_len = p.readInt(1, "little")
     vout["scriptPubKey"] = {}
     vout["scriptPubKey"]["hex"] = p.readString(script_len, "big")
+    vout["scriptPubKey"]["addresses"] = []
+    try:
+        add_bytes = extract_pkh_from_locking_script(bytes.fromhex(vout["scriptPubKey"]["hex"]))
+        address = pubkeyhash_to_address(add_bytes, isTestnet)
+        vout["scriptPubKey"]["addresses"].append(address)
+    except Exception as e:
+        print(e)
     return vout
 
 
-def ParseTx(rawhex):
-    p = HexParser(rawhex)
+def ParseTx(hex_string, isTestnet=False):
+    p = HexParser(hex_string)
     tx = {}
 
     tx["version"] = p.readInt(4, "little")
@@ -70,7 +78,7 @@ def ParseTx(rawhex):
     num_of_outputs = p.readInt(1, "little")
     tx["vout"] = []
     for i in range(num_of_outputs):
-        tx["vout"].append(ParseTxOutput(p))
+        tx["vout"].append(ParseTxOutput(p, isTestnet))
 
     tx["locktime"] = p.readInt(4, "little")
     return tx

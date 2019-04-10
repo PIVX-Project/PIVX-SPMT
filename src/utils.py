@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import base64
-from bitcoin import b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, \
+from bitcoin import bin_hash160, b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, \
     encode_sig, decode_sig, dbl_sha256, bin_dbl_sha256
 from ipaddress import ip_address
 
@@ -121,7 +121,14 @@ def extract_pkh_from_locking_script(script):
                 return script[3:23]
             else:
                 raise Exception('Non-standard public key hash length (should be 20)')
-    raise Exception('Non-standard locking script type (should be P2PKH)')
+
+        elif len(script) == 35:
+            scriptlen = read_varint(script, 0)[0]
+            if scriptlen in [32, 33]:
+                return bin_hash160(script[1:1 + scriptlen])
+            else:
+                raise Exception('Non-standard public key length (should be 32 or 33)')
+    raise Exception('Non-standard locking script type (should be P2PKH or P2PK). len is %d' % len(script))
 
 
 
