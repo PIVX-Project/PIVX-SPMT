@@ -254,6 +254,9 @@ class SweepAll_dlg(QDialog):
                         mess2.exec_()
                         # remove spent rewards (All of them except for collaterals)
                         self.removeSpentRewards()
+                        # reload utxos
+                        self.main_tab.caller.t_rewards.display_mn_utxos()
+                        self.main_tab.caller.t_rewards.onCancel()
 
                     else:
                         myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "Transaction NOT sent")
