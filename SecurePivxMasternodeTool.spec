@@ -16,27 +16,21 @@ version_file.close()
 version_str = version_data["number"] + version_data["tag"]
 
 add_files = [('src/version.txt', '.'), ('img', 'img')]
-
 lib_path = next(p for p in sys.path if 'site-packages' in p)
-if os_type == 'win32':
-    qt5_path = os.path.join(lib_path, 'PyQt5\\Qt\\bin')
-    sys.path.append(qt5_path)
-    # add file vcruntime140.dll manually, due to not including by pyinstaller
-    found = False
-    for p in os.environ["PATH"].split(os.pathsep):
-        file_name = os.path.join(p, "vcruntime140.dll")
-        if os.path.exists(file_name):
-            found = True
-            add_files.append((file_name, ''))
-            print('Adding file ' + file_name)
-            break
-    if not found:
-        raise Exception('File vcruntime140.dll not found in the system path.')
-
-	
-# add bitcoin library data file
 add_files.append( (os.path.join(lib_path, 'bitcoin/english.txt'),'bitcoin') )
-	
+add_files.append( (os.path.join(lib_path, 'trezorlib/coins.json'), 'trezorlib') )
+add_files.append( (os.path.join(lib_path, 'trezorlib/transport'), 'trezorlib/transport') )
+
+if os_type == 'darwin':
+    add_files.append( ('/usr/local/lib/libusb-1.0.dylib', '.') )
+elif os_type == 'win32':
+    import ctypes.util
+    l = ctypes.util.find_library('libusb-1.0.dll')
+    if l:
+       add_files.append( (l, '.') )
+
+
+
 a = Analysis(['spmt.py'],
              pathex=[base_dir, 'src', 'src/qt'],
              binaries=[],
@@ -76,8 +70,8 @@ if os_type == 'darwin':
              icon=os.path.join(base_dir, 'img', 'spmt.icns'),
              bundle_identifier=None,
              info_plist={'NSHighResolutionCapable': 'True'})
-             
-   
+
+
 # Prepare bundles
 dist_path = os.path.join(base_dir, 'dist')
 app_path = os.path.join(dist_path, 'app')
@@ -100,8 +94,8 @@ if os_type == 'win32':
 	# Compress dist Dir
 	print('Compressing Windows App Folder')
 	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
-	
-	
+
+
 if os_type == 'linux':
 	os.chdir(base_dir)
 	# Rename dist Dir
@@ -109,7 +103,7 @@ if os_type == 'linux':
 	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz', 
+	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz',
                 base_dir, 'SPMT-v' + version_str + '-gnu_linux'))
 
 
@@ -128,4 +122,3 @@ if os_type == 'darwin':
     os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-MacOSX.tar.gz',
                 base_dir, 'SPMT-v' + version_str + '-MacOSX'))
 
-    

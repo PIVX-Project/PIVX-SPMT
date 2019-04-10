@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 import os
 from queue import Queue
+import sys
 from time import strftime, gmtime
 import threading
-import sys
 
-from PyQt5.QtCore import pyqtSignal, Qt, QThread, QSettings
-from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QIcon, QFont
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
+from PyQt5.QtGui import QPixmap, QColor, QPalette, QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
-    QFileDialog, QMessageBox, QTextEdit, QTabWidget, QLabel, QSplitter
+    QFileDialog, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
 from constants import starting_height, log_File, DefaultCache
@@ -175,14 +175,15 @@ class MainWindow(QWidget):
 
 
     def clearRPCstatus(self):
-        self.rpcConnected = False
-        self.header.lastPingBox.setHidden(False)
-        self.header.rpcLed.setPixmap(self.ledGrayH_icon)
-        self.header.lastBlockLabel.setText("<em>Connecting...</em>")
-        self.header.lastPingIcon.setPixmap(self.connRed_icon)
-        self.header.responseTimeLabel.setText("--")
-        self.header.responseTimeLabel.setStyleSheet("color: red")
-        self.header.lastPingIcon.setStyleSheet("color: red")
+        with self.lock:
+            self.rpcConnected = False
+            self.header.lastPingBox.setHidden(False)
+            self.header.rpcLed.setPixmap(self.ledGrayH_icon)
+            self.header.lastBlockLabel.setText("<em>Connecting...</em>")
+            self.header.lastPingIcon.setPixmap(self.connRed_icon)
+            self.header.responseTimeLabel.setText("--")
+            self.header.responseTimeLabel.setStyleSheet("color: red")
+            self.header.lastPingIcon.setStyleSheet("color: red")
 
 
 
@@ -585,12 +586,16 @@ class MainWindow(QWidget):
             printException(getCallerName(), getFunctionName(), "exception in updateRPCstatus", str(e))
             return
 
-        status, statusMess, lastBlock, r_time1, isTestnet = rpcClient.getStatus()
+        try:
+            status, statusMess, lastBlock, r_time1, isTestnet = rpcClient.getStatus()
+            isBlockchainSynced, r_time2 = rpcClient.isBlockchainSynced()
+        except Exception as e:
+            return
 
-        isBlockchainSynced, r_time2  = rpcClient.isBlockchainSynced()
         rpcResponseTime = None
-        if r_time1 is not None and r_time2 is not None:
+        if r_time1 is not None and r_time2 !=0 :
             rpcResponseTime = round((r_time1+r_time2)/2, 3)
+
         # Update status and client only if selected server is not changed
         if rpc_index != self.header.rpcClientsBox.currentIndex():
             return
