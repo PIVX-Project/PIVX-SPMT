@@ -388,7 +388,7 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
 
     R = trezor_proto.RequestType
 
-    percent = 1  # Used for signaling progress. 1-10 for inputs/outputs, 10-100 for sigs.
+    percent = 0  # Used for signaling progress. 1-10 for inputs/outputs, 10-100 for sigs.
     sig_percent.emit(percent)
     while isinstance(res, trezor_proto.TxRequest):
         # If there's some part of signed transaction, let's add it
@@ -417,7 +417,7 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
             res = client.call(trezor_proto.TxAck(tx=msg))
 
         elif res.request_type == R.TXINPUT:
-            if res.details.request_index > 0 and percent < 10:
+            if percent == 0 or (res.details.request_index > 0 and percent < 10):
                 percent = 1 + int(8 * (res.details.request_index + 1) / len(inputs))
                 sig_percent.emit(percent)
             msg = trezor_proto.TransactionType()
