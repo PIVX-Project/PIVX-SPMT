@@ -59,6 +59,7 @@ class MainWindow(QWidget):
 
         ###-- Create clients and statuses
         self.hwStatus = 0
+        self.hwModel = 0
         self.hwStatusMess = "Not Connected"
         self.rpcClient = None
         self.rpcConnected = False
@@ -472,7 +473,7 @@ class MainWindow(QWidget):
         # re-initialize device
         try:
             self.hwdevice.initDevice(self.header.hwDevices.currentIndex())
-            self.hwStatus, self.hwStatusMess = self.hwdevice.getStatus()
+            self.hwModel, self.hwStatus, self.hwStatusMess = self.hwdevice.getStatus()
 
         except Exception:
             pass

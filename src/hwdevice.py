@@ -44,8 +44,13 @@ class HWdevice(QObject):
 
 
 
+    # Status codes:
+    # 0 - not connected
+    # 1 - not initialized
+    # 2 - fine
     def getStatus(self):
-        return self.api.getStatus()
+        messages = self.api.messages
+        return self.api.model, self.api.status, messages[self.api.status]
 
 
 

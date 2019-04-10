@@ -10,7 +10,7 @@ from PyQt5.Qt import QObject
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
-from constants import MPATH_LEDGER as MPATH, MPATH_TESTNET
+from constants import MPATH_LEDGER as MPATH, MPATH_TESTNET, HW_devices
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString, DisconnectedException
 from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
@@ -63,6 +63,12 @@ class LedgerApi(QObject):
 
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        self.model = HW_devices.index("LEDGER Nano S")
+        self.messages = [
+            'Device not initialized.',
+            'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
+            'Hardware device connected.'
+        ]
         # Device Lock for threads
         self.lock = threading.RLock()
         self.status = 0
@@ -101,19 +107,6 @@ class LedgerApi(QObject):
                 self.dongle = None
 
         self.sig_disconnected.emit(message)
-
-
-
-    # Status codes:
-    # 0 - not connected
-    # 1 - not in pivx app
-    # 2 - fine
-    def getStatus(self):
-        messages = {
-            0: 'Device not initialized.',
-            1: 'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
-            2: 'Hardware device connected.'}
-        return self.status, messages[self.status]
 
 
 

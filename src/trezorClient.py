@@ -15,7 +15,7 @@ from trezorlib.transport import get_transport
 from trezorlib.tx_api import TxApi
 from trezorlib.ui import ClickUI
 
-from constants import MPATH_TREZOR as MPATH, MPATH_TESTNET
+from constants import MPATH_TREZOR as MPATH, MPATH_TESTNET, HW_devices
 from misc import getCallerName, getFunctionName, printException, printDbg, \
     DisconnectedException, printOK, splitString
 from threads import ThreadFuns
@@ -53,6 +53,12 @@ class TrezorApi(QObject):
 
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        self.model = HW_devices.index("TREZOR Model T")
+        self.messages = [
+            'Trezor not initialized. Coonect and unlock it',
+            'Error setting up Trezor Client',
+            'Hardware device connected.'
+        ]
         # Device Lock for threads
         self.lock = threading.RLock()
         self.status = 0
@@ -85,19 +91,6 @@ class TrezorApi(QObject):
             self.client = None
 
         self.sig_disconnected.emit(message)
-
-
-
-    # Status codes:
-    # 0 - not connected
-    # 1 - not initialized
-    # 2 - fine
-    def getStatus(self):
-        messages = {
-            0: 'Trezor not initialized. Coonect and unlock it',
-            1: 'Error setting up Trezor Client',
-            2: 'Hardware device connected.'}
-        return self.status, messages[self.status]
 
 
 
@@ -338,7 +331,7 @@ class TrezorApi(QObject):
         # -1 simply adds a waiting message to the actual progress
         if percent == -1:
             t = self.mBox2.text()
-            messageText = t + "<br>Accept signature on Trezor device..."
+            messageText = t + "<br>Please confirm action on your Trezor device..."
         else:
             messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"
         self.mBox2.setText(messageText)
