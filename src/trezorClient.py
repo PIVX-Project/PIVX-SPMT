@@ -138,6 +138,7 @@ class TrezorApi(QObject):
                 curr_utxo_checked += 1
                 completion = int(95 * curr_utxo_checked / num_of_txes)
                 self.tx_progress.emit(completion)
+        self.tx_progress.emit(100)
         return txes
 
 
@@ -334,7 +335,12 @@ class TrezorApi(QObject):
 
 
     def updateSigProgress(self, percent):
-        messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"
+        # -1 simply adds a waiting message to the actual progress
+        if percent == -1:
+            t = self.mBox2.text()
+            messageText = t + "<br>Accept signature on Trezor device..."
+        else:
+            messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"
         self.mBox2.setText(messageText)
         QApplication.processEvents()
 
@@ -388,6 +394,9 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
         return tx_copy
 
     R = trezor_proto.RequestType
+
+    percent = 1  # Used for signaling progress. 1-10 for inputs/outputs, 10-100 for sigs.
+    sig_percent.emit(percent)
     while isinstance(res, trezor_proto.TxRequest):
         # If there's some part of signed transaction, let's add it
         if res.serialized:
@@ -400,9 +409,9 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
                 if signatures[idx] is not None:
                     raise ValueError("Signature for index %d already filled" % idx)
                 signatures[idx] = sig
-                # completion percent emitted
-                completion = int(95 * idx / len(signatures))
-                sig_percent.emit(completion)
+                # emit completion percent
+                percent = 10 + int(90 * (idx+1) / len(signatures))
+                sig_percent.emit(percent)
 
         if res.request_type == R.TXFINISHED:
             break
@@ -415,11 +424,20 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
             res = client.call(trezor_proto.TxAck(tx=msg))
 
         elif res.request_type == R.TXINPUT:
+            if res.details.request_index > 0 and percent < 10:
+                percent = 1 + int(8 * (res.details.request_index + 1) / len(inputs))
+                sig_percent.emit(percent)
             msg = trezor_proto.TransactionType()
             msg.inputs = [current_tx.inputs[res.details.request_index]]
             res = client.call(trezor_proto.TxAck(tx=msg))
 
         elif res.request_type == R.TXOUTPUT:
+            # Update just one percent then display additional waiting message (emitting -1)
+            if percent == 9:
+                percent += 1
+                sig_percent.emit(percent)
+                sig_percent.emit(-1)
+
             msg = trezor_proto.TransactionType()
             if res.details.tx_hash:
                 msg.bin_outputs = [current_tx.bin_outputs[res.details.request_index]]
