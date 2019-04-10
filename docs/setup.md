@@ -4,11 +4,12 @@
 
 #### <a name="setup2"></a>Hardware Wallet Connection
 
-> *Note*: :warning: make sure to have the latest firmware installed on your Nano S device.<br>
+> *Note*: :warning: make sure to have the latest firmware installed on your hardware device.<br>
 Also make sure to close all applications that might interfere with the device's USB dongle (such as Ledger Chrome Wallet or Ledger Live App)
 
-Connect the hardware device to the USB, unlock it and open the PIVX app on it.<br>
-Click the button `Connect` next to 'Hardware Device: Ledger Nano S':<br>
+Select the hardware wallet model from the dropdown menu.
+Connect the hardware device to the USB, unlock it (and, for Ledger, open the PIVX app on it).<br>
+Click the button `Connect` next to 'Hardware Device:' drop down menu:<br>
 
 <img src="img/setup_01.png" width="670"><br>
 
@@ -88,13 +89,16 @@ Click `New Masternode` (big button below the list) and fill all the informations
 If you don't have one yet, you can generate a new one clicking on `Generate` (then copy it to the config file of the remote node).
 
 <br>Insert the PIVX Address holding the collateral and relative account number.<br>
-If you have only one account in your Ledger wallet, leave account number to "0".<br>
+If you have only one account in your wallet, leave account number to "0".<br>
 After inserting Account number and PIVX Address, click `>>` to look for path and public key.<br>
 
 <img src="img/setup_10.png" width="670"><br>
 
->*Note*: If you are unsure about the account number, you can check the account details from Ledger live app (advanced logs --> your account number is next to `"index"`):<br>
+>*Note*: If you are unsure about the account number, you can check the account details:
+<br> ° (LEDGER) from Ledger live app (advanced logs --> your account number is next to `"index"`):<br>
 <img src="img/setup_09.png" width="400"><br>
+<br> * (TREZOR) from Trezor web wallet, select the account, go to the 'receive' tab and click on 'show full address'. Next to the QR code there's the full path of the address, e.g.:
+`BIP32 Path: m/44'/119'/1'/2/3`. --> Your account number is the third one (i.e. `1` in the example).
 
 <p>The tool looks for the public key and path of the given address (in batches of 10 paths per scan, asking confirmation to continue if needed).<br>
 When found, a notification message is displayed.</p>

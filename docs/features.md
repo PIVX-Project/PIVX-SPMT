@@ -24,7 +24,7 @@ Click `yes` to confirm<br>
 <img src="img/features_05.png" width="670"><br>
 
 <p>Double check the masternode message hash both on screen and on the display of the device.<br>
-Then click "yes" (right button) on the ledger nano S.</p>
+Then click "yes" on the hardware device.</p>
 
 <img src="img/features_06.png" width="670"><br>
 

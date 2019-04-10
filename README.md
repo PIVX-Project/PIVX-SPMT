@@ -2,7 +2,9 @@
 
 # SPMT
 
-**SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on Ledger Nano S hardware wallets.**
+**SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on hardware wallets.<br>Currently supported wallets:**
+ - [LEDGER](https://www.ledger.com) Nano S
+ - [TREZOR](https://trezor.io) Model T.
 
 <p>Running a PIVX masternode usually requires setting up two PIVX full nodes: </p>
 
@@ -11,7 +13,7 @@
 2) the *Control Wallet*, that holds the collateral and does not need to be always on-line. <br>
 It is used only to spend rewards, to vote on proposals, or to send a message (signed with the key of the collateral) to activate the remote node when it needs to be started.
 
-<p>SPMT allows the user to store the collateral on a Ledger Nano hardware wallet and replaces the control wallet, allowing the user:</p>
+<p>SPMT allows the user to store the keys of the collateral on an hardware wallet thus replaces the control wallet, allowing the user:</p>
 
 - to sign with the collateral private key the start-message for the remote node and broadcast it.
 - to spend masternode rewards without inadvertently including the collateral.
