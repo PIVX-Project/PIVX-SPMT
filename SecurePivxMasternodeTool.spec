@@ -1,25 +1,31 @@
 # -*- mode: python -*-
 import sys
-import os
-import os.path
+import os.path as os_path
 import simplejson as json
 
 os_type = sys.platform
 block_cipher = None
-base_dir = os.path.dirname(os.path.realpath('__file__'))
+base_dir = os_path.dirname(os_path.realpath('__file__'))
+
+def libModule(module, source, dest):
+	m = __import__(module)
+	module_path = os_path.dirname(m.__file__)
+	del m
+	print("libModule %s" % str(( os_path.join(module_path, source), dest )))
+	return ( os_path.join(module_path, source), dest )
+
 
 # look for version string
 version_str = ''
-with open(os.path.join(base_dir, 'src', 'version.txt')) as version_file:
+with open(os_path.join(base_dir, 'src', 'version.txt')) as version_file:
 	version_data = json.load(version_file)
 version_file.close()
 version_str = version_data["number"] + version_data["tag"]
 
 add_files = [('src/version.txt', '.'), ('img', 'img')]
-lib_path = next(p for p in sys.path if 'site-packages' in p)
-add_files.append( (os.path.join(lib_path, 'bitcoin/english.txt'),'bitcoin') )
-add_files.append( (os.path.join(lib_path, 'trezorlib/coins.json'), 'trezorlib') )
-add_files.append( (os.path.join(lib_path, 'trezorlib/transport'), 'trezorlib/transport') )
+add_files.append( libModule('bitcoin', 'english.txt','bitcoin') )
+add_files.append( libModule('trezorlib', 'coins.json', 'trezorlib') )
+add_files.append( libModule('trezorlib', 'transport', 'trezorlib/transport') )
 
 if os_type == 'darwin':
     add_files.append( ('/usr/local/lib/libusb-1.0.dylib', '.') )
@@ -84,7 +90,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           console=False,
-          icon=os.path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
+          icon=os_path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
 
 coll = COLLECT(exe,
                a.binaries,
@@ -97,21 +103,21 @@ coll = COLLECT(exe,
 if os_type == 'darwin':
 	app = BUNDLE(coll,
              name='SecurePivxMasternodeTool.app',
-             icon=os.path.join(base_dir, 'img', 'spmt.icns'),
+             icon=os_path.join(base_dir, 'img', 'spmt.icns'),
              bundle_identifier=None,
              info_plist={'NSHighResolutionCapable': 'True'})
 
 
 # Prepare bundles
-dist_path = os.path.join(base_dir, 'dist')
-app_path = os.path.join(dist_path, 'app')
+dist_path = os_path.join(base_dir, 'dist')
+app_path = os_path.join(dist_path, 'app')
 os.chdir(dist_path)
 
 # Copy Readme Files
 from shutil import copyfile, copytree
 print('Copying README.md')
-copyfile(os.path.join(base_dir, 'README.md'), 'README.md')
-copytree(os.path.join(base_dir, 'docs'), 'docs')
+copyfile(os_path.join(base_dir, 'README.md'), 'README.md')
+copytree(os_path.join(base_dir, 'docs'), 'docs')
 
 
 if os_type == 'win32':
@@ -119,7 +125,7 @@ if os_type == 'win32':
 	os.system('xcopy app\PyQt5\Qt\plugins\platforms app\platforms\ /i')
 	os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_win = os.path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
+	dist_path_win = os_path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
 	os.rename(dist_path, dist_path_win)
 	# Compress dist Dir
 	print('Compressing Windows App Folder')
@@ -129,7 +135,7 @@ if os_type == 'win32':
 if os_type == 'linux':
 	os.chdir(base_dir)
 	# Rename dist Dir
-	dist_path_linux = os.path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
+	dist_path_linux = os_path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
 	os.rename(dist_path, dist_path_linux)
 	# Compress dist Dir
 	print('Compressing Linux App Folder')
@@ -140,7 +146,7 @@ if os_type == 'linux':
 if os_type == 'darwin':
     os.chdir(base_dir)
     # Rename dist Dir
-    dist_path_mac = os.path.join(base_dir, 'SPMT-v' + version_str + '-MacOSX')
+    dist_path_mac = os_path.join(base_dir, 'SPMT-v' + version_str + '-MacOSX')
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
     print("Removin 'app' folder")
@@ -151,4 +157,3 @@ if os_type == 'darwin':
     print('Compressing Mac App Folder')
     os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-MacOSX.tar.gz',
                 base_dir, 'SPMT-v' + version_str + '-MacOSX'))
-
