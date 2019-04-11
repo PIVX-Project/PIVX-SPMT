@@ -4,15 +4,16 @@ import os
 import signal
 import sys
 
-from PyQt5.Qt import QMainWindow, QIcon, QAction, QFileDialog, pyqtSignal, QSettings
+from PyQt5.QtCore import pyqtSignal, QSettings
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QAction, QFileDialog
 
 from database import Database
-from misc import getSPMTVersion, printDbg, printOK, \
+from misc import getSPMTVersion, printDbg, initLogs, \
     clean_v4_migration, saveCacheSettings, readCacheSettings
 from mainWindow import MainWindow
 from constants import user_dir
 from qt.dlg_configureRPCservers import ConfigureRPCservers_dlg
-
 
 class ServiceExit(Exception):
     """
@@ -34,6 +35,8 @@ class App(QMainWindow):
     sig_changed_rpcServers = pyqtSignal()
 
     def __init__(self, imgDir, app, start_args):
+        # Initialize Logs
+        initLogs()
         super().__init__()
         self.app = app
         # Register the signal handlers
