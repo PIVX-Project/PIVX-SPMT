@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from ipaddress import ip_address
+import logging
 import simplejson as json
 import time
 from urllib.parse import urlparse
@@ -17,14 +18,6 @@ def add_defaultKeys_to_dict(dictObj, defaultObj):
         if key not in dictObj:
             dictObj[key] = defaultObj[key]
 
-
-def append_to_logfile(text):
-    try:
-        logFile = open(log_File, 'a+')
-        logFile.write(text)
-        logFile.close()
-    except Exception as e:
-        print(e)
 
 
 QT_MESSAGE_TYPE = {
@@ -98,6 +91,8 @@ def clean_v4_migration(wnd):
     rpc_file = os.path.join(user_dir, 'rpcServer.json')
     cache_file = os.path.join(user_dir, 'cache.json')
     mn_file = os.path.join(user_dir, 'masternodes.json')
+    log_file = os.path.join(user_dir, 'lastLogs.html')
+
     messTitle = "Clean migration to v0.4.0 data storage"
 
     if os.path.exists(rpc_file) or os.path.exists(cache_file) or os.path.exists(mn_file):
@@ -143,6 +138,11 @@ def clean_v4_migration(wnd):
         except Exception as e:
             mess = "Error importing old masternodes_config file"
             printException(getCallerName(), getFunctionName(), mess, e)
+
+    # Remove old logs
+    if os.path.exists(log_file):
+        os.remove(log_file)
+        printDbg("old lastLogs.html file deleted")
 
 
 
@@ -210,6 +210,19 @@ def getTxidTxidn(txid, txidn):
         return None
     else:
         return txid + '-' + str(txidn)
+
+
+
+def initLogs():
+    filename = log_File
+    filemode = 'w'
+    format = '%(asctime)s - %(levelname)s - %(threadName)s | %(message)s'
+    level = logging.DEBUG
+    logging.basicConfig(filename=filename,
+                        filemode=filemode,
+                        format=format,
+                        level=level
+                        )
 
 
 
@@ -335,6 +348,12 @@ def persistCacheSetting(cache_key, cache_value):
 
 
 
+def printDbg(what):
+    logging.info(what)
+    log_line = printDbg_msg(what)
+    print(log_line)
+
+
 
 def printDbg_msg(what):
     what = clean_for_html(what)
@@ -343,34 +362,44 @@ def printDbg_msg(what):
     return log_line
 
 
-def printError_msg(what):
-    what = clean_for_html(what)
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
-    log_line = '<b style="color: yellow">{}</b> : <em style="color: red">{}</em><br>'.format(timestamp, what)
-    return log_line
 
-
-
-def printDbg(what):
-    log_line = printDbg_msg(what)
-    append_to_logfile(log_line)
+def printError(
+        caller_name,
+        function_name,
+        what
+):
+    logging.error("%s | %s | %s" % (caller_name, function_name, what))
+    log_line = printException_msg(caller_name, function_name, what, None, True)
     print(log_line)
 
 
-def printError(what):
-    log_line = printError_msg(what)
-    append_to_logfile(log_line)
-    print(log_line)
+
+def printException(
+        caller_name,
+        function_name,
+        err_msg,
+        errargs=None
+):
+    what = err_msg
+    if errargs is not None:
+        what += " ==> %s" % str(errargs)
+    logging.warning("%s | %s | %s" % (caller_name, function_name, what))
+    text = printException_msg(caller_name, function_name, err_msg, errargs)
+    print(text)
+
 
 
 def printException_msg(
         caller_name,
         function_name,
         err_msg,
-        errargs=None):
-    VERSION = getSPMTVersion()
-    msg = '<b style="color: red">EXCEPTION</b><br>'
-    msg += '<span style="color:white">version</span> : %s-%s<br>' % (VERSION['number'], VERSION['tag'])
+        errargs=None,
+        is_error=False
+):
+    if is_error:
+        msg = '<b style="color: red">ERROR</b><br>'
+    else:
+        msg = '<b style="color: red">EXCEPTION</b><br>'
     msg += '<span style="color:white">caller</span>   : %s<br>' % caller_name
     msg += '<span style="color:white">function</span> : %s<br>' % function_name
     msg += '<span style="color:red">'
@@ -382,21 +411,10 @@ def printException_msg(
 
 
 
-def printException(caller_name,
-        function_name,
-        err_msg,
-        errargs=None):
-    text = printException_msg(caller_name, function_name, err_msg, errargs)
-    append_to_logfile(text)
-    print(text)
-
-
-
 def printOK(what):
+    logging.debug(what)
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
-    append_to_logfile(msg)
     print(msg)
-
 
 
 

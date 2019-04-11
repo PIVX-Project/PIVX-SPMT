@@ -16,7 +16,7 @@ starting_height = 666
 APPDATA_DIRNAME = ".SecurePivxMasternodeTool"
 home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
-log_File = os.path.join(user_dir, 'lastLogs.html')
+log_File = os.path.join(user_dir, 'debug.log')
 database_File = os.path.join(user_dir, 'application.db')
 
 

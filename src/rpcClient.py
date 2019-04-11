@@ -21,7 +21,7 @@ def process_RPC_exceptions(func):
 
         except Exception as e:
             message = "Exception in RPC client"
-            printException(getCallerName(True), getFunctionName(True), message, e)
+            printException(getCallerName(True), getFunctionName(True), message, str(e))
         finally:
             try:
                 args[0].httpConnection.close()

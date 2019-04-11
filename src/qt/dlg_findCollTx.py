@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, \
     QSizePolicy, QTableWidget, QAbstractScrollArea, QAbstractItemView, QTableWidgetItem, QHeaderView, QSpacerItem
 
-from misc import printDbg, printError
+from misc import printDbg, getCallerName, getFunctionName, printError
 from threads import ThreadFuns
 
 
@@ -75,7 +75,7 @@ class FindCollTx_dlg(QDialog):
 
                 except Exception as e:
                     errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                    printError(errorMsg)
+                    printError(getCallerName(), getFunctionName(), errorMsg)
 
         except Exception as e:
             pass

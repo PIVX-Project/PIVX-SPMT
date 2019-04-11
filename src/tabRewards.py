@@ -193,7 +193,7 @@ class TabRewards():
 
             # If rpc is not connected warn and return.
             if not self.caller.rpcConnected:
-                printError('PIVX daemon not connected - Unable to update UTXO list')
+                printError(getCallerName(), getFunctionName(), 'PIVX daemon not connected - Unable to update UTXO list')
                 return
 
             total_num_of_utxos = 0
@@ -203,7 +203,7 @@ class TabRewards():
                 rewards = self.caller.apiClient.getAddressUtxos(mn['collateral'].get('address'))
 
                 if rewards is None:
-                    printError('API client not responding.')
+                    printError(getCallerName(), getFunctionName(), 'API client not responding.')
                     return
 
                 mn_rewards[mn['name']] = rewards
@@ -226,7 +226,7 @@ class TabRewards():
 
                     # Don't save UTXO if raw TX is unavailable
                     if rawtx is None:
-                        printError("Unable to get raw TX with hash=%s from RPC server" % utxo['txid'])
+                        printError(getCallerName(), getFunctionName(), "Unable to get raw TX with hash=%s from RPC server" % utxo['txid'])
                         continue
 
                     # Add mn_name and raw_tx to UTXO and save it to DB

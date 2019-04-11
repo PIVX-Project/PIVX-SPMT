@@ -19,7 +19,7 @@ def process_api_exceptions(func):
                 return func(*args, **kwargs)
 
             except Exception as e:
-                printError(str(e))
+                printError(getCallerName(True), getFunctionName(True), str(e))
                 return None
 
     return process_api_exceptions_int

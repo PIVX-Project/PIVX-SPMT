@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 import os
 from queue import Queue
 import sys
@@ -94,11 +95,7 @@ class MainWindow(QWidget):
         sys.stdout = WriteStream(self.queue)
 
         ###-- Init last logs
-        logFile = open(log_File, 'w+')
-        timestamp = strftime('%Y-%m-%d %H:%M:%S', gmtime(now()))
-        log_line = '<b style="color: blue">{}</b><br>'.format('STARTING SPMT at '+ timestamp)
-        logFile.write(log_line)
-        logFile.close()
+        logging.debug("STARTING SPMT")
 
         ###-- Create the thread to update console log for stdout
         self.consoleLogThread = QThread()
