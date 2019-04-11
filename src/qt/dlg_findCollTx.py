@@ -70,8 +70,8 @@ class FindCollTx_dlg(QDialog):
             else:
                 try:
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
-                    utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)['unspent_outputs']
-                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('satoshis', 0))/1e8, 8) == 10000.00000000 ]
+                    utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)
+                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('satoshis', 0))/1e8, 8) == 10000.00000000]
 
                 except Exception as e:
                     errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
