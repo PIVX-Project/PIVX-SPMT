@@ -65,8 +65,6 @@ class TabRewards():
 
 
 
-
-
     def display_mn_utxos(self):
         if self.curr_name is None:
             return
@@ -182,7 +180,6 @@ class TabRewards():
 
 
 
-
     def load_utxos_thread(self, ctrl):
         with self.Lock:
             # clear rewards DB
@@ -191,8 +188,8 @@ class TabRewards():
             self.caller.parent.db.clearTable('MY_VOTES')
             self.utxoLoaded = False
 
-            # If rpc is not connected warn and return.
-            if not self.caller.rpcConnected:
+            # If rpc is not connected and hw device is Ledger, warn and return.
+            if not self.caller.rpcConnected and self.caller.hwModel == 0:
                 printError(getCallerName(), getFunctionName(), 'PIVX daemon not connected - Unable to update UTXO list')
                 return
 
@@ -266,8 +263,6 @@ class TabRewards():
 
 
 
-
-
     def onChangeSelectedMN(self):
         self.curr_name = None
         if self.ui.mnSelect.currentIndex() >= 0:
@@ -283,19 +278,15 @@ class TabRewards():
 
 
 
-
-
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
         self.updateSelection()
 
 
 
-
     def onDeselectAllRewards(self):
         self.ui.rewardsList.box.clearSelection()
         self.updateSelection()
-
 
 
 
@@ -306,13 +297,10 @@ class TabRewards():
 
 
 
-
-
     def onSendRewards(self):
         self.dest_addr = self.ui.destinationLine.text().strip()
 
-        # Check dongle
-        printDbg("Checking HW device")
+        # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
@@ -390,7 +378,6 @@ class TabRewards():
 
 
 
-
     def onToggleCollateral(self):
         if self.ui.rewardsList.box.collateralRow is not None:
             if not self.ui.collateralHidden:
@@ -422,7 +409,6 @@ class TabRewards():
     def removeSpentRewards(self):
         for utxo in self.selectedRewards:
             self.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
-
 
 
 
@@ -482,13 +468,12 @@ class TabRewards():
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
 
+
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
-
-
 
 
 
@@ -506,7 +491,6 @@ class TabRewards():
     def updateProgressPercent(self, percent):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
-
 
 
 
@@ -546,7 +530,6 @@ class TabRewards():
 
         totalBalance = str(round(nAmount/1e8, 8))
         self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % totalBalance)
-
 
 
 

@@ -6,8 +6,7 @@ from btchip.btchipUtils import compress_public_key, bitcoinTransaction, bitcoinI
 import threading
 from time import sleep
 
-from PyQt5.Qt import QObject
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
 from constants import MPATH_LEDGER as MPATH, MPATH_TESTNET, HW_devices
@@ -15,7 +14,6 @@ from misc import printDbg, printException, printOK, getCallerName, getFunctionNa
 from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
-
 
 
 def process_ledger_exceptions(func):
@@ -58,8 +56,7 @@ class LedgerApi(QObject):
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
     sig_progress = pyqtSignal(int)
-    # signal: sig_disconnected -emitted with DisconnectedException
-    sig_disconnected = pyqtSignal(str)
+
 
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -80,34 +77,34 @@ class LedgerApi(QObject):
 
     @process_ledger_exceptions
     def initDevice(self):
-        print("Initializing Ledger")
+        printDbg("Initializing Ledger")
         with self.lock:
             self.status = 0
-            self.clearDevice()
             self.dongle = getDongle(False)
             printOK('Ledger Nano S drivers found')
             self.chip = btchip(self.dongle)
             printDbg("Ledger Initialized")
+            self.status = 1
             ver = self.chip.getFirmwareVersion()
             printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
             # Check device is unlocked
             bip32_path = MPATH + "%d'/0/%d" % (0, 0)
-            self.status = 1
             firstKey = self.chip.getWalletPublicKey(bip32_path)
             self.status = 2
         self.sig_progress.connect(self.updateSigProgress)
 
 
 
-    def clearDevice(self, message=''):
-        self.status = 1
-        if hasattr(self, 'dongle') and self.dongle is not None:
-            with self.lock:
-                self.dongle.close()
+    def closeDevice(self):
+        printDbg("Closing LEDGER client")
+        self.status = 0
+        with self.lock:
+            if self.dongle is not None:
+                try:
+                    self.dongle.close()
+                except:
+                    pass
                 self.dongle = None
-
-        self.sig_disconnected.emit(message)
-
 
 
     @process_ledger_exceptions
@@ -213,14 +210,14 @@ class LedgerApi(QObject):
 
 
 
+    @process_ledger_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
-        curr_addr = None
-        curr_path = MPATH + "%d'/0/%d" % (account, spath)
-
         with self.lock:
             if not isTestnet:
+                curr_path = MPATH + "%d'/0/%d" % (account, spath)
                 curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
             else:
+                curr_path = MPATH_TESTNET + "%d'/0/%d" % (account, spath)
                 pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()
                 curr_addr = pubkey_to_address(pubkey, isTestnet)
 
@@ -228,39 +225,18 @@ class LedgerApi(QObject):
 
 
 
-    def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
-        found = False
-        spath = -1
+    @process_ledger_exceptions
+    def scanForPubKey(self, account, spath, isTestnet=False):
+        hwpath = "%d'/0/%d" % (account, spath)
+        if isTestnet:
+            curr_path = MPATH_TESTNET + hwpath
+        else:
+            curr_path = MPATH + hwpath
 
-        for i in range(starting_spath, starting_spath + spath_count):
-            curr_path = MPATH + "%d'/0/%d" % (account, i)
-            printDbg("checking path... %s" % curr_path)
-            with self.lock:
-                if not isTestnet:
-                    curr_addr = self.chip.getWalletPublicKey(curr_path).get('address')[12:-2]
-                else:
-                    pubkey = compress_public_key(self.chip.getWalletPublicKey(curr_path).get('publicKey')).hex()
-                    curr_addr = pubkey_to_address(pubkey, isTestnet)
-
-                if curr_addr == address:
-                    found = True
-                    spath = i
-                    break
-
-                sleep(0.01)
-
-        return (found, spath)
-
-
-
-    def scanForPubKey(self, account, spath):
-        result = None
-        curr_path = MPATH + "%d'/0/%d" % (account, spath)
         with self.lock:
             nodeData = self.chip.getWalletPublicKey(curr_path)
-            result = compress_public_key(nodeData.get('publicKey')).hex()
 
-        return result
+        return compress_public_key(nodeData.get('publicKey')).hex()
 
 
 

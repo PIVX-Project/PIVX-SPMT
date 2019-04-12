@@ -4,8 +4,7 @@ import binascii
 import threading
 from time import sleep
 
-from PyQt5.Qt import QObject
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
 from trezorlib import btc, exceptions, messages as trezor_proto, coins
@@ -21,7 +20,6 @@ from misc import getCallerName, getFunctionName, printException, printDbg, \
 from threads import ThreadFuns
 
 
-
 def  process_trezor_exceptions(func):
     def process_trezor_exceptions_int(*args, **kwargs):
         hwDevice = args[0]
@@ -35,6 +33,7 @@ def  process_trezor_exceptions(func):
     return process_trezor_exceptions_int
 
 
+
 class TrezorApi(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
@@ -46,9 +45,6 @@ class TrezorApi(QObject):
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
     sig_progress = pyqtSignal(int)
-    # signal: sig_disconnected -emitted with DisconnectedException
-    sig_disconnected = pyqtSignal(str)
-
 
 
     def __init__(self, *args, **kwargs):
@@ -84,20 +80,24 @@ class TrezorApi(QObject):
 
 
 
-    def clearDevice(self, message=''):
-        self.status = 1
-        if self.client is not None:
-            self.client.close()
-            self.client = None
-
-        self.sig_disconnected.emit(message)
+    def closeDevice(self):
+        printDbg("Closing TREZOR client")
+        self.status = 0
+        with self.lock:
+            if self.client is not None:
+                try:
+                    self.client.close()
+                except:
+                    pass
+                self.client = None
 
 
 
     @process_trezor_exceptions
     def initDevice(self):
-        print("Initializing Trezor")
+        printDbg("Initializing Trezor")
         with self.lock:
+            self.status = 0
             transport = get_transport()
             ui = ClickUI()
             printOK('Trezor drivers found')
@@ -202,9 +202,8 @@ class TrezorApi(QObject):
 
 
 
+    @process_trezor_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
-        curr_addr = None
-
         with self.lock:
             if not isTestnet:
                 curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
@@ -217,26 +216,8 @@ class TrezorApi(QObject):
 
 
 
-    def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
-        found = False
-        spath = -1
-
-        for i in range(starting_spath, starting_spath + spath_count):
-            printDbg("checking path... %d'/0/%d" % (account, i))
-            curr_addr = self.scanForAddress(account, i, isTestnet)
-            if curr_addr == address:
-                found = True
-                spath = i
-                break
-
-            sleep(0.01)
-
-        return (found, spath)
-
-
-
+    @process_trezor_exceptions
     def scanForPubKey(self, account, spath, isTestnet=False):
-        result = None
         hwpath = "%d'/0/%d" % (account, spath)
         if isTestnet:
             path = MPATH_TESTNET + hwpath
@@ -248,6 +229,7 @@ class TrezorApi(QObject):
             result = btc.get_public_node(self.client, curr_path)
 
         return result.node.public_key.hex()
+
 
 
     def signMess(self, caller, hwpath, message, isTestnet=False):
@@ -313,6 +295,7 @@ class TrezorApi(QObject):
 
         self.tx_raw = bytearray(signed[1])
         self.sig_progress.emit(100)
+
 
 
     def signTxFinish(self):

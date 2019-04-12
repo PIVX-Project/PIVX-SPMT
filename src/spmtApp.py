@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 import os
 import signal
 import sys
@@ -149,10 +150,11 @@ class App(QMainWindow):
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         self.mainWindow.myRpcWd.shutdown_flag.set()
-        print("Saving stuff & closing...")
-        if getattr(self.mainWindow.hwdevice, 'dongle', None) is not None:
-            self.mainWindow.hwdevice.dongle.close()
-            print("Dongle closed")
+        logging.debug("Saving stuff & closing...")
+        try:
+            self.mainWindow.hwdevice.clearDevice()
+        except Exception as e:
+            logging.warning(str(e))
 
         # Update window/splitter size
         self.cache['window_width'] = self.width()
@@ -180,7 +182,6 @@ class App(QMainWindow):
         self.db.clearTable('REWARDS')
         self.db.clearTable('PROPOSALS')
         self.db.clearTable('MY_VOTES')
-
 
         # close database
         self.db.close()

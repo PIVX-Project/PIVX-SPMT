@@ -45,7 +45,6 @@ class TabMain():
 
 
 
-
     def displayMNStatus(self, currMN):
         statusData = None
         for mn in self.all_masternodes.get('masternodes'):
@@ -97,7 +96,6 @@ class TabMain():
 
 
 
-
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
@@ -116,9 +114,6 @@ class TabMain():
 
 
 
-
-
-
     def onDisplayStatusDetails(self, masternode_alias, statusData):
         try:
             ui = MnStatus_dlg(self.ui, masternode_alias, statusData)
@@ -127,8 +122,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error in displayStatusDetails"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
 
 
@@ -147,14 +140,10 @@ class TabMain():
 
 
 
-
-
     def onNewMasternode(self):
         self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
         self.caller.tabMNConf.clearConfigForm()
         self.caller.tabs.setCurrentIndex(1)
-
-
 
 
 
@@ -177,7 +166,6 @@ class TabMain():
 
 
 
-
     def onRewardsMN(self, data=None):
         if not data:
             target = self.ui.sender()
@@ -190,7 +178,7 @@ class TabMain():
 
     def onStartAllMN(self):
         printOK("Start-All pressed")
-        # Check RPC & dongle
+        # Check RPC & HW device
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")
@@ -216,11 +204,8 @@ class TabMain():
 
 
 
-
-
-
     def onStartMN(self, data=None):
-        # Check RPC & dongle
+        # Check RPC & HW device
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
             printDbg("Hardware device or RPC server not connected")
@@ -249,7 +234,6 @@ class TabMain():
 
 
 
-
     def onSweepAllRewards(self):
         if not self.caller.rpcConnected or self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
@@ -260,8 +244,6 @@ class TabMain():
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
 
 
@@ -306,7 +288,6 @@ class TabMain():
 
 
 
-
     def startMN(self):
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "warn", 'SPMT - hw device check', self.caller.hwStatusMess)
@@ -320,8 +301,5 @@ class TabMain():
 
 
 
-
     def updateAllMasternodes_thread(self, ctrl):
         self.all_masternodes = self.caller.rpcClient.getMasternodes()
-
-

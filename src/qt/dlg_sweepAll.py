@@ -34,6 +34,7 @@ class SweepAll_dlg(QDialog):
         self.main_tab.caller.sig_UTXOsLoaded.connect(self.display_utxos)
 
 
+
     # Called each time before exec_ in showDialog
     def load_data(self):
         # clear table
@@ -45,8 +46,6 @@ class SweepAll_dlg(QDialog):
             self.ui.swiftxCheck.setChecked(True)
         # Reload UTXOs
         ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
-
-
 
 
 
@@ -121,13 +120,10 @@ class SweepAll_dlg(QDialog):
             self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total,8)))
             self.ui.noOfUtxosLine.setText("<b>%s</b>" % str(numOfInputs))
 
-
             # update fee
             estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.updateFee()
-
-
 
 
 
@@ -137,14 +133,12 @@ class SweepAll_dlg(QDialog):
 
 
 
-
-
     def onButtonSend(self):
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
             self.currFee = self.ui.feeLine.value() * 1e8
 
-             # Check RPC & dongle
+             # Check RPC & HW device
             if not self.main_tab.caller.rpcConnected or self.main_tab.caller.hwStatus != 2:
                 myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
                 return None
@@ -277,7 +271,6 @@ class SweepAll_dlg(QDialog):
 
 
 
-
     def updateFee(self):
         if self.useSwiftX():
             self.ui.feeLine.setValue(0.01)
@@ -294,16 +287,16 @@ class SweepAll_dlg(QDialog):
 
 
 
-
-
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
 
 
+
     def useSwiftX(self):
         return self.ui.swiftxCheck.isChecked()
+
 
 
 

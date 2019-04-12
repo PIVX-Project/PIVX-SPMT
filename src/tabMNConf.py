@@ -34,18 +34,15 @@ class TabMNConf():
 
 
 
-
     def addressToSpath(self):
         printOK("addressToSpath pressed")
         self.spath_found = False
-        # Check dongle
-        printDbg("Checking HW device")
+        # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)
-
 
 
 
@@ -57,8 +54,6 @@ class TabMNConf():
         printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, self.spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
-
-
 
 
 
@@ -87,13 +82,11 @@ class TabMNConf():
 
 
 
-
     def findPubKey(self):
         printDbg("Computing public key...")
         currSpath = self.ui.edt_spath.value()
         currHwAcc = self.ui.edt_hwAccount.value()
-        # Check dongle
-        printDbg("Checking HW device")
+        # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
@@ -103,7 +96,7 @@ class TabMNConf():
 
         # Connection pop-up
         warningText = "Another application (such as Ledger Wallet app) has probably taken over "
-        warningText += "the communication with the Ledger device.<br><br>To continue, close that application and "
+        warningText += "the USB communication with the device.<br><br>To continue, close that application and "
         warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
         mBox = QMessageBox(QMessageBox.Critical, "WARNING", warningText, QMessageBox.Retry)
         mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
@@ -113,8 +106,8 @@ class TabMNConf():
             if ans == QMessageBox.Abort:
                 return
             # we need to reconnect the device
-            self.caller.hwdevice.dongle.close()
-            self.caller.hwdevice.initDevice()
+            self.caller.hwdevice.clearDevice()
+            self.caller.hwdevice.initDevice(self.caller.header.hwDevices.currentIndex())
 
             result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath, self.isTestnet())
 
@@ -122,7 +115,6 @@ class TabMNConf():
         myPopUp_sb(self.caller, "info", "SPMT - findPubKey", mess)
         printOK("Public Key: %s" % result)
         self.ui.edt_pubKey.setText(result)
-
 
 
 
@@ -139,12 +131,10 @@ class TabMNConf():
 
 
 
-
     def onCancelMNConfig(self):
         self.caller.tabs.setCurrentIndex(0)
         self.caller.tabs.removeTab(1)
         self.caller.mnode_to_change = None
-
 
 
 
@@ -153,8 +143,6 @@ class TabMNConf():
             self.ui.edt_masternodePort.setValue(51474)
         else:
             self.ui.edt_masternodePort.setValue(51472)
-
-
 
 
 
@@ -175,14 +163,10 @@ class TabMNConf():
 
 
 
-
-
     def onFindSpathAndPrivKey(self):
         self.ui.edt_spath.setValue(0)
         self.ui.edt_pubKey.setText('')
         self.addressToSpath()
-
-
 
 
 
@@ -208,8 +192,6 @@ class TabMNConf():
 
 
 
-
-
     def onGenerateMNkey(self):
         printDbg("Generate MNkey pressed")
         reply = QMessageBox.Yes
@@ -223,8 +205,6 @@ class TabMNConf():
 
         newkey = generate_privkey(self.isTestnet())
         self.ui.edt_mnPrivKey.setText(newkey)
-
-
 
 
 
@@ -292,14 +272,11 @@ class TabMNConf():
 
 
 
-
-
     def spathToAddress(self):
         printOK("spathToAddress pressed")
         currHwAcc = self.ui.edt_hwAccount.value()
         currSpath = self.ui.edt_spath.value()
-        # Check dongle
-        printDbg("Checking HW device")
+        # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
