@@ -30,12 +30,15 @@ class HWdevice(QObject):
     sig_disconnected = pyqtSignal(str)
 
     def __init__(self, main_wnd, *args, **kwargs):
+        printDbg("HW: Initializing Class...")
         QObject.__init__(self, *args, **kwargs)
         self.main_wnd = main_wnd
         self.api = None
+        printOK("HW: Class initialized")
 
 
     def initDevice(self, hw_index):
+        printDbg("HW: initializing hw device with index %d" % hw_index)
         if hw_index >= len(HW_devices):
             raise Exception("Invalid HW index")
 
@@ -49,13 +52,15 @@ class HWdevice(QObject):
         self.api.initDevice()
         self.sig1done = self.api.sig1done
         self.sig_disconnected.connect(self.main_wnd.clearHWstatus)
+        printOK("HW: hw device with index %d initialized" % hw_index)
 
 
     @check_api_init
     def clearDevice(self, message=''):
-        printDbg("Clearing HW device...")
+        printDbg("HW: Clearing HW device...")
         self.api.closeDevice()
         self.sig_disconnected.emit(message)
+        printOK("HW: device cleared")
 
 
     # Status codes:
@@ -64,7 +69,9 @@ class HWdevice(QObject):
     # 2 - fine
     @check_api_init
     def getStatus(self):
+        printDbg("HW: checking device status...")
         messages = self.api.messages
+        printOK("Status: %d" % self.api.status)
         return self.api.model, self.api.status, messages[self.api.status]
 
 
@@ -79,23 +86,24 @@ class HWdevice(QObject):
 
     @check_api_init
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
+        printDbg("HW: Preparing transfer TX")
         self.api.prepare_transfer_tx_bulk(caller, rewardsArray, dest_address, tx_fee, useSwiftX, isTestnet)
 
 
     @check_api_init
     def scanForAddress(self, account, spath, isTestnet=False):
-        printOK("Scanning for Address n. %d on account n. %d" % (spath, account))
+        printOK("HW: Scanning for Address n. %d on account n. %d" % (spath, account))
         return self.api.scanForAddress(account, spath, isTestnet)
 
 
     @check_api_init
     def scanForBip32(self, account, address, starting_spath=0, spath_count=10, isTestnet=False):
-        printOK("Scanning for Bip32 path of address: %s" % address)
+        printOK("HW: Scanning for Bip32 path of address: %s" % address)
         found = False
         spath = -1
 
         for i in range(starting_spath, starting_spath + spath_count):
-            printDbg("checking path... %d'/0/%d" % (account, i))
+            printDbg("HW: checking path... %d'/0/%d" % (account, i))
             curr_addr = self.api.scanForAddress(account, i, isTestnet)
 
             if curr_addr == address:
@@ -110,20 +118,25 @@ class HWdevice(QObject):
 
     @check_api_init
     def scanForPubKey(self, account, spath, isTestnet=False):
-        printOK("Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
+        printOK("HW: Scanning for PubKey of address n. %d on account n. %d" % (spath, account))
         return self.api.scanForPubKey(account, spath, isTestnet)
 
 
     @check_api_init
     def signMess(self, caller, path, message, isTestnet=False):
+        printDbg("HW: Signing message...")
         self.api.signMess(caller, path, message, isTestnet)
+        printOK("HW: Message signed")
 
 
     @check_api_init
     def signTxSign(self, ctrl):
+        printDbg("HW: Signing TX...")
         self.api.signTxSign(ctrl)
 
 
     @check_api_init
     def signTxFinish(self):
+        printDbg("HW: Finishing TX signature...")
         self.api.signTxFinish()
+        printDbg("HW: TX signed")

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 import simplejson as json
 import time
 
@@ -253,10 +254,12 @@ class TabMain():
             self.sendBroadcastCheck()
             return
 
-        printOK("Start Message: %s" % text)
+        printOK("Start Message ready for being relayed...")
+        logging.debug("Start Message: %s" % text)
         ret = self.caller.rpcClient.decodemasternodebroadcast(text)
         if ret is None:
             myPopUp_sb(self.caller, "crit", 'message decoding failed', 'message decoding failed')
+            printDbg("Message decoding failed")
             self.sendBroadcastCheck()
             return
 
@@ -269,14 +272,16 @@ class TabMain():
         ret2 = self.caller.rpcClient.relaymasternodebroadcast(text)
 
         if json.dumps(ret2)[1:26] == "Masternode broadcast sent":
+            printOK("Masternode broadcast sent")
             message = "Start-message was successfully sent to the network.<br>"
             message += "If your remote server is correctly configured and connected to the network, "
             message += "the output of the <b>./pivx-cli masternode status</b> command on the VPS should show:<br>"
             message += "<br><em>\"message\": \"Masternode successfully started\"</em>"
             myPopUp_sb(self.caller, "info", 'message relayed', message)
         else:
-            print(json.dumps(ret2)[1:26])
-            print("\n")
+            printDbg("Masternode broadcast NOT sent")
+            printException(getCallerName(), getFunctionName(), json.dumps(ret2), "Error sending masternode broadcast")
+
         self.sendBroadcastCheck()
 
 

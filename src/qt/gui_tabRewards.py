@@ -7,24 +7,23 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxL
     QProgressBar, QLineEdit, QComboBox, QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, \
     QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
 from PyQt5.Qt import QIcon
-    
+
 
 class TabRewards_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
         self.caller = caller
-        self.initRewardsForm()    
-        mainVertical = QVBoxLayout()        
+        self.initRewardsForm()
+        mainVertical = QVBoxLayout()
         mainVertical.addWidget(self.rewardsForm)
         buttonbox = QHBoxLayout()
         buttonbox.addStretch(1)
         buttonbox.addWidget(self.btn_Cancel)
         mainVertical.addLayout(buttonbox)
-        self.setLayout(mainVertical)     
-        
-        
-        
-        
+        self.setLayout(mainVertical)
+
+
+
     def initRewardsForm(self):
         self.collateralHidden = True
         self.rewardsForm = QGroupBox()
@@ -36,7 +35,7 @@ class TabRewards_gui(QWidget):
         ##--- ROW 1
         hBox = QHBoxLayout()
         self.mnSelect = QComboBox()
-        self.mnSelect.setToolTip("Select Masternode") 
+        self.mnSelect.setToolTip("Select Masternode")
         hBox.addWidget(self.mnSelect)
         self.btn_ReloadUTXOs = QPushButton()
         self.btn_ReloadUTXOs.setToolTip("Reload UTXOs")
@@ -53,12 +52,12 @@ class TabRewards_gui(QWidget):
         hBox.addWidget(self.addrAvailLine)
         self.btn_toggleCollateral = QPushButton("Show Collateral")
         hBox.addWidget(self.btn_toggleCollateral)
-        layout.addRow(QLabel("Masternode"), hBox)             
+        layout.addRow(QLabel("Masternode"), hBox)
         ## --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()
         self.rewardsList.statusLabel = QLabel()
         self.rewardsList.statusLabel.setMinimumWidth(116)
-        self.resetStatusLabel()
+        self.resetStatusLabel('<b style="color:red">Reload Rewards</b>')
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
         self.rewardsList.box.setMinimumHeight(140)
@@ -87,7 +86,7 @@ class TabRewards_gui(QWidget):
         item.setText("TX Output N")
         item.setTextAlignment(Qt.AlignCenter)
         self.rewardsList.box.setHorizontalHeaderItem(3, item)
-        item = QTableWidgetItem()        
+        item = QTableWidgetItem()
         self.rewardsList.addWidget(self.rewardsList.box)
         layout.addRow(self.rewardsList)
         ##--- ROW 3
@@ -103,7 +102,7 @@ class TabRewards_gui(QWidget):
         self.selectedRewardsLine.setMinimumWidth(200)
         self.selectedRewardsLine.setStyleSheet("color: purple")
         self.selectedRewardsLine.setToolTip("PIVX to move away")
-        hBox2.addWidget(self.selectedRewardsLine)    
+        hBox2.addWidget(self.selectedRewardsLine)
         hBox2.addStretch(1)
         self.swiftxCheck = QCheckBox()
         self.swiftxCheck.setToolTip("check for SwiftX instant transaction (flat fee rate of 0.01 PIV)")
@@ -139,19 +138,17 @@ class TabRewards_gui(QWidget):
         self.loadingLine.hide()
         self.loadingLinePercent.hide()
         layout.addRow(hBox4)
-        #--- Set Layout    
+        #--- Set Layout
         self.rewardsForm.setLayout(layout)
         #--- ROW 5
         self.btn_Cancel = QPushButton("Clear/Reload")
-        
-        
-        
+
+
+
     def resetStatusLabel(self, message=None):
         if message is None:
             self.rewardsList.statusLabel.setText('<em><b style="color:purple">Checking explorer...</b></em>')
         else:
             self.rewardsList.statusLabel.setText(message)
         self.rewardsList.statusLabel.setVisible(True)
-            
-            
-            
+

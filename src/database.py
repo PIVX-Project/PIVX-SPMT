@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
+import logging
 import sqlite3
 import threading
 
-from constants import user_dir, database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
+from constants import database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
 from proposals import Proposal, vote_type, vote_index
 from misc import printDbg, getCallerName, getFunctionName, printException, add_defaultKeys_to_dict
 
@@ -15,19 +15,21 @@ class Database():
     class methods
     '''
     def __init__(self, app):
+        printDbg("DB: Initializing...")
         self.app = app
         self.file_name = database_File
         self.lock = threading.Lock()
         self.isOpen = False
         self.conn = None
+        printDbg("DB: Initialized")
 
 
 
     def open(self):
+        printDbg("DB: Opening...")
         if self.isOpen:
             raise Exception("Database already open")
 
-        printDbg("trying to open database...")
         with self.lock:
             try:
                 if self.conn is None:
@@ -38,7 +40,7 @@ class Database():
                 self.conn.close()
                 self.conn = None
                 self.isOpen = True
-                printDbg("Database open")
+                printDbg("DB: Database open")
 
             except Exception as e:
                 err_msg = 'SQLite initialization error'
@@ -46,14 +48,13 @@ class Database():
 
 
 
-
     def close(self):
+        printDbg("DB: closing...")
         if not self.isOpen:
             err_msg = "Database already closed"
             printException(getCallerName(), "close()", err_msg, "")
             return
 
-        printDbg("trying to close database...")
         with self.lock:
             try:
                 if self.conn is not None:
@@ -61,7 +62,7 @@ class Database():
 
                 self.conn = None
                 self.isOpen = False
-                printDbg("Database closed")
+                printDbg("DB: Database closed")
 
             except Exception as e:
                 err_msg = 'SQLite closing error'
@@ -118,6 +119,7 @@ class Database():
 
 
     def initTables(self):
+        printDbg("DB: Initializing tables...")
         try:
             cursor = self.conn.cursor()
 
@@ -160,6 +162,8 @@ class Database():
                            " mn_name TEXT, p_hash, vote INTEGER, timeslip INTEGER, "
                            " PRIMARY KEY (mn_name, p_hash))")
 
+            printDbg("DB: Tables initialized")
+
 
         except Exception as e:
             err_msg = 'error initializing tables'
@@ -189,6 +193,7 @@ class Database():
     '''
 
     def clearTable(self,  table_name):
+        printDbg("DB: Clearing table %s..." % table_name)
         cleared_RPC = False
         try:
             cursor = self.getCursor()
@@ -197,6 +202,7 @@ class Database():
             if table_name == 'CUSTOM_RPC_SERVERS':
                 self.initTable_RPC(cursor)
                 cleared_RPC = True
+            printDbg("DB: Table %s cleared" % table_name)
 
         except Exception as e:
             err_msg = 'error clearing %s in database' % table_name
@@ -210,9 +216,11 @@ class Database():
 
 
     def removeTable(self, table_name):
+        printDbg("DB: Dropping table %s..." % table_name)
         try:
             cursor = self.getCursor()
             cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
+            printDbg("DB: Table %s removed" % table_name)
 
         except Exception as e:
             err_msg = 'error removing table %s from database' % table_name
@@ -228,6 +236,7 @@ class Database():
     '''
 
     def addRPCServer(self, protocol, host, user, passwd):
+        printDbg("DB: Adding new RPC server...")
         added_RPC = False
         try:
             cursor = self.getCursor()
@@ -237,6 +246,7 @@ class Database():
                            (protocol, host, user, passwd)
                            )
             added_RPC = True
+            printDbg("DB: RPC server added")
 
         except Exception as e:
             err_msg = 'error adding RPC server entry to DB'
@@ -249,6 +259,7 @@ class Database():
 
 
     def editRPCServer(self, protocol, host, user, passwd, id):
+        printDbg("DB: Editing RPC server with id %d" % id)
         changed_RPC = False
         try:
             cursor = self.getCursor()
@@ -272,6 +283,10 @@ class Database():
 
     def getRPCServers(self, custom, id=None):
         tableName = "CUSTOM_RPC_SERVERS" if custom else "PUBLIC_RPC_SERVERS"
+        if id is not None:
+            printDbg("DB: Getting RPC server with id %d from table %s" % (id, tableName))
+        else:
+            printDbg("DB: Getting all RPC servers from table %s" % tableName)
         try:
             cursor = self.getCursor()
             if id is None:
@@ -306,6 +321,7 @@ class Database():
 
 
     def removeRPCServer(self, id):
+        printDbg("DB: Remove RPC server with id %d" % id)
         removed_RPC = False
         try:
             cursor = self.getCursor()
@@ -330,6 +346,7 @@ class Database():
     '''
 
     def getMasternodeList(self):
+        printDbg("DB: Getting masternode list")
         try:
             cursor = self.getCursor()
 
@@ -370,6 +387,7 @@ class Database():
 
 
     def addNewMasternode(self, mn):
+        printDbg("DB: Adding new masternode")
         try:
             cursor = self.getCursor()
 
@@ -394,6 +412,7 @@ class Database():
         add_defaultKeys_to_dict(mn, DEFAULT_MN_CONF)
 
         if not old_mn is None:
+            printDbg("DB: Editing masternode %s" % old_mn)
             try:
                 cursor = self.getCursor()
 
@@ -421,6 +440,7 @@ class Database():
 
 
     def deleteMasternode(self, mn_name):
+        printDbg("DB: Deleting masternode %s" % mn_name)
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM MASTERNODES WHERE name = ? ", (mn_name,))
@@ -458,6 +478,7 @@ class Database():
 
 
     def addReward(self, utxo):
+        logging.debug("DB: Adding reward")
         try:
             cursor = self.getCursor()
 
@@ -477,6 +498,7 @@ class Database():
 
 
     def deleteReward(self, tx_hash, tx_ouput_n):
+        logging.debug("DB: Deleting reward")
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM REWARDS WHERE tx_hash = ? AND tx_ouput_n = ?", (tx_hash, tx_ouput_n))
@@ -490,6 +512,7 @@ class Database():
 
 
     def getReward(self, tx_hash, tx_ouput_n):
+        logging.debug("DB: Getting reward")
         try:
             cursor = self.getCursor()
 
@@ -498,7 +521,7 @@ class Database():
             rows = cursor.fetchall()
 
         except Exception as e:
-            err_msg = 'error getting reward %s-%d' % (txid, txidn)
+            err_msg = 'error getting reward %s-%d' % (tx_hash, tx_ouput_n)
             printException(getCallerName(), getFunctionName(), err_msg, e)
             rows = []
         finally:
@@ -513,8 +536,10 @@ class Database():
             cursor = self.getCursor()
 
             if mn_name is None:
+                printDbg("DB: Getting rewards of all masternodes")
                 cursor.execute("SELECT * FROM REWARDS")
             else:
+                printDbg("DB: Getting rewards of masternode %s" % mn_name)
                 cursor.execute("SELECT * FROM REWARDS WHERE mn_name = ?", (mn_name,))
             rows = cursor.fetchall()
 
@@ -565,6 +590,7 @@ class Database():
 
 
     def addMyVote(self, mn_name, p_hash, vote):
+        logging.debug("DB: Adding vote")
         try:
             cursor = self.getCursor()
 
@@ -583,6 +609,7 @@ class Database():
 
 
     def addProposal(self, p):
+        logging.debug("DB: Adding proposal")
         try:
             cursor = self.getCursor()
 
@@ -607,8 +634,10 @@ class Database():
             cursor = self.getCursor()
 
             if p_hash is None:
+                printDbg("DB: Getting votes for all proposals")
                 cursor.execute("SELECT * FROM MY_VOTES")
             else:
+                printDbg("DB: Getting votes for proposal %s" % p_hash)
                 cursor.execute("SELECT * FROM MY_VOTES WHERE p_hash = ?", (p_hash,))
             rows = cursor.fetchall()
 
@@ -624,6 +653,7 @@ class Database():
 
 
     def getProposalsList(self):
+        printDbg("DB: Getting proposal list")
         try:
             cursor = self.getCursor()
             cursor.execute("SELECT * FROM PROPOSALS")

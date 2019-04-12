@@ -13,9 +13,9 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxL
     QFileDialog, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
-from constants import starting_height, log_File, DefaultCache
+from constants import starting_height, DefaultCache
 from hwdevice import HWdevice
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
+from misc import printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
     persistCacheSetting,  appendMasternode, myPopUp_sb
 from tabGovernance import TabGovernance

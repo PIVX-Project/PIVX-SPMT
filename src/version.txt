@@ -1,5 +1,5 @@
 {
- "number": "0.4.2",
- "tag": "X",
+ "number": "0.5.0",
+ "tag": "alpha.2",
  "comments": ["TREZOR pre-release"]
  }

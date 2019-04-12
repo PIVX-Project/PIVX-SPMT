@@ -42,11 +42,8 @@ class TabRewards():
             self.ui.swiftxCheck.setChecked(True)
 
         # init first selected MN
-        self.loadMnSelect()         # loads masternodes list in MnSelect and display utxos
+        self.loadMnSelect(True)         # loads masternodes list in MnSelect and display utxos
         self.updateFee()
-
-        # show UTXOs from DB
-        self.display_mn_utxos()
 
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
@@ -79,11 +76,6 @@ class TabRewards():
 
         rewards = self.caller.parent.db.getRewardsList(self.curr_name)
         self.updateTotalBalance(rewards)
-
-        # if DB is empty we never saved anything
-        if len(rewards) == 0:
-            self.ui.resetStatusLabel('<b style="color:red">Reload Rewards</b>')
-            return
 
         if rewards is not None:
             def item(value):
@@ -153,7 +145,7 @@ class TabRewards():
 
 
 
-    def loadMnSelect(self):
+    def loadMnSelect(self, isInitializing=False):
         # save previous index
         index = 0
         if self.ui.mnSelect.count() > 0:
@@ -176,7 +168,7 @@ class TabRewards():
         if index < self.ui.mnSelect.count():
             self.ui.mnSelect.setCurrentIndex(index)
 
-        self.onChangeSelectedMN()
+        self.onChangeSelectedMN(isInitializing)
 
 
 
@@ -263,10 +255,9 @@ class TabRewards():
 
 
 
-    def onChangeSelectedMN(self):
+    def onChangeSelectedMN(self, isInitializing=False):
         self.curr_name = None
         if self.ui.mnSelect.currentIndex() >= 0:
-            self.ui.resetStatusLabel()
             self.curr_name = self.ui.mnSelect.itemText(self.ui.mnSelect.currentIndex())
             self.curr_addr = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[0]
             self.curr_txid = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[1]
@@ -274,7 +265,10 @@ class TabRewards():
             self.curr_hwpath = self.ui.mnSelect.itemData(self.ui.mnSelect.currentIndex())[3]
             self.ui.rewardsList.box.collateralRow = None
             self.onCancel()
-            self.display_mn_utxos()
+            # If we are initializing the class, don't display_mn_utxos. It's still empty
+            if not isInitializing:
+                self.ui.resetStatusLabel()
+                self.display_mn_utxos()
 
 
 

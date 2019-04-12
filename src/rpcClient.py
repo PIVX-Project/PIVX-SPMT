@@ -51,25 +51,6 @@ class RpcClient:
 
 
 
-    @process_RPC_exceptions
-    def decodeRawTransaction(self, rawTx):
-        res = None
-        with self.lock:
-            res = self.conn.decoderawtransaction(rawTx)
-
-        return res
-
-
-
-    @process_RPC_exceptions
-    def getAddressUtxos(self, addresses):
-        res = None
-        with self.lock:
-            res = self.conn.getaddressutxos({'addresses': addresses})
-
-        return res
-
-
 
     @process_RPC_exceptions
     def getBlockCount(self):
@@ -139,6 +120,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def getMasternodes(self):
+        printDbg("RPC: Getting masternode list...")
         mnList = {}
         score = []
         masternodes = []
@@ -184,6 +166,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def getProposals(self):
+        printDbg("RPC: Getting proposals list...")
         proposals = []
         data = []
         with self.lock:
@@ -206,6 +189,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def getProposalsProjection(self):
+        printDbg("RPC: Getting proposals projection...")
         data = []
         proposals = []
         with self.lock:
@@ -294,6 +278,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def decodemasternodebroadcast(self, work):
+        printDbg("RPC: Decoding masternode broadcast...")
         res = ""
         with self.lock:
             res = self.conn.decodemasternodebroadcast(work.strip())
@@ -304,6 +289,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def relaymasternodebroadcast(self, work):
+        printDbg("RPC: Relaying masternode broadcast...")
         res = ""
         with self.lock:
             res = self.conn.relaymasternodebroadcast(work.strip())
@@ -314,6 +300,11 @@ class RpcClient:
 
     @process_RPC_exceptions
     def sendRawTransaction(self, tx_hex, use_swiftx):
+        dbg_mess = "RPC: Sending raw transaction"
+        if use_swiftx:
+            dbg_mess += " with SwiftX"
+        dbg_mess += "..."
+        printDbg(dbg_mess)
         tx_id = None
         with self.lock:
             tx_id = self.conn.sendrawtransaction(tx_hex, True, bool(use_swiftx))
@@ -324,6 +315,7 @@ class RpcClient:
 
     @process_RPC_exceptions
     def verifyMessage(self, pivxaddress, signature, message):
+        printDbg("RPC: Verifying message...")
         res = False
         with self.lock:
             res = self.conn.verifymessage(pivxaddress, signature, message)
