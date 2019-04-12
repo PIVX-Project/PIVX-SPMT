@@ -209,6 +209,20 @@ class Database():
 
 
 
+    def removeTable(self, table_name):
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
+
+        except Exception as e:
+            err_msg = 'error removing table %s from database' % table_name
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+
+        finally:
+            self.releaseCursor(vacuum=True)
+
+
+
     '''
     RPC servers methods
     '''

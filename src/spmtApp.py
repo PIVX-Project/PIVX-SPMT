@@ -179,9 +179,9 @@ class App(QMainWindow):
             self.db.open()
         except Exception:
             pass
-        self.db.clearTable('REWARDS')
-        self.db.clearTable('PROPOSALS')
-        self.db.clearTable('MY_VOTES')
+        self.db.removeTable('REWARDS')
+        self.db.removeTable('PROPOSALS')
+        self.db.removeTable('MY_VOTES')
 
         # close database
         self.db.close()
