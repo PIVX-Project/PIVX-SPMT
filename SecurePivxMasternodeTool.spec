@@ -27,15 +27,11 @@ add_files.append( libModule('bitcoin', 'english.txt','bitcoin') )
 add_files.append( libModule('trezorlib', 'coins.json', 'trezorlib') )
 add_files.append( libModule('trezorlib', 'transport', 'trezorlib/transport') )
 
-if os_type == 'darwin':
-    add_files.append( ('/usr/local/lib/libusb-1.0.dylib', '.') )
-elif os_type == 'win32':
+if os_type == 'win32':
     import ctypes.util
     l = ctypes.util.find_library('libusb-1.0.dll')
     if l:
        add_files.append( (l, '.') )
-
-
 
 a = Analysis(['spmt.py'],
              pathex=[base_dir, 'src', 'src/qt'],
