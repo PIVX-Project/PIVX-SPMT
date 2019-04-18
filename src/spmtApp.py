@@ -36,6 +36,10 @@ class App(QMainWindow):
     sig_changed_rpcServers = pyqtSignal()
 
     def __init__(self, imgDir, app, start_args):
+        # Create the userdir if it doesn't exist
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir)
+
         # Initialize Logs
         initLogs()
         super().__init__()
@@ -47,10 +51,6 @@ class App(QMainWindow):
         # Get version and title
         self.version = getSPMTVersion()
         self.title = 'SPMT - Secure PIVX Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
-
-        # Create the userdir if it doesn't exist
-        if not os.path.exists(user_dir):
-            os.makedirs(user_dir)
 
         # Open database
         self.db = Database(self)

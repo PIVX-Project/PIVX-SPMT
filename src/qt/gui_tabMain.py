@@ -173,5 +173,6 @@ class TabMain_gui(QWidget):
         self.rewards_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_money.png'))
         self.details_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_search.png'))
         self.ledgerImg = QPixmap(os.path.join(self.caller.imgDir, 'ledger.png'))
-        self.trezorImg = QPixmap(os.path.join(self.caller.imgDir, 'trezor.png'))
+        self.trezorImg = QPixmap(os.path.join(self.caller.imgDir, 'trezorModT.png'))
+        self.trezorOneImg = QPixmap(os.path.join(self.caller.imgDir, 'trezorOne.png'))
         self.threeDots_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_3dots.png'))

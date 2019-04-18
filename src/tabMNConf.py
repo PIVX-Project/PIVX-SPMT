@@ -95,9 +95,9 @@ class TabMNConf():
         result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath, self.isTestnet())
 
         # Connection pop-up
-        warningText = "Another application (such as Ledger Wallet app) has probably taken over "
-        warningText += "the USB communication with the device.<br><br>To continue, close that application and "
-        warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
+        warningText = "Unable to find public key. The action was refused on the device or another application "
+        warningText += "might have taken over the USB communication with the device.<br><br>"
+        warningText += "To continue click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button."
         mBox = QMessageBox(QMessageBox.Critical, "WARNING", warningText, QMessageBox.Retry)
         mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
 
@@ -282,5 +282,6 @@ class TabMNConf():
             printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
             return None
         addr = self.caller.hwdevice.scanForAddress(currHwAcc, currSpath, self.isTestnet())
-        self.ui.edt_address.setText(addr)
-        self.findPubKey()
+        if addr:
+            self.ui.edt_address.setText(addr)
+            self.findPubKey()

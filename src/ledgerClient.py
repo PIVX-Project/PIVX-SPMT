@@ -89,7 +89,7 @@ class LedgerApi(QObject):
             printOK("Ledger HW device connected [v. %s]" % str(ver.get('version')))
             # Check device is unlocked
             bip32_path = MPATH + "%d'/0/%d" % (0, 0)
-            firstKey = self.chip.getWalletPublicKey(bip32_path)
+            _ = self.chip.getWalletPublicKey(bip32_path)
             self.status = 2
         self.sig_progress.connect(self.updateSigProgress)
 

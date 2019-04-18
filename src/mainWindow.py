@@ -472,8 +472,8 @@ class MainWindow(QWidget):
         try:
             self.hwdevice.initDevice(self.header.hwDevices.currentIndex())
             self.hwModel, self.hwStatus, self.hwStatusMess = self.hwdevice.getStatus()
-
-        except Exception:
+        except Exception as e:
+            printDbg(str(e))
             pass
 
         printDbg("status:%s - mess: %s" % (self.hwStatus, self.hwStatusMess))

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import binascii
 import threading
-from time import sleep
 
 from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QApplication
@@ -10,14 +9,16 @@ from PyQt5.QtWidgets import QMessageBox, QApplication
 from trezorlib import btc, exceptions, messages as trezor_proto, coins
 from trezorlib.client import TrezorClient, MINIMUM_FIRMWARE_VERSION
 from trezorlib.tools import parse_path
-from trezorlib.transport import get_transport
+from trezorlib.transport import enumerate_devices
 from trezorlib.tx_api import TxApi
-from trezorlib.ui import ClickUI
+from trezorlib.ui import PIN_CURRENT, PIN_NEW, PIN_CONFIRM
 
 from constants import MPATH_TREZOR as MPATH, MPATH_TESTNET, HW_devices
 from misc import getCallerName, getFunctionName, printException, printDbg, \
     DisconnectedException, printOK, splitString
 from threads import ThreadFuns
+
+from qt.dlg_pinMatrix import PinMatrix_dlg
 
 
 def  process_trezor_exceptions(func):
@@ -25,9 +26,12 @@ def  process_trezor_exceptions(func):
         hwDevice = args[0]
         try:
             return func(*args, **kwargs)
+        except exceptions.Cancelled:
+            printDbg("Action cancelled on the device")
+            pass
         except Exception as e:
             err_mess = "Trezor Exception"
-            printException(getCallerName(True), getFunctionName(True), err_mess, e.args)
+            printException(getCallerName(True), getFunctionName(True), err_mess, str(e))
             raise DisconnectedException(err_mess, hwDevice, str(e))
 
     return process_trezor_exceptions_int
@@ -47,12 +51,12 @@ class TrezorApi(QObject):
     sig_progress = pyqtSignal(int)
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, model, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        self.model = HW_devices.index("TREZOR Model T")
+        self.model = model # index of HW_devices
         self.messages = [
             'Trezor not initialized. Coonect and unlock it',
-            'Error setting up Trezor Client',
+            'Error setting up Trezor Client.',
             'Hardware device connected.'
         ]
         # Device Lock for threads
@@ -80,6 +84,13 @@ class TrezorApi(QObject):
 
 
 
+    def checkModel(self, model):
+        if HW_devices[self.model][0] == "TREZOR One":
+            return model == "1"
+        else:
+            return model == "T"
+
+
     def closeDevice(self):
         printDbg("Closing TREZOR client")
         self.status = 0
@@ -98,19 +109,37 @@ class TrezorApi(QObject):
         printDbg("Initializing Trezor")
         with self.lock:
             self.status = 0
-            transport = get_transport()
-            ui = ClickUI()
-            printOK('Trezor drivers found')
-            self.status = 1
-            self.client = TrezorClient(transport, ui)
+            devices = enumerate_devices()
+            if not len(devices):
+                # No device connected
+                return
+            # Use the first device for now
+            d = devices[0]
+            ui = TrezorUi()
+            try:
+                self.client = TrezorClient(d, ui)
+            except IOError:
+                raise Exception("TREZOR device is currently in use")
             printOK("Trezor HW device connected [v. %s.%s.%s]" % (
                 self.client.features.major_version,
                 self.client.features.minor_version,
                 self.client.features.patch_version)
             )
+            self.status = 1
             model = self.client.features.model or "1"
+            if not self.checkModel(model):
+                self.status = 3
+                if len(self.messages) > 3:
+                    self.messages = self.messages[:3]
+                self.messages.append("Wrong device model (%s) detected.\nLooking for model %s." % (
+                    HW_devices[self.model][0], model
+                ))
+                return
             required_version = MINIMUM_FIRMWARE_VERSION[model]
             printDbg("Current version is %s (minimum required: %s)" % (str(self.client.version), str(required_version)))
+            # Check device is unlocked
+            bip32_path = parse_path(MPATH + "%d'/0/%d" % (0, 0))
+            _ = btc.get_address(self.client, 'PIVX', bip32_path, False)
             self.status = 2
 
 
@@ -192,7 +221,7 @@ class TrezorApi(QObject):
                 self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
             messageText = self.messageText + "Signature Progress: 0 %"
             self.mBox2.setText(messageText)
-            self.mBox2.setIconPixmap(caller.tabMain.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
+            self.setBoxIcon(self.mBox2, caller)
             self.mBox2.setWindowTitle("CHECK YOUR TREZOR")
             self.mBox2.setStandardButtons(QMessageBox.NoButton)
             self.mBox2.setMaximumWidth(500)
@@ -232,6 +261,14 @@ class TrezorApi(QObject):
 
 
 
+    def setBoxIcon(self, box, caller):
+        if HW_devices[self.model][0] == "TREZOR One":
+            box.setIconPixmap(caller.ui.trezorOneImg.scaledToHeight(200, Qt.SmoothTransformation))
+        else:
+            box.setIconPixmap(caller.ui.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
+
+
+
     def signMess(self, caller, hwpath, message, isTestnet=False):
         if isTestnet:
             path = MPATH_TESTNET + hwpath
@@ -242,7 +279,7 @@ class TrezorApi(QObject):
         messageText = "Check display of your hardware device\n\n- masternode message:\n\n%s\n\n-path:\t%s\n" % (
             splitString(message, 32), path)
         self.mBox.setText(messageText)
-        self.mBox.setIconPixmap(caller.ui.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
+        self.setBoxIcon(self.mBox, caller)
         self.mBox.setWindowTitle("CHECK YOUR TREZOR")
         self.mBox.setStandardButtons(QMessageBox.NoButton)
         self.mBox.show()
@@ -438,3 +475,54 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
         raise RuntimeError("Some signatures are missing!")
 
     return signatures, serialized_tx
+
+
+
+
+class TrezorUi(object):
+    def __init__(self):
+        self.prompt_shown = False
+        pass
+
+    def get_pin(self, code=None) -> str:
+        if code == PIN_CURRENT:
+            desc = "current PIN"
+        elif code == PIN_NEW:
+            desc = "new PIN"
+        elif code == PIN_CONFIRM:
+            desc = "new PIN again"
+        else:
+            desc = "PIN"
+
+        pin = ask_for_pin_callback("Please enter {}".format(desc))
+        if pin is None:
+            raise exceptions.Cancelled
+        return pin
+
+    def get_passphrase(self) -> str:
+        passphrase = ask_for_pass_callback()
+        if passphrase is None:
+            raise exceptions.Cancelled
+        return passphrase
+
+    def button_request(self, msg_code):
+        if not self.prompt_shown:
+            pass
+
+        self.prompt_shown = True
+
+
+
+
+def ask_for_pin_callback(msg, hide_numbers=True):
+    dlg = PinMatrix_dlg(title=msg, fHideBtns=hide_numbers)
+    if dlg.exec_():
+        pin = dlg.getPin()
+        printDbg("Returning pin: %s" % pin)
+        return dlg.getPin()
+    else:
+        return None
+
+
+def ask_for_pass_callback():
+    return None

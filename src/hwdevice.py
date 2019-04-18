@@ -43,10 +43,11 @@ class HWdevice(QObject):
             raise Exception("Invalid HW index")
 
         # Select API
-        if hw_index == 0:
+        api_index = HW_devices[hw_index][1]
+        if api_index == 0:
             self.api = LedgerApi()
         else:
-            self.api = TrezorApi()
+            self.api = TrezorApi(hw_index)
 
         # Init device & connect signals
         self.api.initDevice()
@@ -70,9 +71,8 @@ class HWdevice(QObject):
     @check_api_init
     def getStatus(self):
         printDbg("HW: checking device status...")
-        messages = self.api.messages
         printOK("Status: %d" % self.api.status)
-        return self.api.model, self.api.status, messages[self.api.status]
+        return self.api.model, self.api.status, self.api.messages[self.api.status]
 
 
     def prepare_transfer_tx(self, caller, bip32_path,  utxos_to_spend, dest_address, tx_fee, useSwiftX=False, isTestnet=False):

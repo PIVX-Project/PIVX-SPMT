@@ -58,7 +58,7 @@ class GuiHeader(QWidget):
         self.centralBox.addWidget(label3, 1, 0)
         self.hwDevices = QComboBox()
         self.hwDevices.setToolTip("Select hardware device")
-        self.hwDevices.addItems(HW_devices)
+        self.hwDevices.addItems([x[0] for x in HW_devices])
         self.centralBox.addWidget(self.hwDevices, 1, 1)
         self.button_checkHw = QPushButton("Connect")
         self.button_checkHw.setToolTip("try to connect to hardware device")
