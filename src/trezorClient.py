@@ -28,11 +28,15 @@ def  process_trezor_exceptions(func):
             return func(*args, **kwargs)
         except exceptions.Cancelled:
             printDbg("Action cancelled on the device")
-            pass
+            return
+        except exceptions.PinException:
+            hwDevice.status = 4
+            printOK("WRONG PIN")
+            return
         except Exception as e:
             err_mess = "Trezor Exception"
             printException(getCallerName(True), getFunctionName(True), err_mess, str(e))
-            raise DisconnectedException(err_mess, hwDevice, str(e))
+            raise DisconnectedException(e.message, hwDevice)
 
     return process_trezor_exceptions_int
 
@@ -55,9 +59,11 @@ class TrezorApi(QObject):
         QObject.__init__(self, *args, **kwargs)
         self.model = model # index of HW_devices
         self.messages = [
-            'Trezor not initialized. Coonect and unlock it',
+            'Trezor not initialized. Connect and unlock it',
             'Error setting up Trezor Client.',
-            'Hardware device connected.'
+            'Hardware device connected.',
+            "Wrong device model detected.",
+            "Wrong PIN inserted"
         ]
         # Device Lock for threads
         self.lock = threading.RLock()
@@ -129,11 +135,9 @@ class TrezorApi(QObject):
             model = self.client.features.model or "1"
             if not self.checkModel(model):
                 self.status = 3
-                if len(self.messages) > 3:
-                    self.messages = self.messages[:3]
-                self.messages.append("Wrong device model (%s) detected.\nLooking for model %s." % (
+                self.messages[3] = "Wrong device model (%s) detected.\nLooking for model %s." % (
                     HW_devices[self.model][0], model
-                ))
+                )
                 return
             required_version = MINIMUM_FIRMWARE_VERSION[model]
             printDbg("Current version is %s (minimum required: %s)" % (str(self.client.version), str(required_version)))
@@ -204,8 +208,6 @@ class TrezorApi(QObject):
                 try:
                     txes = self.load_prev_txes(tx_api, rewardsArray, skip_cache)
                     break
-                except exceptions.Cancelled:
-                    return
                 except Exception as e:
                     if skip_cache:
                         raise
@@ -297,12 +299,10 @@ class TrezorApi(QObject):
         else:
             hw_coin = "PIVX"
         with self.lock:
-            try:
-                bip32_path = parse_path(path)
-                signed_mess = btc.sign_message(self.client, hw_coin, bip32_path, mess)
-                self.signature = signed_mess.signature
-            except exceptions.Cancelled:
-                pass
+            bip32_path = parse_path(path)
+            signed_mess = btc.sign_message(self.client, hw_coin, bip32_path, mess)
+            self.signature = signed_mess.signature
+
 
 
 
@@ -325,10 +325,7 @@ class TrezorApi(QObject):
         else:
             hw_coin = "PIVX"
         with self.lock:
-            try:
-                signed = sign_tx(self.sig_progress, self.client, hw_coin, inputs, outputs, prev_txes=txes)
-            except exceptions.Cancelled:
-                return
+            signed = sign_tx(self.sig_progress, self.client, hw_coin, inputs, outputs, prev_txes=txes)
 
         self.tx_raw = bytearray(signed[1])
         self.sig_progress.emit(100)
@@ -517,8 +514,6 @@ class TrezorUi(object):
 def ask_for_pin_callback(msg, hide_numbers=True):
     dlg = PinMatrix_dlg(title=msg, fHideBtns=hide_numbers)
     if dlg.exec_():
-        pin = dlg.getPin()
-        printDbg("Returning pin: %s" % pin)
         return dlg.getPin()
     else:
         return None

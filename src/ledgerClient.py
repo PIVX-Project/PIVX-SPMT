@@ -30,17 +30,15 @@ def process_ledger_exceptions(func):
                 e.message += '<br>If there is a program (such as Ledger Bitcoin Wallet) interfering with the USB communication, close it first.'
             elif (e.sw == 0x6982):
                 e.message = 'Enter the PIN on your Ledger device.'
-            statusmess = e.message
             printException(getCallerName(True), getFunctionName(True), e.message, e.args)
-            raise DisconnectedException(e.message, hwDevice, statusmess)
+            raise DisconnectedException(e.message, hwDevice)
 
         except Exception as e:
             e.message = "Ledger - generic exception"
             if str(e.args[0]) == 'read error':
                 e.message = 'Read Error. Click "Connect" to reconnect HW device'
             printException(getCallerName(True), getFunctionName(True), e.message, str(e))
-            statusmess = e.message
-            raise DisconnectedException(e.message, hwDevice, statusmess)
+            raise DisconnectedException(e.message, hwDevice)
 
     return process_ledger_exceptions_int
 

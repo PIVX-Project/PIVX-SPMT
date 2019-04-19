@@ -18,7 +18,7 @@ class PinMatrix_dlg(QDialog):
 
     def btn_clicked(self, num):
         self.pin += num
-        self.lab_pin.setText('*' * len(self.pin))
+        self.lbl_pin.setText('*' * len(self.pin))
 
 
     def getPin(self):
@@ -32,7 +32,7 @@ class PinMatrix_dlg(QDialog):
 
     def onDel(self):
         self.pin = self.pin[:-1]
-        self.lab_pin.setText('*' * len(self.pin))
+        self.lbl_pin.setText('*' * len(self.pin))
 
 
     def onOK(self):
@@ -72,9 +72,13 @@ class Ui_pinMatrixDlg(object):
         layout.addWidget(title)
 
         # Label
-        self.lab_pin = QLabel()
-        self.lab_pin.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.lab_pin)
+        lbl_style = """
+                    QLabel {margin-top: 10px; color: purple; font-size: 15pt}
+                    """
+        self.lbl_pin = QLabel()
+        self.lbl_pin.setAlignment(Qt.AlignCenter)
+        self.lbl_pin.setStyleSheet(lbl_style)
+        layout.addWidget(self.lbl_pin)
 
         # Buttons
         btn_style = """

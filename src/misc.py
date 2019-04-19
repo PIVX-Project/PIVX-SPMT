@@ -537,11 +537,11 @@ def updateSplash(label, i):
 
 
 class DisconnectedException(Exception):
-    def __init__(self, message, hwDevice, statusmess):
+    def __init__(self, message, hwDevice):
         # Call the base class constructor
         super().__init__(message)
         # clear device
-        hwDevice.closeDevice(statusmess)
+        hwDevice.closeDevice()
 
 
 
