@@ -58,7 +58,7 @@ class LedgerApi(QObject):
 
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        self.model = HW_devices.index("LEDGER Nano S")
+        self.model = [x[0] for x in HW_devices].index("LEDGER Nano S")
         self.messages = [
             'Device not initialized.',
             'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
@@ -342,11 +342,17 @@ class LedgerApi(QObject):
             curr_input_signed = 0
             # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
             for idx, new_input in enumerate(self.arg_inputs):
-                self.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
+                try:
+                    self.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
 
-                self.chip.finalizeInputFull(self.all_outputs_raw)
+                    self.chip.finalizeInputFull(self.all_outputs_raw)
 
-                sig = self.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
+                    sig = self.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
+                except BTChipException as e:
+                    if e.args[0] != "Invalid status 6985":
+                        raise e
+                    # Signature refused by the user
+                    return
 
                 new_input['signature'] = sig
                 inputTx = bitcoinInput()
