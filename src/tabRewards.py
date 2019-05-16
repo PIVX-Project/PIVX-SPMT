@@ -350,7 +350,7 @@ class TabRewards():
                 if ans2 == QMessageBox.No:
                     return None
                 else:
-                    ans2 = myPopUp(self.caller, "crit", 'SPMT - warning', warning3)
+                    ans3 = myPopUp(self.caller, "crit", 'SPMT - warning', warning3)
                     if ans3 == QMessageBox.No:
                         return None
                     
