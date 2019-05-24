@@ -10,9 +10,9 @@ from PyQt5.Qt import QIcon
 
 
 class TabRewards_gui(QWidget):
-    def __init__(self, caller, *args, **kwargs):
+    def __init__(self, imgDir, *args, **kwargs):
         QWidget.__init__(self)
-        self.caller = caller
+        self.imgDir = imgDir
         self.initRewardsForm()
         mainVertical = QVBoxLayout()
         mainVertical.addWidget(self.rewardsForm)
@@ -39,7 +39,7 @@ class TabRewards_gui(QWidget):
         hBox.addWidget(self.mnSelect)
         self.btn_ReloadUTXOs = QPushButton()
         self.btn_ReloadUTXOs.setToolTip("Reload UTXOs")
-        refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
+        refresh_icon = QIcon(os.path.join(self.imgDir, 'icon_refresh.png'))
         self.btn_ReloadUTXOs.setIcon(refresh_icon)
         hBox.addWidget(self.btn_ReloadUTXOs)
         hBox.addStretch(1)

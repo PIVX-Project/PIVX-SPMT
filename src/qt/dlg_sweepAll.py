@@ -226,7 +226,7 @@ class SweepAll_dlg(QDialog):
                         destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
                         amount = decodedTx.get("vout")[0].get("value")
                         message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
-                        message += '<p>Amount: <b>%s</b> PIV<br>' % str(amount)
+                        message += '<p>Amount: <b>%s</b> PIV<br>' % str(round(amount / 1e8, 8))
                         message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
                     except Exception as e:
                         printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
