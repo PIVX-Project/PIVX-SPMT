@@ -221,7 +221,7 @@ class TabMain():
                         reply = myPopUp(self.caller, QMessageBox.Question, 'Confirm START',
                                                  "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'], QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
-                            self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
+                            self.masternodeToStart = Masternode(self.caller, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
                                                                 mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'], mn_conf['isTestnet'])
                             # connect signal
                             self.masternodeToStart.sigdone.connect(self.sendBroadcast)

@@ -6,6 +6,8 @@
 """
 from PyQt5.QtCore import QThread
 
+from misc import printError
+
 class CtrlObject(object):
     pass
 
@@ -35,4 +37,5 @@ class WorkerThread(QThread):
         try:
             self.worker_result = self.worker_fun(self.ctrl_obj, *self.worker_fun_args)
         except Exception as e:
-            print(e)
+            printError("worker thread", "run", str(e))
+            self.stop()
