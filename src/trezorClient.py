@@ -36,7 +36,7 @@ def  process_trezor_exceptions(func):
         except Exception as e:
             err_mess = "Trezor Exception"
             printException(getCallerName(True), getFunctionName(True), err_mess, str(e))
-            raise DisconnectedException(e.message, hwDevice)
+            raise DisconnectedException(str(e), hwDevice)
 
     return process_trezor_exceptions_int
 
@@ -53,6 +53,8 @@ class TrezorApi(QObject):
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
     sig_progress = pyqtSignal(int)
+    # signal: sig_disconnected -emitted with DisconnectedException
+    sig_disconnected = pyqtSignal(str)
 
 
     def __init__(self, model, *args, **kwargs):
@@ -97,8 +99,9 @@ class TrezorApi(QObject):
             return model == "T"
 
 
-    def closeDevice(self):
+    def closeDevice(self, message=''):
         printDbg("Closing TREZOR client")
+        self.sig_disconnected.emit(message)
         self.status = 0
         with self.lock:
             if self.client is not None:
@@ -213,7 +216,7 @@ class TrezorApi(QObject):
                         raise
 
             self.mBox2 = QMessageBox(caller)
-            self.messageText = "<p>Confirm transaction on your device, with the following details:</p>"
+            self.messageText = "<p>Signing transaction...</p>"
             # messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
             self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
             self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
@@ -265,9 +268,9 @@ class TrezorApi(QObject):
 
     def setBoxIcon(self, box, caller):
         if HW_devices[self.model][0] == "TREZOR One":
-            box.setIconPixmap(caller.ui.trezorOneImg.scaledToHeight(200, Qt.SmoothTransformation))
+            box.setIconPixmap(caller.tabMain.trezorOneImg.scaledToHeight(200, Qt.SmoothTransformation))
         else:
-            box.setIconPixmap(caller.ui.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
+            box.setIconPixmap(caller.tabMain.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
 
 
 
@@ -277,7 +280,7 @@ class TrezorApi(QObject):
         else:
             path = MPATH + hwpath
         # Connection pop-up
-        self.mBox = QMessageBox(caller.ui)
+        self.mBox = QMessageBox(caller)
         messageText = "Check display of your hardware device\n\n- masternode message:\n\n%s\n\n-path:\t%s\n" % (
             splitString(message, 32), path)
         self.mBox.setText(messageText)
@@ -391,8 +394,7 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
     serialized_tx = b""
 
     def copy_tx_meta(tx):
-        tx_copy = trezor_proto.TransactionType()
-        tx_copy.CopyFrom(tx)
+        tx_copy = trezor_proto.TransactionType(**tx)
         # clear fields
         tx_copy.inputs_cnt = len(tx.inputs)
         tx_copy.inputs = []

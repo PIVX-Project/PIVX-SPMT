@@ -541,7 +541,7 @@ class DisconnectedException(Exception):
         # Call the base class constructor
         super().__init__(message)
         # clear device
-        hwDevice.closeDevice()
+        hwDevice.closeDevice(message)
 
 
 

@@ -26,8 +26,6 @@ def check_api_init(func):
 class HWdevice(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
-    # signal: sig_disconnected -emitted with DisconnectedException
-    sig_disconnected = pyqtSignal(str)
 
     def __init__(self, main_wnd, *args, **kwargs):
         printDbg("HW: Initializing Class...")
@@ -52,15 +50,14 @@ class HWdevice(QObject):
         # Init device & connect signals
         self.api.initDevice()
         self.sig1done = self.api.sig1done
-        self.sig_disconnected.connect(self.main_wnd.clearHWstatus)
+        self.api.sig_disconnected.connect(self.main_wnd.clearHWstatus)
         printOK("HW: hw device with index %d initialized" % hw_index)
 
 
     @check_api_init
-    def clearDevice(self, message=''):
+    def clearDevice(self):
         printDbg("HW: Clearing HW device...")
-        self.api.closeDevice()
-        self.sig_disconnected.emit(message)
+        self.api.closeDevice('')
         printOK("HW: device cleared")
 
 

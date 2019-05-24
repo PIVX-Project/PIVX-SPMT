@@ -54,6 +54,8 @@ class LedgerApi(QObject):
     tx_progress = pyqtSignal(int)
     # signal: sig_progress percent - emitted by signTxSign
     sig_progress = pyqtSignal(int)
+    # signal: sig_disconnected -emitted with DisconnectedException
+    sig_disconnected = pyqtSignal(str)
 
 
     def __init__(self, *args, **kwargs):
@@ -93,8 +95,9 @@ class LedgerApi(QObject):
 
 
 
-    def closeDevice(self):
+    def closeDevice(self, message=''):
         printDbg("Closing LEDGER client")
+        self.sig_disconnected.emit(message)
         self.status = 0
         with self.lock:
             if self.dongle is not None:
@@ -250,7 +253,7 @@ class LedgerApi(QObject):
         message_sha = splitString(single_sha256(message).hex(), 32);
 
         # Connection pop-up
-        mBox = QMessageBox(caller.ui)
+        mBox = QMessageBox(caller)
         warningText = "Another application (such as Ledger Wallet app) has probably taken over "
         warningText += "the communication with the Ledger device.<br><br>To continue, close that application and "
         warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
@@ -273,11 +276,11 @@ class LedgerApi(QObject):
                 info = self.chip.signMessagePrepare(path, message)
 
             printOK('Signing Message')
-            self.mBox = QMessageBox(caller.ui)
+            self.mBox = QMessageBox(caller)
             messageText = "Check display of your hardware device\n\n" + "- masternode message hash:\n\n%s\n\n-path:\t%s\n" % (
             message_sha, path)
             self.mBox.setText(messageText)
-            self.mBox.setIconPixmap(caller.ui.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
+            self.mBox.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
             self.mBox.setWindowTitle("CHECK YOUR LEDGER")
             self.mBox.setStandardButtons(QMessageBox.NoButton)
             self.mBox.show()
