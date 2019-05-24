@@ -181,7 +181,7 @@ class LedgerApi(QObject):
 
             for o in arg_outputs:
                 output = bitcoinOutput()
-                output.script = compose_tx_locking_script(o['address'])
+                output.script = compose_tx_locking_script(o['address'], isTestnet)
                 output.amount = int.to_bytes(o['valueSat'], 8, byteorder='little')
                 self.new_transaction.outputs.append(output)
 

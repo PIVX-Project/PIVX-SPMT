@@ -20,6 +20,8 @@ OP_RETURN = b'\x6a'
 # Prefixes - Check P2SH
 P2PKH_PREFIXES = ['D']
 P2SH_PREFIXES = ['7']
+P2PKH_PREFIXES_TNET = ['x', 'y']
+P2SH_PREFIXES_TNET = ['8', '9']
 
 
 def b64encode(text):
@@ -30,9 +32,9 @@ def b64encode(text):
 def checkPivxAddr(address, isTestnet=False):
     try:
         # check leading char 'D' or (for testnet) 'x' or 'y'
-        if isTestnet and address[0] not in ['x', 'y']:
+        if isTestnet and address[0] not in P2PKH_PREFIXES_TNET + P2SH_PREFIXES_TNET:
             return False
-        if not isTestnet and address[0] != 'D':
+        if not isTestnet and address[0] not in P2PKH_PREFIXES + P2SH_PREFIXES:
             return False
 
         # decode and verify checksum
@@ -47,7 +49,7 @@ def checkPivxAddr(address, isTestnet=False):
 
 
 
-def compose_tx_locking_script(dest_address):
+def compose_tx_locking_script(dest_address, isTestnet):
     """
     Create a Locking script (ScriptPubKey) that will be assigned to a transaction output.
     :param dest_address: destination address in Base58Check format
@@ -57,7 +59,8 @@ def compose_tx_locking_script(dest_address):
     if len(pubkey_hash) != 20:
         raise Exception('Invalid length of the public key hash: ' + str(len(pubkey_hash)))
 
-    if dest_address[0] in P2PKH_PREFIXES:
+    if (((not isTestnet) and (dest_address[0] in P2PKH_PREFIXES))
+            or (isTestnet and (dest_address[0] in P2PKH_PREFIXES_TNET))):
         # sequence of opcodes/arguments for p2pkh (pay-to-public-key-hash)
         scr = OP_DUP + \
               OP_HASH160 + \
@@ -65,14 +68,18 @@ def compose_tx_locking_script(dest_address):
               pubkey_hash + \
               OP_QEUALVERIFY + \
               OP_CHECKSIG
-    elif dest_address[0] in P2SH_PREFIXES:
+    elif (((not isTestnet) and (dest_address[0] in P2SH_PREFIXES))
+            or (isTestnet and (dest_address[0] in P2SH_PREFIXES_TNET))):
         # sequence of opcodes/arguments for p2sh (pay-to-script-hash)
         scr = OP_HASH160 + \
               int.to_bytes(len(pubkey_hash), 1, byteorder='little') + \
               pubkey_hash + \
               OP_EQUAL
     else:
-        raise Exception('Invalid dest address prefix: ' + dest_address[0])
+        mess = 'Invalid dest address prefix: ' + dest_address[0]
+        if isTestnet:
+            mess += ' for testnet'
+        raise Exception(mess)
     return scr
 
 
