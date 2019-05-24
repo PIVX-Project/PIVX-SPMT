@@ -149,7 +149,7 @@ class SweepAll_dlg(QDialog):
                 return None
 
             # LET'S GO
-            if len(self.rewardsArray) > 0:
+            if sum([len(x['utxos']) for x in self.rewardsArray]) > 0:
                 printDbg("Preparing transaction. Please wait...")
                 self.ui.loadingLine.show()
                 self.ui.loadingLinePercent.show()

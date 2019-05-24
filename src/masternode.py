@@ -21,9 +21,9 @@ class Masternode(QObject):
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
 
-    def __init__(self, caller, name, ip, port, mnPrivKey, hwAcc, collateral = {}, isTestnet=False, *args, **kwargs):
+    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral = {}, isTestnet=False, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        self.caller = caller
+        self.tab_main = tab_main
         self.name = name
         self.ip = ip
         self.port = str(port)
@@ -50,7 +50,7 @@ class Masternode(QObject):
         printDbg("Masternode PubKey: %s" % self.mnPubKey)
         printDbg("SerializedData: MY_IP:%s" % serializedData.split(':')[1])
         try:
-            device.signMess(self.caller, self.nodePath, serializedData, self.isTestnet)
+            device.signMess(self.tab_main.caller, self.nodePath, serializedData, self.isTestnet)
             #wait for signal when device.sig1 is ready then --> finalizeStartMessage
         except Exception as e:
             err_msg = "error in signature1"
