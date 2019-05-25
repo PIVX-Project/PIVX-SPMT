@@ -57,7 +57,7 @@ class Masternode(QObject):
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         except KeyboardInterrupt:
             err_msg = "Keyboard Interrupt"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(getCallerName(), getFunctionName(), err_msg, '')
         return None
 
 
