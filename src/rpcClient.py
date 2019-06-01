@@ -43,9 +43,9 @@ class RpcClient:
 
         host, port = rpc_host.split(":")
         if rpc_protocol == "https":
-            self.httpConnection  = httplib.HTTPSConnection(host, port, timeout=20, context=ssl._create_unverified_context())
+            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl._create_unverified_context())
         else:
-            self.httpConnection  = httplib.HTTPConnection(host, port, timeout=20)
+            self.httpConnection = httplib.HTTPConnection(host, port, timeout=20)
 
         self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
 
