@@ -19,13 +19,15 @@ def process_blockbook_exceptions(func):
                 new_url = "https://explorer.pivx.link"
             message = "BlockBook Client exception on %s\nTrying backup server %s" % (client.url, new_url)
             printException(getCallerName(True), getFunctionName(True), message, str(e))
-
+            '''
             try:
                 client.url = new_url
                 return func(*args, **kwargs)
 
             except Exception:
                 raise
+            '''
+            return None
 
     return process_blockbook_exceptions_int
 

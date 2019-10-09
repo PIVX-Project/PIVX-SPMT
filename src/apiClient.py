@@ -14,6 +14,7 @@ def process_api_exceptions(func):
         except Exception as e:
             message = "Primary API source not responding. Trying secondary"
             printException(getCallerName(True), getFunctionName(True), message, str(e))
+            '''
             try:
                 client.api = CryptoIDClient(client.isTestnet)
                 return func(*args, **kwargs)
@@ -21,6 +22,8 @@ def process_api_exceptions(func):
             except Exception as e:
                 printError(getCallerName(True), getFunctionName(True), str(e))
                 return None
+            '''
+            return None
 
     return process_api_exceptions_int
 
