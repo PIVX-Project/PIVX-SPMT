@@ -59,7 +59,7 @@ trusted_RPC_Servers = [
 
 HW_devices = [
     # (model name, api index)
-    ("LEDGER Nano S", 0),
+    ("LEDGER Nano", 0),
     ("TREZOR One", 1),
     ("TREZOR Model T", 1)
 ]
