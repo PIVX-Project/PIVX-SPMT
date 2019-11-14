@@ -205,24 +205,27 @@ class TabRewards():
             for mn in mn_rewards:
                 # for each UTXO
                 for utxo in mn_rewards[mn]:
-                    rawtx = None
                     percent = int(100*curr_utxo / total_num_of_utxos)
                     # get raw TX from RPC client (only for ledger / trezor has own api)
                     if self.caller.hwModel == 0:
-                        rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
+                        # double check that the rpc connection is still active, else reconnect
+                        if self.caller.rpcClient is None:
+                            self.caller.updateRPCstatus(None)
+                        try:
+                            rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
+                        except Exception as e:
+                            printError(getCallerName(), getFunctionName(),
+                                       "Unable to get raw TX with hash=%s from RPC server: %s" % (
+                                           utxo['txid'], str(e)))
+                            # Don't save UTXO if raw TX is unavailable
+                            continue
                     else:
                         rawtx = ""
 
-                    # Don't save UTXO if raw TX is unavailable
-                    if rawtx is None:
-                        printError(getCallerName(), getFunctionName(), "Unable to get raw TX with hash=%s from RPC server" % utxo['txid'])
-                        continue
-
                     # Add mn_name and raw_tx to UTXO and save it to DB
-                    else:
-                        utxo['mn_name'] = mn
-                        utxo['raw_tx'] = rawtx
-                        self.caller.parent.db.addReward(utxo)
+                    utxo['mn_name'] = mn
+                    utxo['raw_tx'] = rawtx
+                    self.caller.parent.db.addReward(utxo)
 
                     # emit percent
                     self.caller.sig_UTXOsLoading.emit(percent)
