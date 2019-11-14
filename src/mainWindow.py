@@ -571,7 +571,6 @@ class MainWindow(QWidget):
 
     def updateRPCstatus(self, ctrl, fDebug=False):
         self.sig_clearRPCstatus.emit()
-        self.rpcClient = None
 
         rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         if fDebug:

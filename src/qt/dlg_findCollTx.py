@@ -58,7 +58,7 @@ class FindCollTx_dlg(QDialog):
             self.tableW.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
 
         else:
-            self.lblMessage.setText('<b style="color:purple">Unable to connect to API provider or RPC server.\nEnter tx manually</b>')
+            self.lblMessage.setText('<b style="color:purple">No UTXO found for current address.\nEnter tx manually</b>')
             self.lblMessage.setVisible(True)
 
 
