@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMessageBox,
     QPushButton,
     QTabWidget,
@@ -77,12 +78,17 @@ class TabSign:
 
 
     def displaySignature(self, sig):
-        from utils import b64encode
+        from utils import b64encode, ecdsa_verify_addr
         if sig == "None":
             sig = "Signature refused by the user"
         self.ui.signatureTextEdt.setText(b64encode(sig))
         self.ui.copyBtn.setVisible(True)
         self.ui.saveBtn.setVisible(True)
+        # verify sig
+        ok = ecdsa_verify_addr(self.ui.messageTextEdt.toPlainText(), b64encode(sig), self.currAddress)
+        if not ok:
+            mess = "Signature doesn't verify."
+            myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - no signature', mess)
 
 
     def onChangeSelectedAddress(self):
@@ -104,7 +110,7 @@ class TabSign:
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(self.ui.signatureTextEdt.toPlainText(), mode=cb.Clipboard)
-        myPopUp_sb(self.main_wnd, QMessageBox.Information, 'SPMT - copied', "Message copied to the clipboard")
+        myPopUp_sb(self.main_wnd, QMessageBox.Information, 'SPMT - copied', "Signature copied to the clipboard")
 
 
     def onSave(self):
@@ -114,18 +120,19 @@ class TabSign:
             return
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self.main_wnd,"Save signature to file","sig.txt","All Files (*);; Text Files (*.txt)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self.main_wnd, "Save signature to file", "sig.txt",
+                                                  "All Files (*);; Text Files (*.txt)", options=options)
         try:
             if fileName:
                 save_file = open(fileName, 'w')
                 save_file.write(self.ui.signatureTextEdt.toPlainText())
                 save_file.close()
-                myPopUp_sb(self.main_wnd, QMessageBox.Information, 'SPMT - saved', "Message saved to file")
+                myPopUp_sb(self.main_wnd, QMessageBox.Information, 'SPMT - saved', "Signature saved to file")
                 return
         except Exception as e:
             err_msg = "error writing signature to file"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-        myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - NOT saved', "Message NOT saved to file")
+        myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - NOT saved', "Signature NOT saved to file")
 
 
 
@@ -163,6 +170,34 @@ class TabSign:
 class TabVerify:
     def __init__(self):
         self.ui = TabVerify_gui()
+        # connect signals/buttons
+        self.ui.verifyBtn.clicked.connect(lambda: self.onVerify())
+
+    def onVerify(self):
+        # check fields
+        if len(self.ui.addressLineEdit.text()) == 0:
+            mess = "No address inserted"
+            myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - no address', mess)
+            return
+        if self.ui.messageTextEdt.document().isEmpty():
+            mess = "No message inserted"
+            myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - no message', mess)
+            return
+        if self.ui.signatureTextEdt.document().isEmpty():
+            mess = "No signature inserted"
+            myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - no signature', mess)
+            return
+        from utils import ecdsa_verify_addr
+        ok = ecdsa_verify_addr(self.ui.messageTextEdt.toPlainText(),
+                               self.ui.signatureTextEdt.toPlainText(),
+                               self.ui.addressLineEdit.text())
+        if ok:
+            mess = "<span style='color: green'>Signature OK"
+        else:
+            mess = "<span style='color: red'>Signature doesn't verify"
+        mess = "<b>" + mess + "</span></b>"
+        self.ui.resultLabel.setText(mess)
+        self.ui.resultLabel.setVisible(True)
 
 
 class TabSign_gui(QWidget):
@@ -225,13 +260,37 @@ class TabSign_gui(QWidget):
 class TabVerify_gui(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        layout = QFormLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(13)
-        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        row1 = QHBoxLayout()
-        self.addressComboBox = QComboBox()
-        self.addressComboBox.setToolTip("Select address/masternode")
-        row1.addWidget(self.addressComboBox)
-        layout.addRow(QLabel("PIVX address"), row1)
+        # row 1: select address
+        row1 = QFormLayout()
+        row1.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        hBox = QHBoxLayout()
+        self.addressLineEdit = QLineEdit()
+        self.addressLineEdit.setToolTip("insert address to verify signature with")
+        hBox.addWidget(self.addressLineEdit)
+        row1.addRow(QLabel("PIVX address"), hBox)
+        layout.addLayout(row1)
+        # row 2: message
+        self.messageTextEdt = QTextEdit()
+        self.messageTextEdt.setReadOnly(False)
+        self.messageTextEdt.setAcceptRichText(False)
+        self.messageTextEdt.setPlaceholderText("Write message here...")
+        layout.addWidget(self.messageTextEdt)
+        # row 3: signature
+        self.signatureTextEdt = QTextEdit()
+        self.signatureTextEdt.setReadOnly(False)
+        self.signatureTextEdt.setMaximumHeight(100)
+        self.signatureTextEdt.setAcceptRichText(False)
+        self.signatureTextEdt.setPlaceholderText("Write signature here...")
+        layout.addWidget(self.signatureTextEdt)
+        # row 4: verify message button
+        self.verifyBtn = QPushButton("Verify Message")
+        layout.addWidget(self.verifyBtn)
+        # row 5: result
+        self.resultLabel = QLabel()
+        self.resultLabel.setVisible(False)
+        layout.addWidget(self.resultLabel)
+        # ---
         self.setLayout(layout)
