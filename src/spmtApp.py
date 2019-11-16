@@ -19,6 +19,7 @@ from misc import getSPMTVersion, printDbg, initLogs, \
 from mainWindow import MainWindow
 from constants import user_dir
 from qt.dlg_configureRPCservers import ConfigureRPCservers_dlg
+from qt.dlg_signmessage import SignMessage_dlg
 
 class ServiceExit(Exception):
     """
@@ -95,15 +96,6 @@ class App(QMainWindow):
         self.pivx_icon = QIcon(os.path.join(imgDir, 'icon_pivx.png'))
         self.script_icon = QIcon(os.path.join(imgDir, 'icon_script.png'))
         self.setWindowIcon(self.spmtIcon)
-        # Add RPC server menu
-        mainMenu = self.menuBar()
-        confMenu = mainMenu.addMenu('Setup')
-        self.rpcConfMenu = QAction(self.pivx_icon, 'RPC Servers config...', self)
-        self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
-        confMenu.addAction(self.rpcConfMenu)
-        self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
-        self.loadMNConfAction.triggered.connect(self.loadMNConf)
-        confMenu.addAction(self.loadMNConfAction)
 
         # Sort masternode list (by alias if no previous order set)
         if self.cache.get('mnList_order') != {} and (
@@ -120,6 +112,19 @@ class App(QMainWindow):
         # Create main window
         self.mainWindow = MainWindow(self, masternode_list, imgDir)
         self.setCentralWidget(self.mainWindow)
+
+        # Add RPC server menu
+        mainMenu = self.menuBar()
+        confMenu = mainMenu.addMenu('Setup')
+        self.rpcConfMenu = QAction(self.pivx_icon, 'RPC Servers config...', self)
+        self.rpcConfMenu.triggered.connect(self.onEditRPCServer)
+        confMenu.addAction(self.rpcConfMenu)
+        self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
+        self.loadMNConfAction.triggered.connect(self.loadMNConf)
+        confMenu.addAction(self.loadMNConfAction)
+        self.signVerifyAction = QAction('Sign/Verify message', self)
+        self.signVerifyAction.triggered.connect(self.onSignVerifyMessage)
+        confMenu.addAction(self.signVerifyAction)
 
         # Show
         self.show()
@@ -215,4 +220,8 @@ class App(QMainWindow):
 
 
 
-
+    def onSignVerifyMessage(self):
+        # Create Dialog
+        ui = SignMessage_dlg(self.mainWindow)
+        if ui.exec():
+            printDbg("Sign/Verify message...")
