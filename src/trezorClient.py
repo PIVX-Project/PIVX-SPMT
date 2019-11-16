@@ -285,7 +285,7 @@ class TrezorApi(QObject):
             path = MPATH + hwpath
         # Connection pop-up
         self.mBox = QMessageBox(caller)
-        messageText = "Check display of your hardware device\n\n- masternode message:\n\n%s\n\n-path:\t%s\n" % (
+        messageText = "Check display of your hardware device\n\n- message:\n\n%s\n\n-path:\t%s\n" % (
             splitString(message, 32), path)
         self.mBox.setText(messageText)
         self.setBoxIcon(self.mBox, caller)
