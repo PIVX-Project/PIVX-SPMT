@@ -66,7 +66,7 @@ class LedgerApi(QObject):
 
     def __init__(self, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        self.model = [x[0] for x in HW_devices].index("LEDGER Nano S")
+        self.model = [x[0] for x in HW_devices].index("LEDGER Nano")
         self.messages = [
             'Device not initialized.',
             'Unable to connect to the device. Please check that the PIVX app on the device is open, and try again.',
@@ -87,7 +87,7 @@ class LedgerApi(QObject):
         with self.lock:
             self.status = 0
             self.dongle = getDongle(False)
-            printOK('Ledger Nano S drivers found')
+            printOK('Ledger Nano drivers found')
             self.chip = btchip(self.dongle)
             printDbg("Ledger Initialized")
             self.status = 1
@@ -283,7 +283,7 @@ class LedgerApi(QObject):
 
             printOK('Signing Message')
             self.mBox = QMessageBox(caller)
-            messageText = "Check display of your hardware device\n\n" + "- masternode message hash:\n\n%s\n\n-path:\t%s\n" % (
+            messageText = "Check display of your hardware device\n\n- message hash:\n\n%s\n\n-path:\t%s\n" % (
             message_sha, path)
             self.mBox.setText(messageText)
             self.mBox.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
