@@ -122,9 +122,10 @@ class App(QMainWindow):
         self.loadMNConfAction = QAction(self.script_icon, 'Import "masternode.conf" file', self)
         self.loadMNConfAction.triggered.connect(self.loadMNConf)
         confMenu.addAction(self.loadMNConfAction)
+        toolsMenu = mainMenu.addMenu('Tools')
         self.signVerifyAction = QAction('Sign/Verify message', self)
         self.signVerifyAction.triggered.connect(self.onSignVerifyMessage)
-        confMenu.addAction(self.signVerifyAction)
+        toolsMenu.addAction(self.signVerifyAction)
 
         # Show
         self.show()
