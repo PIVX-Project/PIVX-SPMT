@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (
 from misc import myPopUp, myPopUp_sb, getCallerName, getFunctionName, printException
 from pivx_hashlib import pubkey_to_address
 from threads import ThreadFuns
-from utils import checkPivxAddr
+from utils import checkPivxAddr, ecdsa_verify_addr
 
 class SignMessage_dlg(QDialog):
     def __init__(self, main_wnd):
@@ -94,9 +94,10 @@ class TabSign:
 
 
     def displaySignature(self, sig):
-        from utils import b64encode, ecdsa_verify_addr
         if sig == "None":
-            sig = "Signature refused by the user"
+            self.ui.signatureTextEdt.setText("Signature refused by the user")
+            return
+        from utils import b64encode
         self.ui.signatureTextEdt.setText(b64encode(sig))
         self.ui.copyBtn.setVisible(True)
         self.ui.saveBtn.setVisible(True)
@@ -332,7 +333,7 @@ class TabVerify:
             mess = "No signature inserted"
             myPopUp_sb(self.main_wnd, QMessageBox.Warning, 'SPMT - no signature', mess)
             return
-        from utils import ecdsa_verify_addr
+
         try:
             ok = ecdsa_verify_addr(self.ui.messageTextEdt.toPlainText(),
                                    self.ui.signatureTextEdt.toPlainText(),
