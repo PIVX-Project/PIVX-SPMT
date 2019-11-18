@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2017 chaeplin
+# Copyright (c) 2017 Bertrand256
+# Copyright (c) 2017-2019 Random.Zebra (https://github.com/random-zebra/)
+# Distributed under the MIT software license, see the accompanying
+# file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
+
 from time import sleep
 from threading import Event
 
-from PyQt5.Qt import QApplication, QObject
+from PyQt5.Qt import QObject
 
 from misc import printOK
 

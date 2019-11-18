@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2017-2019 Random.Zebra (https://github.com/random-zebra/)
+# Distributed under the MIT software license, see the accompanying
+# file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
+
 import os, sys
 from ipaddress import ip_address
 import logging
@@ -8,9 +12,9 @@ import time
 from urllib.parse import urlparse
 
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
+from PyQt5.QtWidgets import QMessageBox
 
 from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache
-from PyQt5.QtWidgets import QMessageBox
 
 
 def add_defaultKeys_to_dict(dictObj, defaultObj):

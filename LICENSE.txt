@@ -2,7 +2,7 @@ MIT License
 
 Copyright (c) 2017 chaeplin
 Copyright (c) 2017 Bertrand256
-Copyright (c) 2017-2019 random-zebra
+Copyright (c) 2017-2019 Random.Zebra (https://github.com/random-zebra/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

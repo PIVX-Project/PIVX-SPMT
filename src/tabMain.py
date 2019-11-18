@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2017-2019 Random.Zebra (https://github.com/random-zebra/)
+# Distributed under the MIT software license, see the accompanying
+# file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
+
 import logging
 import simplejson as json
 import time
@@ -8,8 +12,8 @@ from PyQt5.Qt import QApplication
 from PyQt5.QtWidgets import QMessageBox
 
 from masternode import Masternode
-from misc import  printDbg, printException, printOK, getCallerName, getFunctionName, \
-    now, removeMNfromList, myPopUp, myPopUp_sb
+from misc import printDbg, printException, printOK, getCallerName, getFunctionName, \
+    removeMNfromList, myPopUp, myPopUp_sb
 from qt.gui_tabMain import TabMain_gui
 from qt.dlg_mnStatus import MnStatus_dlg
 from qt.dlg_sweepAll import SweepAll_dlg

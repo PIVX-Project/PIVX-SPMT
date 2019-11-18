@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2017-2019 Random.Zebra (https://github.com/random-zebra/)
+# Distributed under the MIT software license, see the accompanying
+# file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
+
 import logging
 import sqlite3
 import threading
@@ -7,7 +11,6 @@ import threading
 from constants import database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
 from proposals import Proposal, vote_type, vote_index
 from misc import printDbg, getCallerName, getFunctionName, printException, add_defaultKeys_to_dict
-
 
 class Database():
 
