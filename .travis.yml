@@ -11,12 +11,12 @@ matrix:
       osx_image: xcode10.2
       language: shell
       env: PATH=/Users/travis/Library/Python/3.7/bin:$PATH
-    - name: "Python 3.7.4 on Windows"
+    - name: "Python 3.7.2 on Windows"
       os: windows
       language: shell
-      before_install: choco install python vcredist-all
+      before_install: wget --progress=dot:mega https://bootstrap.pypa.io/get-pip.py && choco install python --version 3.7.2 && python get-pip.py && rm get-pip.py
       env: PATH=/c/Python37:/c/Python37/Scripts:/c/Users/travis/AppData/Roaming/Python/Python37/Scripts:$PATH
 install:
   - pip3 install --user -r requirements.txt || pip3 install -r requirements.txt
   - pip3 install --user pyinstaller || pip3 install pyinstaller
-script: pyinstaller --onefile --windowed SecurePivxMasternodeTool.spec
+script: pyinstaller SecurePivxMasternodeTool.spec
