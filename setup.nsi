@@ -1,6 +1,8 @@
-; Helper defines. Update PRODUCT_VERSION as needed for release.
+; Helper defines. PRODUCT_VERSION is parsed by reading src/version.txt.
+!searchparse /file src/version.txt `"number": "` VER_MAJOR `.` VER_MINOR `.` VER_REV `"`
+!searchparse /file src/version.txt `"tag": "` VER_TAG `"`
 !define PRODUCT_NAME "SPMT"
-!define PRODUCT_VERSION "0.5.0a"
+!define PRODUCT_VERSION "${VER_MAJOR}.${VER_MINOR}.${VER_REV}${VER_TAG}"
 !define PRODUCT_PUBLISHER "PIVX"
 !define PRODUCT_WEB_SITE "https://github.com/PIVX-Project/PIVX-SPMT"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\SecurePivxMasternodeTool.exe"
