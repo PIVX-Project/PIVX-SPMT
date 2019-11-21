@@ -24,8 +24,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_RUN "$INSTDIR\app\SecurePivxMasternodeTool.exe"
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.txt"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\SecurePivxMasternodeTool.exe"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -48,17 +47,11 @@ ShowUnInstDetails show
 
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
-  ; Convert the markdown file to plain text as windows doesn't understand markdown files natively.
-  ; TODO: Make this more pretty
-  File /oname=README.txt "SPMT-v${PRODUCT_VERSION}-Win64\README.md"
-  SetOutPath "$INSTDIR\app"
-  File /r "SPMT-v${PRODUCT_VERSION}-Win64\app\*.*"
-  SetOutPath "$INSTDIR\docs"
-  File /r "SPMT-v${PRODUCT_VERSION}-Win64\docs\*.*"
+  File /r "SPMT-v${PRODUCT_VERSION}-Win64\*.*"
 
   CreateDirectory "$SMPROGRAMS\SPMT"
-  CreateShortCut "$SMPROGRAMS\SPMT\SPMT.lnk" "$INSTDIR\app\SecurePivxMasternodeTool.exe"
-  CreateShortCut "$DESKTOP\SPMT.lnk" "$INSTDIR\app\SecurePivxMasternodeTool.exe"
+  CreateShortCut "$SMPROGRAMS\SPMT\SPMT.lnk" "$INSTDIR\SecurePivxMasternodeTool.exe"
+  CreateShortCut "$DESKTOP\SPMT.lnk" "$INSTDIR\SecurePivxMasternodeTool.exe"
 SectionEnd
 
 Section -AdditionalIcons
@@ -72,7 +65,7 @@ Section -Post
   WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\app\SecurePivxMasternodeTool.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\app\SecurePivxMasternodeTool.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\SecurePivxMasternodeTool.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
@@ -92,9 +85,7 @@ FunctionEnd
 Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\README.txt"
-  RMDir /r "$INSTDIR\docs"
-  RMDir /r "$INSTDIR\app"
+  Delete "$INSTDIR\SecurePivxMasternodeTool.exe"
 
   Delete "$SMPROGRAMS\SPMT\Uninstall.lnk"
   Delete "$SMPROGRAMS\SPMT\Website.lnk"
