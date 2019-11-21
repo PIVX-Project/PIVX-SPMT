@@ -257,6 +257,10 @@ class TabSign:
         # sign message on HW device
         serializedData = str(self.ui.messageTextEdt.toPlainText())
         device = self.main_wnd.hwdevice
+        try:
+            device.sig1done.disconnect()
+        except:
+            pass
         device.sig1done.connect(self.displaySignature)
         try:
             device.signMess(self.main_wnd, self.currHwPath, serializedData, self.currIsTestnet)

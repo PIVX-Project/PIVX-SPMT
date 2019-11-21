@@ -148,6 +148,10 @@ class Masternode(QObject):
         # update protocol version
         self.protocol_version = self.rpcClient.getProtocolVersion()
         # done signal from hwdevice thread
+        try:
+            device.sig1done.disconnect()
+        except:
+            pass
         device.sig1done.connect(self.finalizeStartMessage)
         # prepare sig1 (the one done on the hw device)
         self.signature1(device)
