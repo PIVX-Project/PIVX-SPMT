@@ -8,12 +8,12 @@
 
 import base64
 from bitcoin import bin_hash160, b58check_to_hex, ecdsa_raw_sign, ecdsa_raw_verify, privkey_to_pubkey, \
-    encode_sig, decode_sig, dbl_sha256, bin_dbl_sha256
+    encode_sig, decode_sig, dbl_sha256, bin_dbl_sha256, ecdsa_raw_recover, encode_pubkey
 from ipaddress import ip_address
 
 from misc import getCallerName, getFunctionName, printException
 from pivx_b58 import b58decode
-from pivx_hashlib import wif_to_privkey
+from pivx_hashlib import wif_to_privkey, pubkey_to_address
 
 
 # Bitcoin opcodes used in the application
@@ -105,6 +105,17 @@ def compose_tx_locking_script_OR(message):
 
 def ecdsa_sign(msg, priv):
     return ecdsa_sign_bin(electrum_sig_hash(msg), priv)
+
+
+def ecdsa_verify_addr(msg, sig, addr):
+    isTestnet = addr[0] not in P2PKH_PREFIXES
+    if not checkPivxAddr(addr, isTestnet):
+        return False
+    v, r, s = decode_sig(sig)
+    Q = ecdsa_raw_recover(electrum_sig_hash(msg), (v, r, s))
+    Qenc = encode_pubkey(Q, 'hex_compressed') if v >= 31 else encode_pubkey(Q, 'hex')
+
+    return pubkey_to_address(Qenc, isTestnet) == addr
 
 
 

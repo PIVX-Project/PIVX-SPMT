@@ -203,6 +203,10 @@ class Masternode(QObject):
             printException(getCallerName(), getFunctionName(), err_msg, e)
             return
         # done signal from hwdevice thread
+        try:
+            device.sig1done.disconnect()
+        except:
+            pass
         device.sig1done.connect(self.finalizeStartMessage)
         # prepare sig1 (the one done on the hw device)
         self.signature1(device)

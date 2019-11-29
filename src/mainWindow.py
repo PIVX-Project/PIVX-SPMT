@@ -244,6 +244,7 @@ class MainWindow(QWidget):
         consoleHeader.addWidget(self.btn_checkVersion)
         layout.addLayout(consoleHeader)
         self.consoleArea = QTextEdit()
+        self.consoleArea.setReadOnly(True)
         almostBlack = QColor(40, 40, 40)
         palette = QPalette()
         palette.setColor(QPalette.Base, almostBlack)

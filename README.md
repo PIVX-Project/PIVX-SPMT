@@ -43,6 +43,9 @@ The tool connects to the PIVX blockchain through public remote servers but it's 
     - [Reviewing the budget](docs/features.md#features6)
     - [Casting votes](docs/features.md#features7)
   - [Resetting Application Data](docs/features.md#features8)
+* [Tools](docs/tools.md)
+  - [Sign text messages](docs/tools.md#tools1)
+  - [Verify signatures](docs/tools.md#tools2)
 
 
 <br>
