@@ -8,17 +8,17 @@ block_cipher = None
 base_dir = os_path.dirname(os_path.realpath('__file__'))
 
 def libModule(module, source, dest):
-	m = __import__(module)
-	module_path = os_path.dirname(m.__file__)
-	del m
-	print("libModule %s" % str(( os_path.join(module_path, source), dest )))
-	return ( os_path.join(module_path, source), dest )
+    m = __import__(module)
+    module_path = os_path.dirname(m.__file__)
+    del m
+    print("libModule %s" % str(( os_path.join(module_path, source), dest )))
+    return ( os_path.join(module_path, source), dest )
 
 
 # look for version string
 version_str = ''
 with open(os_path.join(base_dir, 'src', 'version.txt')) as version_file:
-	version_data = json.load(version_file)
+    version_data = json.load(version_file)
 version_file.close()
 version_str = version_data["number"] + version_data["tag"]
 
@@ -79,8 +79,11 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 exe = EXE(pyz,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
           a.scripts,
-          exclude_binaries=True,
+          #exclude_binaries=True,
           name='SecurePivxMasternodeTool',
           debug=False,
           strip=False,
@@ -88,16 +91,16 @@ exe = EXE(pyz,
           console=False,
           icon=os_path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
 
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='app')
+#coll = COLLECT(exe,
+#               a.binaries,
+#               a.zipfiles,
+#               a.datas,
+#               strip=False,
+#               upx=True,
+#               name='app')
 
 if os_type == 'darwin':
-	app = BUNDLE(coll,
+    app = BUNDLE(exe,
              name='SecurePivxMasternodeTool.app',
              icon=os_path.join(base_dir, 'img', 'spmt.icns'),
              bundle_identifier=None,
@@ -110,32 +113,29 @@ app_path = os_path.join(dist_path, 'app')
 os.chdir(dist_path)
 
 # Copy Readme Files
-from shutil import copyfile, copytree
-print('Copying README.md')
-copyfile(os_path.join(base_dir, 'README.md'), 'README.md')
-copytree(os_path.join(base_dir, 'docs'), 'docs')
-
+#from shutil import copyfile, copytree
+#print('Copying README.md')
+#copyfile(os_path.join(base_dir, 'README.md'), 'README.md')
+#copytree(os_path.join(base_dir, 'docs'), 'docs')
 
 if os_type == 'win32':
-	# Copy Qt5 Platforms
-	os.system('xcopy app\PyQt5\Qt\plugins\platforms app\platforms\ /i')
-	os.chdir(base_dir)
-	# Rename dist Dir
-	dist_path_win = os_path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
-	os.rename(dist_path, dist_path_win)
-	# Compress dist Dir
-	print('Compressing Windows App Folder')
-	os.system('"C:\\Program Files\\7-Zip\\7z.exe" a %s %s -mx0' % (dist_path_win + '.zip', dist_path_win))
+    os.chdir(base_dir)
+    # Rename dist Dir
+    dist_path_win = os_path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
+    os.rename(dist_path, dist_path_win)
+    # Create NSIS compressed installer
+    print('Creating Windows installer (requires NSIS)')
+    os.system('\"c:\\program files (x86)\\NSIS\\makensis.exe\" %s' % os.path.join(base_dir, 'setup.nsi'))
 
 
 if os_type == 'linux':
-	os.chdir(base_dir)
-	# Rename dist Dir
-	dist_path_linux = os_path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
-	os.rename(dist_path, dist_path_linux)
-	# Compress dist Dir
-	print('Compressing Linux App Folder')
-	os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz',
+    os.chdir(base_dir)
+    # Rename dist Dir
+    dist_path_linux = os_path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
+    os.rename(dist_path, dist_path_linux)
+    # Compress dist Dir
+    print('Compressing Linux App Folder')
+    os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz',
                 base_dir, 'SPMT-v' + version_str + '-gnu_linux'))
 
 
