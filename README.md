@@ -1,4 +1,4 @@
-<img src ="https://travis-ci.org/PIVX-Project/PIVX-SPMT.png?branch=master"><br><br>
+<a href="https://travis-ci.org/PIVX-Project/PIVX-SPMT"><img src ="https://travis-ci.org/PIVX-Project/PIVX-SPMT.png?branch=master"></a><br><br>
 <img src="img/splashscreen.png"><br><br>
 
 # SPMT
