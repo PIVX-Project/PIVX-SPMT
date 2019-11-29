@@ -104,17 +104,7 @@ def compose_tx_locking_script_OR(message):
 
 
 def ecdsa_sign(msg, priv):
-    """
-    Based on project: https://github.com/chaeplin/dashmnb.
-    """
-    v, r, s = ecdsa_raw_sign(electrum_sig_hash(msg), priv)
-    sig = encode_sig(v, r, s)
-    pubkey = privkey_to_pubkey(wif_to_privkey(priv))
-
-    ok = ecdsa_raw_verify(electrum_sig_hash(msg), decode_sig(sig), pubkey)
-    if not ok:
-        raise Exception('Bad signature!')
-    return sig
+    return ecdsa_sign_bin(electrum_sig_hash(msg), priv)
 
 
 
@@ -124,6 +114,18 @@ def electrum_sig_hash(message):
     """
     padded = b'\x18DarkNet Signed Message:\n' + num_to_varint(len(message)) + from_string_to_bytes(message)
     return dbl_sha256(padded)
+
+
+
+def ecdsa_sign_bin(msgbin, priv):
+    v, r, s = ecdsa_raw_sign(msgbin, priv)
+    sig = encode_sig(v, r, s)
+    pubkey = privkey_to_pubkey(wif_to_privkey(priv))
+
+    ok = ecdsa_raw_verify(msgbin, decode_sig(sig), pubkey)
+    if not ok:
+        raise Exception('Bad signature!')
+    return sig
 
 
 

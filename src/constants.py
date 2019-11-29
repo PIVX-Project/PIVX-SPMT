@@ -22,7 +22,13 @@ home_dir = os.path.expanduser('~')
 user_dir = os.path.join(home_dir, APPDATA_DIRNAME)
 log_File = os.path.join(user_dir, 'debug.log')
 database_File = os.path.join(user_dir, 'application.db')
+NEW_SIGS_HEIGHT_MAINNET = 2967000
+NEW_SIGS_HEIGHT_TESTNET = 2214000
 
+def NewSigsActive(nHeight, fTestnet=False):
+    if fTestnet:
+        return (nHeight >= NEW_SIGS_HEIGHT_TESTNET)
+    return (nHeight >= NEW_SIGS_HEIGHT_MAINNET)
 
 DEFAULT_MN_CONF = {
     "name": "",
