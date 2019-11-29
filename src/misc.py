@@ -5,6 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 import os, sys
+from contextlib import redirect_stdout
 from ipaddress import ip_address
 import logging
 import simplejson as json
@@ -14,15 +15,7 @@ from urllib.parse import urlparse
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 from PyQt5.QtWidgets import QMessageBox
 
-from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache
-
-
-def add_defaultKeys_to_dict(dictObj, defaultObj):
-    for key in defaultObj:
-        if key not in dictObj:
-            dictObj[key] = defaultObj[key]
-
-
+from constants import user_dir, log_File, DEFAULT_MN_CONF, DefaultCache, wqueue
 
 QT_MESSAGE_TYPE = {
     "info": QMessageBox.Information,
@@ -30,6 +23,12 @@ QT_MESSAGE_TYPE = {
     "crit": QMessageBox.Critical,
     "quest": QMessageBox.Question
     }
+
+
+def add_defaultKeys_to_dict(dictObj, defaultObj):
+    for key in defaultObj:
+        if key not in dictObj:
+            dictObj[key] = defaultObj[key]
 
 
 def appendMasternode(mainWnd, mn):
@@ -194,7 +193,7 @@ def getRemoteSPMTversion():
             raise Exception
 
     except Exception:
-        print("Invalid response getting version from GitHub\n")
+        redirect_print("Invalid response getting version from GitHub\n")
         return "0.0.0"
 
 
@@ -355,7 +354,7 @@ def persistCacheSetting(cache_key, cache_value):
 def printDbg(what):
     logging.info(what)
     log_line = printDbg_msg(what)
-    print(log_line)
+    redirect_print(log_line)
 
 
 
@@ -374,7 +373,7 @@ def printError(
 ):
     logging.error("%s | %s | %s" % (caller_name, function_name, what))
     log_line = printException_msg(caller_name, function_name, what, None, True)
-    print(log_line)
+    redirect_print(log_line)
 
 
 
@@ -389,7 +388,7 @@ def printException(
         what += " ==> %s" % str(errargs)
     logging.warning("%s | %s | %s" % (caller_name, function_name, what))
     text = printException_msg(caller_name, function_name, err_msg, errargs)
-    print(text)
+    redirect_print(text)
 
 
 
@@ -418,7 +417,7 @@ def printException_msg(
 def printOK(what):
     logging.debug(what)
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
-    print(msg)
+    redirect_print(msg)
 
 
 
@@ -447,6 +446,10 @@ def readCacheSettings():
     except:
         return DefaultCache
 
+
+def redirect_print(what):
+    with redirect_stdout(WriteStream(wqueue)):
+        print(what)
 
 
 def removeMNfromList(mainWnd, mn, removeFromDB=True):

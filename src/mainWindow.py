@@ -6,8 +6,6 @@
 
 import logging
 import os
-from queue import Queue
-import sys
 from time import strftime, gmtime
 import threading
 
@@ -17,7 +15,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxL
     QFileDialog, QTextEdit, QTabWidget, QLabel, QSplitter
 
 from apiClient import ApiClient
-from constants import starting_height, DefaultCache
+from constants import starting_height, DefaultCache, wqueue
 from hwdevice import HWdevice
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, \
     WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
@@ -94,9 +92,8 @@ class MainWindow(QWidget):
         ##-- init Api Client
         self.apiClient = ApiClient(self.isTestnetRPC)
 
-        ###-- Create Queues and redirect stdout
-        self.queue = Queue()
-        sys.stdout = WriteStream(self.queue)
+        ###-- Create Queue to redirect stdout
+        self.queue = wqueue
 
         ###-- Init last logs
         logging.debug("STARTING SPMT")

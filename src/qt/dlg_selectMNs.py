@@ -30,7 +30,6 @@ class SelectMNs_dlg(QDialog):
         
     def getSelection(self):
         items = self.ui.mnList.selectedItems()
-        #print("Selected MNs " + str([[x.txid, x.text()] for x in items]))
         return [[x.txid, x.text()] for x in items]
         
     def initUI(self):
