@@ -5,6 +5,9 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 import os
+from queue import Queue
+
+wqueue = Queue()
 
 MPATH_LEDGER = "44'/77'/"
 MPATH_TREZOR = "44'/119'/"
