@@ -148,12 +148,12 @@ def extract_pkh_from_locking_script(script):
             else:
                 raise Exception('Non-standard public key hash length (should be 20)')
 
-        elif len(script) == 35:
-            scriptlen = read_varint(script, 0)[0]
-            if scriptlen in [32, 33]:
-                return bin_hash160(script[1:1 + scriptlen])
-            else:
-                raise Exception('Non-standard public key length (should be 32 or 33)')
+    elif len(script) == 35:
+        scriptlen = read_varint(script, 0)[0]
+        if scriptlen in [32, 33]:
+            return bin_hash160(script[1:1 + scriptlen])
+        else:
+            raise Exception('Non-standard public key length (should be 32 or 33)')
     raise Exception('Non-standard locking script type (should be P2PKH or P2PK). len is %d' % len(script))
 
 

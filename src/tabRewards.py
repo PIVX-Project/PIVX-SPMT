@@ -450,6 +450,7 @@ class TabRewards():
                         txid = self.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
                         if txid is None:
                             raise Exception("Unable to send TX - connection to RPC server lost.")
+                        printDbg("Transaction sent. ID: %s" % txid)
                         mess2_text = "<p>Transaction successfully sent.</p>"
                         mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
                         mess2.setDetailedText(txid)
