@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTab
 
 from constants import MINIMUM_FEE
 from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, \
-    myPopUp_sb, DisconnectedException
+    myPopUp_sb, DisconnectedException, myPopUp
 from pivx_parser import ParseTx
 from threads import ThreadFuns
 from utils import checkPivxAddr
@@ -138,14 +138,17 @@ class SweepAll_dlg(QDialog):
 
 
     def onButtonSend(self):
+        # Check HW connection
+        while self.main_tab.caller.hwStatus != 2:
+            mess = "HW device not connected. Try to connect?"
+            ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'PET4L - hw check', mess)
+            if ans == QMessageBox.No:
+                return
+            # re connect
+            self.main_tab.caller.onCheckHw()
         try:
             self.dest_addr = self.ui.edt_destination.text().strip()
             self.currFee = self.ui.feeLine.value() * 1e8
-
-             # Check RPC & HW device
-            if not self.main_tab.caller.rpcConnected or self.main_tab.caller.hwStatus != 2:
-                myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - hw/rpc device check', "Connect to RPC server and HW device first")
-                return None
 
             # Check destination Address
             if not checkPivxAddr(self.dest_addr, self.main_tab.caller.isTestnetRPC):
