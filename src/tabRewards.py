@@ -215,12 +215,9 @@ class TabRewards():
                         # double check that the rpc connection is still active, else reconnect
                         if self.caller.rpcClient is None:
                             self.caller.updateRPCstatus(None)
-                        try:
-                            rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
-                        except Exception as e:
-                            printError(getCallerName(), getFunctionName(),
-                                       "Unable to get raw TX with hash=%s from RPC server: %s" % (
-                                           utxo['txid'], str(e)))
+                        rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
+                        if rawtx is None:
+                            printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
                             # Don't save UTXO if raw TX is unavailable
                             continue
                     else:
