@@ -210,6 +210,7 @@ class TabRewards():
                 # for each UTXO
                 for utxo in mn_rewards[mn]:
                     percent = int(100*curr_utxo / total_num_of_utxos)
+                    
                     # get raw TX from RPC client (only for ledger / trezor has own api)
                     if self.caller.hwModel == 0:
                         # double check that the rpc connection is still active, else reconnect
@@ -222,11 +223,6 @@ class TabRewards():
                             continue
                     else:
                         rawtx = ""
-
-                    # Add mn_name and raw_tx to UTXO and save it to DB
-                    utxo['mn_name'] = mn
-                    utxo['raw_tx'] = rawtx
-                    self.caller.parent.db.addReward(utxo)
 
                     # emit percent
                     self.caller.sig_UTXOsLoading.emit(percent)
