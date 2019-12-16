@@ -14,12 +14,12 @@ from trezorlib import btc, exceptions, messages as trezor_proto, coins
 from trezorlib.client import TrezorClient, MINIMUM_FIRMWARE_VERSION
 from trezorlib.tools import parse_path
 from trezorlib.transport import enumerate_devices
-from trezorlib.tx_api import TxApi
 from trezorlib.ui import PIN_CURRENT, PIN_NEW, PIN_CONFIRM
 
 from constants import MPATH_TREZOR as MPATH, MPATH_TESTNET, HW_devices
 from misc import getCallerName, getFunctionName, printException, printDbg, \
     DisconnectedException, printOK, splitString
+from pivx_parser import ParseTx
 from threads import ThreadFuns
 
 from qt.dlg_pinMatrix import PinMatrix_dlg
@@ -155,17 +155,16 @@ class TrezorApi(QObject):
 
 
 
-    def load_prev_txes(self, tx_api, rewardsArray, skip_cache: bool = False):
+    def load_prev_txes(self, rewardsArray):
         curr_utxo_checked = 0
         txes = {}
-        tx_api.skip_cache = skip_cache
         num_of_txes = sum([len(mnode['utxos']) for mnode in rewardsArray])
         for mn in rewardsArray:
             for utxo in mn['utxos']:
                 prev_hash = bytes.fromhex(utxo["txid"])
                 if prev_hash not in txes:
-                    tx = tx_api[prev_hash]
-                    txes[prev_hash] = tx
+                    json_tx = ParseTx(utxo['raw_tx'])
+                    txes[prev_hash] = self.json_to_tx(json_tx)
 
                 # completion percent emitted
                 curr_utxo_checked += 1
@@ -174,6 +173,35 @@ class TrezorApi(QObject):
         self.tx_progress.emit(100)
         return txes
 
+
+    def json_to_tx(self, jtx):
+        t = trezor_proto.TransactionType()
+        t.version = jtx["version"]
+        t.lock_time = jtx["locktime"]
+        t.inputs = [self.json_to_input(input) for input in jtx["vin"]]
+        t.bin_outputs = [self.json_to_bin_output(output) for output in jtx["vout"]]
+        return t
+
+
+    def json_to_input(self, input):
+        i = trezor_proto.TxInputType()
+        if "coinbase" in input:
+            i.prev_hash = b"\0" * 32
+            i.prev_index = 0xFFFFFFFF  # signed int -1
+            i.script_sig = bytes.fromhex(input["coinbase"])
+        else:
+            i.prev_hash = bytes.fromhex(input["txid"])
+            i.prev_index = input["vout"]
+            i.script_sig = bytes.fromhex(input["scriptSig"]["hex"])
+        i.sequence = input["sequence"]
+        return i
+
+
+    def json_to_bin_output(self, output):
+        o = trezor_proto.TxOutputBinType()
+        o.amount = int(output["value"])
+        o.script_pubkey = bytes.fromhex(output["scriptPubKey"]["hex"])
+        return o
 
 
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
@@ -209,15 +237,7 @@ class TrezorApi(QObject):
                 script_type=trezor_proto.OutputScriptType.PAYTOSCRIPTHASH
             ))
 
-            tx_api = TxApi(coin)
-
-            for skip_cache in (False, True):
-                try:
-                    txes = self.load_prev_txes(tx_api, rewardsArray, skip_cache)
-                    break
-                except Exception as e:
-                    if skip_cache:
-                        raise
+            txes = self.load_prev_txes(rewardsArray)
 
             self.mBox2 = QMessageBox(caller)
             self.messageText = "<p>Signing transaction...</p>"
