@@ -27,6 +27,7 @@ log_File = os.path.join(user_dir, 'debug.log')
 database_File = os.path.join(user_dir, 'application.db')
 NEW_SIGS_HEIGHT_MAINNET = 2153200
 NEW_SIGS_HEIGHT_TESTNET = 1347000
+SECONDS_IN_2_MONTHS = 60 * 24 * 60 * 60
 
 def NewSigsActive(nHeight, fTestnet=False):
     if fTestnet:

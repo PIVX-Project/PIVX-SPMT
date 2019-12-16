@@ -17,7 +17,7 @@ from database import Database
 from misc import getSPMTVersion, printDbg, initLogs, \
     clean_v4_migration, saveCacheSettings, readCacheSettings
 from mainWindow import MainWindow
-from constants import user_dir
+from constants import user_dir, SECONDS_IN_2_MONTHS
 from qt.dlg_configureRPCservers import ConfigureRPCservers_dlg
 from qt.dlg_signmessage import SignMessage_dlg
 
@@ -79,7 +79,7 @@ class App(QMainWindow):
         self.db.clearTable('MY_VOTES')
 
         # Clear raw txes updated earlier than two months ago
-        self.db.clearRawTxes(time() - 60 * 24 * 60 * 60)
+        self.db.clearRawTxes(time() - SECONDS_IN_2_MONTHS)
 
         # Read Masternode List
         masternode_list = self.db.getMasternodeList()
