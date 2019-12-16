@@ -149,6 +149,9 @@ class Database():
                            " satoshis INTEGER, confirmations INTEGER, script TEXT, mn_name TEXT,"
                            " PRIMARY KEY (tx_hash, tx_ouput_n))")
 
+            cursor.execute("CREATE TABLE IF NOT EXISTS RAWTXES("
+                           " tx_hash TEXT PRIMARY KEY,  rawtx TEXT)")
+
             # Tables for Governance Objects
             cursor.execute("CREATE TABLE IF NOT EXISTS PROPOSALS("
                            " name TEXT, url TEXT, hash TEXT PRIMARY KEY, feeHash TEXT,"
@@ -553,6 +556,74 @@ class Database():
             self.releaseCursor()
 
         return self.rewards_from_rows(rows)
+
+    '''
+    txes methods
+    '''
+
+    def txes_from_rows(self, rows):
+        txes = []
+
+        for row in rows:
+            # fetch tx item
+            tx = {}
+            tx['txid'] = row[0]
+            tx['rawtx'] = row[1]
+            # add to list
+            txes.append(tx)
+
+        return txes
+
+
+    def addRawTx(self, tx_hash, rawtx):
+        logging.debug("DB: Adding rawtx")
+        try:
+            cursor = self.getCursor()
+
+            cursor.execute("INSERT INTO RAWTXES "
+                           "VALUES (?, ?)",
+                           (tx_hash, rawtx)
+                           )
+
+        except Exception as e:
+            err_msg = 'error adding rawtx to DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+
+        finally:
+            self.releaseCursor()
+
+
+    def deleteRawTx(self, tx_hash):
+        logging.debug("DB: Deleting rawtx")
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash, ))
+
+        except Exception as e:
+            err_msg = 'error deleting rawtx from DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        finally:
+            self.releaseCursor(vacuum=True)
+
+
+    def getRawTx(self, tx_hash):
+        logging.debug("DB: Getting rawtx")
+        try:
+            cursor = self.getCursor()
+
+            cursor.execute("SELECT * FROM RAWTXES"
+                           " WHERE tx_hash = ?", (tx_hash, ))
+            rows = cursor.fetchall()
+
+        except Exception as e:
+            err_msg = 'error getting raw tx for %s' % tx_hash
+            printException(getCallerName(), getFunctionName(), err_msg, e)
+            rows = []
+        finally:
+            self.releaseCursor()
+
+        return self.rewards_from_rows(rows)[0]
+
 
 
 

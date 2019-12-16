@@ -74,6 +74,7 @@ class App(QMainWindow):
             self.db.clearTable('MASTERNODES')
 
         # Clear Rewards and Governance DB (in case of forced shutdown)
+        self.db.clearTable('RAWTXES')
         self.db.clearTable('REWARDS')
         self.db.clearTable('PROPOSALS')
         self.db.clearTable('MY_VOTES')
