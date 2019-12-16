@@ -18,6 +18,7 @@ from misc import printDbg, printError, printException, getCallerName, getFunctio
 from pivx_parser import ParseTx
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
+from txCache import TxCache
 from utils import checkPivxAddr
 
 
@@ -204,32 +205,23 @@ class TabRewards():
 
             printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
             curr_utxo = 0
-            percent = 0
 
             for mn in mn_rewards:
                 # for each UTXO
                 for utxo in mn_rewards[mn]:
-                    percent = int(100*curr_utxo / total_num_of_utxos)
-                    # get raw TX from RPC client (only for ledger / trezor has own api)
-                    if self.caller.hwModel == 0:
-                        # double check that the rpc connection is still active, else reconnect
-                        if self.caller.rpcClient is None:
-                            self.caller.updateRPCstatus(None)
-                        rawtx = self.caller.rpcClient.getRawTransaction(utxo['txid'])
-                        if rawtx is None:
-                            printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
-                            # Don't save UTXO if raw TX is unavailable
-                            continue
-                    else:
-                        rawtx = ""
+                    # get raw TX from DB/RPC client
+                    rawtx = TxCache(self.caller)[utxo['txid']]
+                    if rawtx is None:
+                        printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
+                        # Don't save UTXO if raw TX is unavailable
+                        continue
 
-                    # Add mn_name and raw_tx to UTXO and save it to DB
+                    # Add mn_name to UTXO and save it to DB
                     utxo['mn_name'] = mn
-                    utxo['raw_tx'] = rawtx
                     self.caller.parent.db.addReward(utxo)
-                    self.caller.parent.db.addRawTx(utxo['txid'], rawtx)
 
                     # emit percent
+                    percent = int(100 * curr_utxo / total_num_of_utxos)
                     self.caller.sig_UTXOsLoading.emit(percent)
                     curr_utxo += 1
 

@@ -150,7 +150,7 @@ class Database():
                            " PRIMARY KEY (tx_hash, tx_ouput_n))")
 
             cursor.execute("CREATE TABLE IF NOT EXISTS RAWTXES("
-                           " tx_hash TEXT PRIMARY KEY,  rawtx TEXT)")
+                           " tx_hash TEXT PRIMARY KEY,  rawtx TEXT, lastfetch INTEGER)")
 
             # Tables for Governance Objects
             cursor.execute("CREATE TABLE IF NOT EXISTS PROPOSALS("
@@ -532,7 +532,9 @@ class Database():
         finally:
             self.releaseCursor()
 
-        return self.rewards_from_rows(rows)[0]
+        if len(rows) > 0:
+            return self.rewards_from_rows(rows)[0]
+        return None
 
 
 
@@ -575,14 +577,14 @@ class Database():
         return txes
 
 
-    def addRawTx(self, tx_hash, rawtx):
-        logging.debug("DB: Adding rawtx")
+    def addRawTx(self, tx_hash, rawtx, lastfetch=0):
+        logging.debug("DB: Adding rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
 
             cursor.execute("INSERT INTO RAWTXES "
-                           "VALUES (?, ?)",
-                           (tx_hash, rawtx)
+                           "VALUES (?, ?, ?)",
+                           (tx_hash, rawtx, lastfetch)
                            )
 
         except Exception as e:
@@ -594,7 +596,7 @@ class Database():
 
 
     def deleteRawTx(self, tx_hash):
-        logging.debug("DB: Deleting rawtx")
+        logging.debug("DB: Deleting rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash, ))
@@ -607,7 +609,7 @@ class Database():
 
 
     def getRawTx(self, tx_hash):
-        logging.debug("DB: Getting rawtx")
+        logging.debug("DB: Getting rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
 
@@ -622,8 +624,25 @@ class Database():
         finally:
             self.releaseCursor()
 
-        return self.rewards_from_rows(rows)[0]
+        if len(rows) > 0:
+            return self.txes_from_rows(rows)[0]
+        return None
 
+
+    def clearRawTxes(self, minTime):
+        '''
+        removes txes with lastfetch older than mintime
+        '''
+        printDbg("Pruning table RAWTXES")
+        try:
+            cursor = self.getCursor()
+            cursor.execute("DELETE FROM RAWTXES WHERE lastfetch < ?", (minTime, ))
+
+        except Exception as e:
+            err_msg = 'error deleting rawtx from DB'
+            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        finally:
+            self.releaseCursor(vacuum=True)
 
 
 

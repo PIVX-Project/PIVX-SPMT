@@ -7,7 +7,7 @@
 import logging
 import os
 import signal
-import sys
+from time import time
 
 from PyQt5.QtCore import pyqtSignal, QSettings
 from PyQt5.QtGui import QIcon
@@ -74,10 +74,12 @@ class App(QMainWindow):
             self.db.clearTable('MASTERNODES')
 
         # Clear Rewards and Governance DB (in case of forced shutdown)
-        self.db.clearTable('RAWTXES')
         self.db.clearTable('REWARDS')
         self.db.clearTable('PROPOSALS')
         self.db.clearTable('MY_VOTES')
+
+        # Clear raw txes updated earlier than two months ago
+        self.db.clearRawTxes(time() - 60 * 24 * 60 * 60)
 
         # Read Masternode List
         masternode_list = self.db.getMasternodeList()
