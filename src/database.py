@@ -487,7 +487,7 @@ class Database():
         try:
             cursor = self.getCursor()
 
-            cursor.execute("INSERT INTO REWARDS "
+            cursor.execute("INSERT OR REPLACE INTO REWARDS "
                            "VALUES (?, ?, ?, ?, ?, ?)",
                            (utxo['txid'], utxo['vout'], utxo['satoshis'],
                             utxo['confirmations'], utxo['script'], utxo['mn_name'])
@@ -582,7 +582,7 @@ class Database():
         try:
             cursor = self.getCursor()
 
-            cursor.execute("INSERT INTO RAWTXES "
+            cursor.execute("INSERT OR REPLACE INTO RAWTXES "
                            "VALUES (?, ?, ?)",
                            (tx_hash, rawtx, lastfetch)
                            )

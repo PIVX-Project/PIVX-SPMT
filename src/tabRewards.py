@@ -31,6 +31,7 @@ class TabRewards():
         self.Lock = threading.Lock()
 
         ##--- Initialize Selection
+        self.rawtxes_loaded = False
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
@@ -62,9 +63,7 @@ class TabRewards():
 
         # Connect Signals
         self.caller.sig_RawTxesLoading.connect(self.update_loading_rawtxes)
-        self.caller.sig_RawTxesLoaded.connect(self.sendTx)
         self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
-        self.caller.sig_UTXOsLoaded.connect(self.display_mn_utxos)
 
 
 
@@ -123,12 +122,12 @@ class TabRewards():
             if len(rewards) > 1:  # (collateral is a reward)
                 self.ui.rewardsList.statusLabel.setVisible(False)
                 self.ui.rewardsList.box.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-
             else:
                 if not self.caller.rpcConnected:
                     self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
                 else:
                     self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
+            self.runInThread(self.load_rawTxes_thread, ())
 
 
 
@@ -179,25 +178,28 @@ class TabRewards():
 
     def load_rawTxes_thread(self, ctrl):
         with self.Lock:
+            if self.rawtxes_loaded:
+                return
             # Fetch raw txes
-            total_num_of_utxos = len(self.selectedRewards)
+            utxos = self.caller.parent.db.getRewardsList()
+            total_num_of_utxos = len(utxos)
             printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
             curr_utxo = 0
 
-            for utxo in self.selectedRewards:
+            for utxo in utxos:
                 rawtx = TxCache(self.caller)[utxo['txid']]
                 if rawtx is None:
                     printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
                     # Don't save UTXO if raw TX is unavailable
-                    self.selectedRewards.remove(utxo)
+                    utxos.remove(utxo)
                     continue
                 utxo['raw_tx'] = rawtx
-
                 # emit percent
                 percent = int(100 * curr_utxo / total_num_of_utxos)
                 self.caller.sig_RawTxesLoading.emit(percent)
                 curr_utxo += 1
-            self.caller.sig_RawTxesLoaded.emit()
+
+            self.caller.sig_RawTxesLoading.emit(100)
 
 
     def load_utxos_thread(self, ctrl):
@@ -239,9 +241,8 @@ class TabRewards():
                     self.caller.sig_UTXOsLoading.emit(percent)
                     curr_utxo += 1
 
-            self.caller.sig_UTXOsLoading.emit(100)
             printDbg("--# REWARDS table updated")
-            self.caller.sig_UTXOsLoaded.emit()
+            self.caller.sig_UTXOsLoading.emit(100)
 
 
 
@@ -337,16 +338,12 @@ class TabRewards():
                     if ans2 == QMessageBox.No:
                         return None
 
-        # LET'S GO
-        if self.selectedRewards:
-            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
-            self.runInThread(self.load_rawTxes_thread, ())
-        else:
+        if len(self.selectedRewards) == 0:
             myPopUp_sb(self.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
+            return None
 
-
-    def sendTx(self):
-        self.ui.rewardsList.statusLabel.hide()
+        # LET'S GO
+        printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
         printDbg("Preparing transaction. Please wait...")
         self.ui.loadingLine.show()
         self.ui.loadingLinePercent.show()
@@ -483,7 +480,6 @@ class TabRewards():
 
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
-        self.ui.rewardsList.statusLabel.hide()
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
@@ -531,12 +527,19 @@ class TabRewards():
 
 
     def update_loading_utxos(self, percent):
-        self.ui.resetStatusLabel('<em><b style="color:purple">Checking explorer... %d%%</b></em>' % percent)
+        if percent < 100:
+            self.ui.resetStatusLabel('<em><b style="color:purple">Checking explorer... %d%%</b></em>' % percent)
+        else:
+            self.display_mn_utxos()
 
 
 
     def update_loading_rawtxes(self, percent):
-        self.ui.resetStatusLabel('<em><b style="color:purple">Getting raw tx inputs... %d%%</b></em>' % percent)
+        if percent < 100:
+            self.ui.resetStatusLabel('<em><b style="color:purple">Getting raw tx inputs... %d%%</b></em>' % percent)
+        else:
+            self.ui.rewardsList.statusLabel.hide()
+            self.rawtxes_loaded = True
 
 
 

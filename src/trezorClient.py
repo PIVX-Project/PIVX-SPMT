@@ -21,6 +21,7 @@ from misc import getCallerName, getFunctionName, printException, printDbg, \
     DisconnectedException, printOK, splitString
 from pivx_parser import ParseTx
 from threads import ThreadFuns
+from txCache import TxCache
 
 from qt.dlg_pinMatrix import PinMatrix_dlg
 
@@ -61,9 +62,10 @@ class TrezorApi(QObject):
     sig_disconnected = pyqtSignal(str)
 
 
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model, main_wnd, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.model = model # index of HW_devices
+        self.main_wnd = main_wnd
         self.messages = [
             'Trezor not initialized. Connect and unlock it',
             'Error setting up Trezor Client.',
@@ -163,7 +165,8 @@ class TrezorApi(QObject):
             for utxo in mn['utxos']:
                 prev_hash = bytes.fromhex(utxo["txid"])
                 if prev_hash not in txes:
-                    json_tx = ParseTx(utxo['raw_tx'])
+                    raw_tx = TxCache(self.main_wnd)[utxo['txid']]
+                    json_tx = ParseTx(raw_tx)
                     txes[prev_hash] = self.json_to_tx(json_tx)
 
                 # completion percent emitted

@@ -19,6 +19,7 @@ from constants import MPATH_LEDGER as MPATH, MPATH_TESTNET, HW_devices
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, splitString, DisconnectedException
 from pivx_hashlib import pubkey_to_address, single_sha256
 from threads import ThreadFuns
+from txCache import TxCache
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
 
 
@@ -64,8 +65,9 @@ class LedgerApi(QObject):
     sig_disconnected = pyqtSignal(str)
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, main_wnd, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        self.main_wnd = main_wnd
         self.model = [x[0] for x in HW_devices].index("LEDGER Nano")
         self.messages = [
             'Device not initialized.',
@@ -117,15 +119,15 @@ class LedgerApi(QObject):
     @process_ledger_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path):
         self.amount += int(utxo['satoshis'])
-        raw_tx = bytearray.fromhex(utxo['raw_tx'])
+        raw_tx = TxCache(self.main_wnd)[utxo['txid']]
 
         # parse the raw transaction, so that we can extract the UTXO locking script we refer to
-        prev_transaction = bitcoinTransaction(raw_tx)
+        prev_transaction = bitcoinTransaction(bytearray.fromhex(raw_tx))
 
         utxo_tx_index = utxo['vout']
         if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
             raise Exception('Incorrect value of outputIndex for UTXO %s-%d' %
-                            (utxo['raw_tx'], utxo['vout']))
+                            (utxo['txid'], utxo['vout']))
 
         trusted_input = self.chip.getTrustedInput(prev_transaction, utxo_tx_index)
         self.trusted_inputs.append(trusted_input)
