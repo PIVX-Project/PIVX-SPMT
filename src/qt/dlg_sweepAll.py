@@ -142,7 +142,9 @@ class SweepAll_dlg(QDialog):
 
 
     def onButtonSend(self):
-        # Check HW connection
+        dest_addr = self.ui.edt_destination.text().strip()
+        currFee = self.ui.feeLine.value() * 1e8
+        # Check HW device
         while self.main_tab.caller.hwStatus != 2:
             mess = "HW device not connected. Try to connect?"
             ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'SPMT - hw check', mess)
@@ -150,67 +152,15 @@ class SweepAll_dlg(QDialog):
                 return
             # re connect
             self.main_tab.caller.onCheckHw()
-
-        self.dest_addr = self.ui.edt_destination.text().strip()
-        self.currFee = self.ui.feeLine.value() * 1e8
-
-        # Check destination Address
-        if not checkPivxAddr(self.dest_addr, self.main_tab.caller.isTestnetRPC):
-            myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
-            return None
-
-        if sum([len(x['utxos']) for x in self.rewardsArray]) == 0:
-            myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
-            return None
-
-        # LET'S GO
-        printDbg("Sweeping rewards to PIVX address %s " % self.dest_addr)
-        self.ui.lblMessage.hide()
-        printDbg("Preparing transaction. Please wait...")
-        self.ui.loadingLine.show()
-        self.ui.loadingLinePercent.show()
-        QApplication.processEvents()
-
         # disable buttons (re-enabled in AbortSend)
         self.ui.buttonSend.setEnabled(False)
         self.ui.buttonCancel.setEnabled(False)
-
-        # save last destination address and swiftxCheck to cache and persist to settings
-        self.main_tab.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
-        self.main_tab.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())
-
-        # re-connect signals
-        try:
-            self.main_tab.caller.hwdevice.api.sigTxdone.disconnect()
-        except:
-            pass
-        try:
-            self.main_tab.caller.hwdevice.api.sigTxabort.disconnect()
-        except:
-            pass
-        try:
-            self.main_tab.caller.hwdevice.api.tx_progress.disconnect()
-        except:
-            pass
-        self.main_tab.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
-        self.main_tab.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
-        self.main_tab.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
-
-        try:
-            self.txFinished = False
-            self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller,
-                                                                   self.rewardsArray,
-                                                                   self.dest_addr,
-                                                                   self.currFee,
-                                                                   self.useSwiftX(),
-                                                                   self.main_tab.caller.isTestnetRPC)
-        except DisconnectedException as e:
-            self.main_tab.caller.hwStatus = 0
-            self.main_tab.caller.updateHWleds()
-
-        except Exception as e:
-            printException(getCallerName(), getFunctionName(), "exception in sendTx", str(e))
-
+        # SEND
+        self.main_tab.caller.t_rewards.SendRewards(dest_addr,
+                                                   currFee,
+                                                   self.useSwiftX(),
+                                                   self.rewardsArray,
+                                                   self)
 
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
