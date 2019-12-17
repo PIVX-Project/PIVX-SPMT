@@ -47,9 +47,9 @@ class HWdevice(QObject):
         # Select API
         api_index = HW_devices[hw_index][1]
         if api_index == 0:
-            self.api = LedgerApi()
+            self.api = LedgerApi(self.main_wnd)
         else:
-            self.api = TrezorApi(hw_index)
+            self.api = TrezorApi(hw_index, self.main_wnd)
 
         # Init device & connect signals
         self.api.initDevice()

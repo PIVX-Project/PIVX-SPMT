@@ -44,8 +44,8 @@ class MainWindow(QWidget):
     # signal: UTXO list loading percent (emitted by load_utxos_thread in tabRewards)
     sig_UTXOsLoading = pyqtSignal(int)
 
-    # signal: UTXO list has been reloaded (emitted by load_utxos_thread in tabRewards)
-    sig_UTXOsLoaded = pyqtSignal()
+    # signal: raw txes loading percent (emitted by load_rawtxes_thread in tabRewards)
+    sig_RawTxesLoading = pyqtSignal(int)
 
     # signal: Proposals list has been reloaded (emitted by loadProposals_thread in tabGovernance)
     sig_ProposalsLoaded = pyqtSignal()

@@ -16,6 +16,7 @@ from misc import printDbg, getCallerName, getFunctionName, printException, persi
     myPopUp_sb, DisconnectedException, myPopUp
 from pivx_parser import ParseTx
 from threads import ThreadFuns
+from txCache import TxCache
 from utils import checkPivxAddr
 
 
@@ -26,16 +27,16 @@ class SweepAll_dlg(QDialog):
         self.main_tab = main_tab
         self.setWindowTitle('Sweep All Rewards')
         ##--- Initialize Selection
+        self.loading_txes = False
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
         ##--- Initialize GUI
         self.setupUI()
         # Connect GUI buttons
         self.connectButtons()
-         # Connect reloadUTXO signal
+         # Connect Signals
+        self.main_tab.caller.sig_RawTxesLoading.connect(self.update_loading_rawtxes)
         self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
-        # Connect reloadUTXO signal
-        self.main_tab.caller.sig_UTXOsLoaded.connect(self.display_utxos)
 
 
 
@@ -48,8 +49,11 @@ class SweepAll_dlg(QDialog):
         # load useSwiftX check from cache
         if self.main_tab.caller.parent.cache.get("useSwiftX"):
             self.ui.swiftxCheck.setChecked(True)
-        # Reload UTXOs
-        ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
+        if self.loading_txes:
+            self.display_utxos()
+        else:
+            # Reload UTXOs
+            ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
 
 
 
@@ -141,71 +145,77 @@ class SweepAll_dlg(QDialog):
         # Check HW connection
         while self.main_tab.caller.hwStatus != 2:
             mess = "HW device not connected. Try to connect?"
-            ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'PET4L - hw check', mess)
+            ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'SPMT - hw check', mess)
             if ans == QMessageBox.No:
                 return
             # re connect
             self.main_tab.caller.onCheckHw()
+
+        self.dest_addr = self.ui.edt_destination.text().strip()
+        self.currFee = self.ui.feeLine.value() * 1e8
+
+        # Check destination Address
+        if not checkPivxAddr(self.dest_addr, self.main_tab.caller.isTestnetRPC):
+            myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
+            return None
+
+        if sum([len(x['utxos']) for x in self.rewardsArray]) == 0:
+            myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
+            return None
+
+        # LET'S GO
+        printDbg("Sweeping rewards to PIVX address %s " % self.dest_addr)
+        self.ui.lblMessage.hide()
+        printDbg("Preparing transaction. Please wait...")
+        self.ui.loadingLine.show()
+        self.ui.loadingLinePercent.show()
+        QApplication.processEvents()
+
+        # disable buttons (re-enabled in AbortSend)
+        self.ui.buttonSend.setEnabled(False)
+        self.ui.buttonCancel.setEnabled(False)
+
+        # save last destination address and swiftxCheck to cache and persist to settings
+        self.main_tab.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
+        self.main_tab.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())
+
+        # re-connect signals
         try:
-            self.dest_addr = self.ui.edt_destination.text().strip()
-            self.currFee = self.ui.feeLine.value() * 1e8
+            self.main_tab.caller.hwdevice.api.sigTxdone.disconnect()
+        except:
+            pass
+        try:
+            self.main_tab.caller.hwdevice.api.sigTxabort.disconnect()
+        except:
+            pass
+        try:
+            self.main_tab.caller.hwdevice.api.tx_progress.disconnect()
+        except:
+            pass
+        self.main_tab.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
+        self.main_tab.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
+        self.main_tab.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
 
-            # Check destination Address
-            if not checkPivxAddr(self.dest_addr, self.main_tab.caller.isTestnetRPC):
-                myPopUp_sb(self.main_tab.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
-                return None
-
-            # LET'S GO
-            if sum([len(x['utxos']) for x in self.rewardsArray]) > 0:
-                printDbg("Preparing transaction. Please wait...")
-                self.ui.loadingLine.show()
-                self.ui.loadingLinePercent.show()
-                QApplication.processEvents()
-
-                # save last destination address and swiftxCheck to cache and persist to settings
-                self.main_tab.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
-                self.main_tab.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())
-
-                # re-connect signals
-                try:
-                    self.main_tab.caller.hwdevice.api.sigTxdone.disconnect()
-                except:
-                    pass
-                try:
-                    self.main_tab.caller.hwdevice.api.sigTxabort.disconnect()
-                except:
-                    pass
-                try:
-                    self.main_tab.caller.hwdevice.api.tx_progress.disconnect()
-                except:
-                    pass
-                self.main_tab.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
-                self.main_tab.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
-                self.main_tab.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
-
-                self.txFinished = False
-                self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller,
-                                                                       self.rewardsArray,
-                                                                       self.dest_addr,
-                                                                       self.currFee,
-                                                                       self.useSwiftX(),
-                                                                       self.main_tab.caller.isTestnetRPC)
-            else:
-                myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
-
+        try:
+            self.txFinished = False
+            self.main_tab.caller.hwdevice.prepare_transfer_tx_bulk(self.main_tab.caller,
+                                                                   self.rewardsArray,
+                                                                   self.dest_addr,
+                                                                   self.currFee,
+                                                                   self.useSwiftX(),
+                                                                   self.main_tab.caller.isTestnetRPC)
         except DisconnectedException as e:
             self.main_tab.caller.hwStatus = 0
             self.main_tab.caller.updateHWleds()
-            self.onButtonCancel()
 
         except Exception as e:
-            err_msg = "Exception in onButtonSend"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
-
+            printException(getCallerName(), getFunctionName(), "exception in sendTx", str(e))
 
 
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
+        self.ui.buttonSend.setEnabled(True)
+        self.ui.buttonCancel.setEnabled(True)
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
@@ -289,8 +299,27 @@ class SweepAll_dlg(QDialog):
 
 
     def update_loading_utxos(self, percent):
-        self.ui.lblMessage.setVisible(True)
-        self.ui.lblMessage.setText("Loading rewards...%d%%" % percent)
+        if percent < 100:
+            self.ui.buttonSend.setEnabled(False)
+            self.ui.lblMessage.show()
+            self.ui.lblMessage.setText("Loading rewards...%d%%" % percent)
+        else:
+            self.ui.buttonSend.setEnabled(True)
+            self.ui.lblMessage.hide()
+            self.display_utxos()
+
+
+
+    def update_loading_rawtxes(self, percent):
+        if percent < 100:
+            self.loading_txes = True
+            self.ui.buttonSend.setEnabled(False)
+            self.ui.lblMessage.show()
+            self.ui.lblMessage.setText("Loading raw tx inputs...%d%%" % percent)
+        else:
+            self.loading_txes = False
+            self.ui.buttonSend.setEnabled(True)
+            self.ui.lblMessage.hide()
 
 
 
@@ -384,4 +413,4 @@ class Ui_SweepAllDlg(object):
         self.buttonSend = QPushButton("Send")
         hBox.addWidget(self.buttonSend)
         layout.addLayout(hBox)
-        SweepAllDlg.resize(650, 257)
+        SweepAllDlg.resize(700, 300)
