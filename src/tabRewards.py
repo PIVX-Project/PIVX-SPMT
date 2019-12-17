@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 
 from constants import MINIMUM_FEE
 from misc import printDbg, printError, printException, getCallerName, getFunctionName, \
-    persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException
+    persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException, checkTxInputs
 from pivx_parser import ParseTx
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
@@ -31,7 +31,7 @@ class TabRewards():
         self.Lock = threading.Lock()
 
         ##--- Initialize Selection
-        self.rawtxes_loaded = False
+        self.rawtxes_loading = False
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
@@ -178,28 +178,29 @@ class TabRewards():
 
     def load_rawTxes_thread(self, ctrl):
         with self.Lock:
-            if self.rawtxes_loaded:
-                return
-            # Fetch raw txes
-            utxos = self.caller.parent.db.getRewardsList()
-            total_num_of_utxos = len(utxos)
-            printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
-            curr_utxo = 0
+            if not self.rawtxes_loading:
+                self.rawtxes_loading = True
+                # Fetch raw txes
+                utxos = self.caller.parent.db.getRewardsList()
+                total_num_of_utxos = len(utxos)
+                printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
+                curr_utxo = 0
 
-            for utxo in utxos:
-                rawtx = TxCache(self.caller)[utxo['txid']]
-                if rawtx is None:
-                    printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
-                    # Don't save UTXO if raw TX is unavailable
-                    utxos.remove(utxo)
-                    continue
-                utxo['raw_tx'] = rawtx
-                # emit percent
-                percent = int(100 * curr_utxo / total_num_of_utxos)
-                self.caller.sig_RawTxesLoading.emit(percent)
-                curr_utxo += 1
+                for utxo in utxos:
+                    rawtx = TxCache(self.caller)[utxo['txid']]
+                    if rawtx is None:
+                        printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
+                        # Don't save UTXO if raw TX is unavailable
+                        utxos.remove(utxo)
+                        continue
+                    utxo['raw_tx'] = rawtx
+                    # emit percent
+                    percent = int(100 * curr_utxo / total_num_of_utxos)
+                    self.caller.sig_RawTxesLoading.emit(percent)
+                    curr_utxo += 1
 
-            self.caller.sig_RawTxesLoading.emit(100)
+                self.caller.sig_RawTxesLoading.emit(100)
+                self.rawtxes_loading = False
 
 
     def load_utxos_thread(self, ctrl):
@@ -301,24 +302,9 @@ class TabRewards():
             self.runInThread(self.load_utxos_thread, ())
 
 
-
     def onSendRewards(self):
         self.dest_addr = self.ui.destinationLine.text().strip()
-
-        # Check HW device
-        while self.caller.hwStatus != 2:
-            mess = "HW device not connected. Try to connect?"
-            ans = myPopUp(self.caller, QMessageBox.Question, 'SPMT - hw check', mess)
-            if ans == QMessageBox.No:
-                return
-            # re connect
-            self.caller.onCheckHw()
-
-        # Check destination Address
-        if not checkPivxAddr(self.dest_addr, self.caller.isTestnetRPC):
-            myPopUp_sb(self.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
-            return None
-
+        self.currFee = self.ui.feeLine.value() * 1e8
         # Check spending collateral
         if (not self.ui.collateralHidden and
                 self.ui.rewardsList.box.collateralRow is not None and
@@ -337,23 +323,23 @@ class TabRewards():
                     ans2 = myPopUp(self.caller, "crit", 'SPMT - warning', warning3)
                     if ans2 == QMessageBox.No:
                         return None
+        # Check HW device
+        while self.caller.hwStatus != 2:
+            mess = "HW device not connected. Try to connect?"
+            ans = myPopUp(self.caller, QMessageBox.Question, 'SPMT - hw check', mess)
+            if ans == QMessageBox.No:
+                return
+            # re connect
+            self.caller.onCheckHw()
+        # SEND
+        self.SendRewards(self, self.dest_addr, self.currFee, self.useSwiftX())
 
-        if len(self.selectedRewards) == 0:
-            myPopUp_sb(self.caller, "warn", 'Transaction NOT sent', "No UTXO to send")
-            return None
 
-        # LET'S GO
-        printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
-        printDbg("Preparing transaction. Please wait...")
-        self.ui.loadingLine.show()
-        self.ui.loadingLinePercent.show()
-        QApplication.processEvents()
+    def SendRewards(self, dest_addr, fee, useSwiftX, inputs=None, gui=None):
+        # Default slots on tabRewards
+        if gui is None:
+            gui = self
 
-        # save last destination address and swiftxCheck to cache and persist to settings
-        self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
-        self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', self.useSwiftX())
-
-        self.currFee = self.ui.feeLine.value() * 1e8
         # re-connect signals
         try:
             self.caller.hwdevice.api.sigTxdone.disconnect()
@@ -367,13 +353,60 @@ class TabRewards():
             self.caller.hwdevice.api.tx_progress.disconnect()
         except:
             pass
-        self.caller.hwdevice.api.sigTxdone.connect(self.FinishSend)
-        self.caller.hwdevice.api.sigTxabort.connect(self.AbortSend)
-        self.caller.hwdevice.api.tx_progress.connect(self.updateProgressPercent)
+        self.caller.hwdevice.api.sigTxdone.connect(gui.FinishSend)
+        self.caller.hwdevice.api.sigTxabort.connect(gui.AbortSend)
+        self.caller.hwdevice.api.tx_progress.connect(gui.updateProgressPercent)
+
+        # Check destination Address
+        if not checkPivxAddr(dest_addr, self.caller.isTestnetRPC):
+            myPopUp_sb(self.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
+            return None
+
+        if inputs is None:
+            # send from single path
+            num_of_inputs = len(self.selectedRewards)
+        else:
+            # bulk send
+            num_of_inputs = sum([len(x['utxos']) for x in inputs])
+        ans = checkTxInputs(self.caller, num_of_inputs)
+        if ans is None or ans == QMessageBox.No:
+            # emit sigTxAbort and return
+            self.caller.hwdevice.api.sigTxabort.emit()
+            return None
+
+        # LET'S GO
+        if inputs is None:
+            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, dest_addr))
+        else:
+            printDbg("Sweeping rewards to PIVX address %s " % dest_addr)
+        printDbg("Preparing transaction. Please wait...")
+        self.ui.loadingLine.show()
+        self.ui.loadingLinePercent.show()
+        QApplication.processEvents()
+
+        # save last destination address and swiftxCheck to cache and persist to settings
+        self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', dest_addr)
+        self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', useSwiftX)
 
         try:
             self.txFinished = False
-            self.caller.hwdevice.prepare_transfer_tx(self.caller, self.curr_hwpath, self.selectedRewards, self.dest_addr, self.currFee, self.useSwiftX(), self.caller.isTestnetRPC)
+            if inputs is None:
+                # send from single path
+                self.caller.hwdevice.prepare_transfer_tx(self.caller,
+                                                         self.curr_hwpath,
+                                                         self.selectedRewards,
+                                                         dest_addr,
+                                                         fee,
+                                                         useSwiftX,
+                                                         self.caller.isTestnetRPC)
+            else:
+                # bulk send
+                self.caller.hwdevice.prepare_transfer_tx_bulk(self.caller,
+                                                              inputs,
+                                                              dest_addr,
+                                                              fee,
+                                                              useSwiftX,
+                                                              self.caller.isTestnetRPC)
 
         except DisconnectedException as e:
             self.caller.hwStatus = 0
@@ -539,7 +572,6 @@ class TabRewards():
             self.ui.resetStatusLabel('<em><b style="color:purple">Getting raw tx inputs... %d%%</b></em>' % percent)
         else:
             self.ui.rewardsList.statusLabel.hide()
-            self.rawtxes_loaded = True
 
 
 
