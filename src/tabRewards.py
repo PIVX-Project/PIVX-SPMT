@@ -31,7 +31,7 @@ class TabRewards():
         self.Lock = threading.Lock()
 
         ##--- Initialize Selection
-        self.rawtxes_loaded = False
+        self.rawtxes_loading = False
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
@@ -178,28 +178,29 @@ class TabRewards():
 
     def load_rawTxes_thread(self, ctrl):
         with self.Lock:
-            if self.rawtxes_loaded:
-                return
-            # Fetch raw txes
-            utxos = self.caller.parent.db.getRewardsList()
-            total_num_of_utxos = len(utxos)
-            printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
-            curr_utxo = 0
+            if not self.rawtxes_loading:
+                self.rawtxes_loading = True
+                # Fetch raw txes
+                utxos = self.caller.parent.db.getRewardsList()
+                total_num_of_utxos = len(utxos)
+                printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
+                curr_utxo = 0
 
-            for utxo in utxos:
-                rawtx = TxCache(self.caller)[utxo['txid']]
-                if rawtx is None:
-                    printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
-                    # Don't save UTXO if raw TX is unavailable
-                    utxos.remove(utxo)
-                    continue
-                utxo['raw_tx'] = rawtx
-                # emit percent
-                percent = int(100 * curr_utxo / total_num_of_utxos)
-                self.caller.sig_RawTxesLoading.emit(percent)
-                curr_utxo += 1
+                for utxo in utxos:
+                    rawtx = TxCache(self.caller)[utxo['txid']]
+                    if rawtx is None:
+                        printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
+                        # Don't save UTXO if raw TX is unavailable
+                        utxos.remove(utxo)
+                        continue
+                    utxo['raw_tx'] = rawtx
+                    # emit percent
+                    percent = int(100 * curr_utxo / total_num_of_utxos)
+                    self.caller.sig_RawTxesLoading.emit(percent)
+                    curr_utxo += 1
 
-            self.caller.sig_RawTxesLoading.emit(100)
+                self.caller.sig_RawTxesLoading.emit(100)
+                self.rawtxes_loading = False
 
 
     def load_utxos_thread(self, ctrl):
@@ -571,7 +572,6 @@ class TabRewards():
             self.ui.resetStatusLabel('<em><b style="color:purple">Getting raw tx inputs... %d%%</b></em>' % percent)
         else:
             self.ui.rewardsList.statusLabel.hide()
-            self.rawtxes_loaded = True
 
 
 
