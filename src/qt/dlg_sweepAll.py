@@ -167,7 +167,6 @@ class SweepAll_dlg(QDialog):
         self.ui.buttonSend.setEnabled(True)
         self.ui.buttonCancel.setEnabled(True)
         self.ui.loadingLine.hide()
-        self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
 
 
@@ -275,7 +274,11 @@ class SweepAll_dlg(QDialog):
 
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
-        self.ui.loadingLinePercent.setValue(percent)
+        if percent < 100:
+            self.ui.loadingLinePercent.setValue(percent)
+            self.ui.loadingLinePercent.show()
+        else:
+            self.ui.loadingLinePercent.hide()
         QApplication.processEvents()
 
 
@@ -330,7 +333,7 @@ class Ui_SweepAllDlg(object):
         self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
         self.loadingLinePercent = QProgressBar()
         self.loadingLinePercent.setMaximumWidth(200)
-        self.loadingLinePercent.setMaximumHeight(10)
+        self.loadingLinePercent.setMaximumHeight(15)
         self.loadingLinePercent.setRange(0, 100)
         hBox.addWidget(self.loadingLine)
         hBox.addWidget(self.loadingLinePercent)

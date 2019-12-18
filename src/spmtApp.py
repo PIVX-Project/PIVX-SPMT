@@ -72,14 +72,17 @@ class App(QMainWindow):
             self.db.clearTable('CUSTOM_RPC_SERVERS')
         if start_args.clearMnData:
             self.db.clearTable('MASTERNODES')
+        if start_args.clearTxCache:
+            self.db.clearTable('RAWTXES')
 
         # Clear Rewards and Governance DB (in case of forced shutdown)
         self.db.clearTable('REWARDS')
         self.db.clearTable('PROPOSALS')
         self.db.clearTable('MY_VOTES')
 
-        # Clear raw txes updated earlier than two months ago
-        self.db.clearRawTxes(time() - SECONDS_IN_2_MONTHS)
+        # Remove raw txes updated earlier than two months ago (if not already cleared)
+        if not start_args.clearTxCache:
+            self.db.clearRawTxes(time() - SECONDS_IN_2_MONTHS)
 
         # Read Masternode List
         masternode_list = self.db.getMasternodeList()

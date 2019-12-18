@@ -332,7 +332,7 @@ class TabRewards():
             # re connect
             self.caller.onCheckHw()
         # SEND
-        self.SendRewards(self, self.dest_addr, self.currFee, self.useSwiftX())
+        self.SendRewards(self.dest_addr, self.currFee, self.useSwiftX())
 
 
     def SendRewards(self, dest_addr, fee, useSwiftX, inputs=None, gui=None):

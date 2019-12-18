@@ -208,6 +208,7 @@ To reset application data, the SPMT can be started from the command line with on
 - `--clearAppData` : to clear user preferences such as window dimensions, pre-compiled fields, etc...
 - `--clearMnData` : to remove all masternode's entries from the database
 - `--clearRpcData` : to remove all RPC server's entries from the database
+- `--clearTxCache` : to remove all saved raw transactions from the database
 
 For example, to reset everything on a windows machine, navigate inside the app folder:
 ```
