@@ -4,14 +4,15 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
+import bitcoin
 import random
 import time
 
-from PyQt5.Qt import QFont, QDesktopServices, QUrl, QApplication
+from PyQt5.Qt import QDesktopServices, QUrl
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout,\
-    QMessageBox, QScrollArea, QLabel
+from PyQt5.QtWidgets import QTableWidgetItem, QPushButton, QWidget, QHBoxLayout
 
+from constants import NewSigsActive
 from misc import printException, getCallerName, getFunctionName, \
     printDbg, printOK, persistCacheSetting, myPopUp_sb
 from qt.gui_tabGovernance import TabGovernance_gui, ScrollMessageBox
@@ -19,7 +20,7 @@ from qt.dlg_proposalDetails import ProposalDetails_dlg
 from qt.dlg_selectMNs import SelectMNs_dlg
 from qt.dlg_budgetProjection import BudgetProjection_dlg
 from threads import ThreadFuns
-from utils import ecdsa_sign
+from utils import ecdsa_sign, ecdsa_sign_bin
 
 class TabGovernance():
     def __init__(self, caller):
@@ -320,12 +321,29 @@ class TabGovernance():
 
 
 
+    def getBudgetVoteMess(self, fNewSigs, txid, txidn, hash, vote_code, sig_time):
+        if fNewSigs:
+            ss = bytes.fromhex(txid)[::-1]
+            ss += (txidn).to_bytes(4, byteorder='little')
+            ss += bytes([0, 255, 255, 255, 255])
+            ss += bytes.fromhex(hash)[::-1]
+            ss += (vote_code).to_bytes(4, byteorder='little')
+            ss += (sig_time).to_bytes(8, byteorder='little')
+            return bitcoin.bin_dbl_sha256(ss)
+        else:
+            serialize_for_sig = '%s-%d' % (txid, txidn)
+            serialize_for_sig += hash + str(vote_code) + str(sig_time)
+            return serialize_for_sig
+
+
+
     def vote_thread(self, ctrl, vote_code):
         # vote_code index for ["yes", "abstain", "no"]
         if not isinstance(vote_code, int) or vote_code not in range(3):
             raise Exception("Wrong vote_code %s" % str(vote_code))
         self.successVotes = 0
         self.failedVotes = 0
+        self.currHeight = self.caller.rpcClient.getBlockCount()
 
         # save delay check data to cache and persist settings
         self.caller.parent.cache["votingDelayCheck"] = persistCacheSetting('cache_vdCheck', self.ui.randomDelayCheck.isChecked())
@@ -346,6 +364,7 @@ class TabGovernance():
                         self.clear()
                         raise Exception()
                     mnPrivKey = currNode['mnPrivKey']
+                    self.isTestnet = currNode['isTestnet']
 
                     # Add random delay offset
                     if self.ui.randomDelayCheck.isChecked():
@@ -361,12 +380,17 @@ class TabGovernance():
                         mess += " with offset of %d seconds" % delay_secs
                     printDbg(mess)
 
-                    # Serialize vote
-                    serialize_for_sig = mn[0][:64] + '-' + str(currNode['collateral'].get('txidn'))
-                    serialize_for_sig += prop.Hash + str(vote_code) + str(sig_time)
+                    # Serialize and sign vote
+                    fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
+                    serialize_for_sig = self.getBudgetVoteMess(fNewSigs,
+                                                               mn[0][:64],
+                                                               currNode['collateral']['txidn'],
+                                                               prop.Hash, vote_code, sig_time)
+                    if fNewSigs:
+                        vote_sig = ecdsa_sign_bin(serialize_for_sig, mnPrivKey)
+                    else:
+                        vote_sig = ecdsa_sign(serialize_for_sig, mnPrivKey)
 
-                    # Sign vote
-                    vote_sig = ecdsa_sign(serialize_for_sig, mnPrivKey)
 
                     # Broadcast the vote
                     v_res = self.caller.rpcClient.mnBudgetRawVote(

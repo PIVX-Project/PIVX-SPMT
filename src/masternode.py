@@ -91,33 +91,30 @@ class Masternode(QObject):
         return None
 
 
-    def getOldPingMessage(self, block_hash):
-        scriptSig = ''
-        sequence = 0xffffffff
-        return serialize_input_str(self.collateral['txid'],
-                                   self.collateral['txidn'],
-                                   sequence, scriptSig) + \
-               block_hash + str(self.sig_time)
 
-
-    def getNewPingMessage(self, block_hash):
-        ss = bytes.fromhex(self.collateral["txid"])[::-1]
-        ss += (self.collateral["txidn"]).to_bytes(4, byteorder='little')
-        ss += bytes([0, 255, 255, 255, 255])
-        ss += bytes.fromhex(block_hash)[::-1]
-        ss += (self.sig_time).to_bytes(8, byteorder='little')
-        return bitcoin.bin_dbl_sha256(ss)
+    def getPingMessage(self, fNewSigs, block_hash):
+        if fNewSigs:
+            ss = bytes.fromhex(self.collateral["txid"])[::-1]
+            ss += (self.collateral["txidn"]).to_bytes(4, byteorder='little')
+            ss += bytes([0, 255, 255, 255, 255])
+            ss += bytes.fromhex(block_hash)[::-1]
+            ss += (self.sig_time).to_bytes(8, byteorder='little')
+            return bitcoin.bin_dbl_sha256(ss)
+        else:
+            scriptSig = ''
+            sequence = 0xffffffff
+            return serialize_input_str(self.collateral['txid'], self.collateral['txidn'], sequence, scriptSig) + \
+                   block_hash + str(self.sig_time)
 
 
     def signature2(self, block_hash):
         try:
             fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
+            mnping = self.getPingMessage(fNewSigs, block_hash)
             if fNewSigs:
-                mnping = self.getNewPingMessage(block_hash)
                 printDbg("mnping: %s" % mnping.hex())
                 sig2 = ecdsa_sign_bin(mnping, self.mnWIF) # local
             else:
-                mnping = self.getOldPingMessage(block_hash)
                 printDbg("mnping: %s" % mnping)
                 sig2 = ecdsa_sign(mnping, self.mnWIF)
 
