@@ -61,9 +61,11 @@ def ParseTxOutput(p, isTestnet=False):
     vout["scriptPubKey"]["hex"] = p.readString(script_len, "big")
     vout["scriptPubKey"]["addresses"] = []
     try:
-        add_bytes = extract_pkh_from_locking_script(bytes.fromhex(vout["scriptPubKey"]["hex"]))
-        address = pubkeyhash_to_address(add_bytes, isTestnet)
-        vout["scriptPubKey"]["addresses"].append(address)
+        locking_script = bytes.fromhex(vout["scriptPubKey"]["hex"])
+        if len(locking_script) > 0:
+            add_bytes = extract_pkh_from_locking_script(locking_script)
+            address = pubkeyhash_to_address(add_bytes, isTestnet)
+            vout["scriptPubKey"]["addresses"].append(address)
     except Exception as e:
         printException(getCallerName(True), getFunctionName(True), "error parsing output", str(e))
     return vout
@@ -87,3 +89,8 @@ def ParseTx(hex_string, isTestnet=False):
 
     tx["locktime"] = p.readInt(4, "little")
     return tx
+
+
+def IsCoinStake(rawtx):
+    json_tx = ParseTx(rawtx)
+    return json_tx['vout'][0]["scriptPubKey"]["hex"] == ""

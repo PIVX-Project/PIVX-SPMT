@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from constants import MINIMUM_FEE
 from misc import printDbg, printError, printException, getCallerName, getFunctionName, \
     persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException, checkTxInputs
-from pivx_parser import ParseTx
+from pivx_parser import ParseTx, IsCoinStake
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from txCache import TxCache
@@ -31,7 +31,6 @@ class TabRewards():
         self.Lock = threading.Lock()
 
         ##--- Initialize Selection
-        self.rawtxes_loading = False
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
@@ -62,7 +61,6 @@ class TabRewards():
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
 
         # Connect Signals
-        self.caller.sig_RawTxesLoading.connect(self.update_loading_rawtxes)
         self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
 
 
@@ -109,10 +107,13 @@ class TabRewards():
                     self.ui.rewardsList.box.collateralRow = row
 
                 # make immature rewards unselectable
-                if utxo.get('confirmations') < 101:
-                    for i in range(0,4):
-                        self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
-                        self.ui.rewardsList.box.item(row, i).setToolTip("Immature - 100 confirmations required")
+                if utxo['coinstake']:
+                    required = 16 if self.caller.isTestnetRPC else 101
+                    if utxo['confirmations'] < required:
+                        for i in range(0,4):
+                            self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
+                            self.ui.rewardsList.box.item(row, i).setToolTip(
+                                "Immature - 100 confirmations required")
 
             self.ui.rewardsList.box.resizeColumnsToContents()
 
@@ -127,7 +128,6 @@ class TabRewards():
                     self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
                 else:
                     self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
-            self.runInThread(self.load_rawTxes_thread, ())
 
 
 
@@ -176,32 +176,6 @@ class TabRewards():
         self.onChangeSelectedMN(isInitializing)
 
 
-    def load_rawTxes_thread(self, ctrl):
-        with self.Lock:
-            if not self.rawtxes_loading:
-                self.rawtxes_loading = True
-                # Fetch raw txes
-                utxos = self.caller.parent.db.getRewardsList()
-                total_num_of_utxos = len(utxos)
-                printDbg("Number of UTXOs to load: %d" % total_num_of_utxos)
-                curr_utxo = 0
-
-                for utxo in utxos:
-                    rawtx = TxCache(self.caller)[utxo['txid']]
-                    if rawtx is None:
-                        printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
-                        # Don't save UTXO if raw TX is unavailable
-                        utxos.remove(utxo)
-                        continue
-                    utxo['raw_tx'] = rawtx
-                    # emit percent
-                    percent = int(100 * curr_utxo / total_num_of_utxos)
-                    self.caller.sig_RawTxesLoading.emit(percent)
-                    curr_utxo += 1
-
-                self.caller.sig_RawTxesLoading.emit(100)
-                self.rawtxes_loading = False
-
 
     def load_utxos_thread(self, ctrl):
         with self.Lock:
@@ -233,8 +207,18 @@ class TabRewards():
 
             for mn in mn_rewards:
                 for utxo in mn_rewards[mn]:
-                    # Add mn_name to UTXO and save it to DB
+                    # Add mn_name to UTXO
                     utxo['mn_name'] = mn
+                    # Get raw tx
+                    rawtx = TxCache(self.caller)[utxo['txid']]
+                    if rawtx is None:
+                        printDbg("Unable to get raw TX with hash=%s from RPC server." % utxo['txid'])
+                        # Don't save UTXO if raw TX is unavailable
+                        mn_rewards[mn].remove(utxo)
+                        continue
+                    utxo['raw_tx'] = rawtx
+                    utxo['coinstake'] = IsCoinStake(rawtx)
+                    # Add utxo to database
                     self.caller.parent.db.addReward(utxo)
 
                     # emit percent
@@ -332,10 +316,10 @@ class TabRewards():
             # re connect
             self.caller.onCheckHw()
         # SEND
-        self.SendRewards(self.dest_addr, self.currFee, self.useSwiftX())
+        self.SendRewards(self.useSwiftX())
 
 
-    def SendRewards(self, dest_addr, fee, useSwiftX, inputs=None, gui=None):
+    def SendRewards(self, useSwiftX, inputs=None, gui=None):
         # Default slots on tabRewards
         if gui is None:
             gui = self
@@ -358,7 +342,7 @@ class TabRewards():
         self.caller.hwdevice.api.tx_progress.connect(gui.updateProgressPercent)
 
         # Check destination Address
-        if not checkPivxAddr(dest_addr, self.caller.isTestnetRPC):
+        if not checkPivxAddr(self.dest_addr, self.caller.isTestnetRPC):
             myPopUp_sb(self.caller, "crit", 'SPMT - PIVX address check', "The destination address is missing, or invalid.")
             return None
 
@@ -376,16 +360,16 @@ class TabRewards():
 
         # LET'S GO
         if inputs is None:
-            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, dest_addr))
+            printDbg("Sending from PIVX address  %s  to PIVX address  %s " % (self.curr_addr, self.dest_addr))
         else:
-            printDbg("Sweeping rewards to PIVX address %s " % dest_addr)
+            printDbg("Sweeping rewards to PIVX address %s " % self.dest_addr)
         printDbg("Preparing transaction. Please wait...")
         self.ui.loadingLine.show()
         self.ui.loadingLinePercent.show()
         QApplication.processEvents()
 
         # save last destination address and swiftxCheck to cache and persist to settings
-        self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', dest_addr)
+        self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
         self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', useSwiftX)
 
         try:
@@ -395,16 +379,16 @@ class TabRewards():
                 self.caller.hwdevice.prepare_transfer_tx(self.caller,
                                                          self.curr_hwpath,
                                                          self.selectedRewards,
-                                                         dest_addr,
-                                                         fee,
+                                                         self.dest_addr,
+                                                         self.currFee,
                                                          useSwiftX,
                                                          self.caller.isTestnetRPC)
             else:
                 # bulk send
                 self.caller.hwdevice.prepare_transfer_tx_bulk(self.caller,
                                                               inputs,
-                                                              dest_addr,
-                                                              fee,
+                                                              self.dest_addr,
+                                                              self.currFee,
                                                               useSwiftX,
                                                               self.caller.isTestnetRPC)
 
@@ -448,14 +432,21 @@ class TabRewards():
 
 
     def removeSpentRewards(self):
-        for utxo in self.selectedRewards:
-            self.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
+        if self.selectedRewards is not None:
+            for utxo in self.selectedRewards:
+                self.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
+        else:
+            self.caller.parent.db.clearTable('REWARDS')
 
 
 
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
+        self.FinishSend_int(serialized_tx, amount_to_send)
+
+
+    def FinishSend_int(self, serialized_tx, amount_to_send):
         if not self.txFinished:
             try:
                 self.txFinished = True
@@ -480,7 +471,7 @@ class TabRewards():
                         printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
                         message = '<p>Unable to decode TX- Broadcast anyway?</p>'
 
-                    mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
+                    mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message, parent=self.caller)
                     if decodedTx is not None:
                         mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
                     mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
@@ -492,7 +483,7 @@ class TabRewards():
                             raise Exception("Unable to send TX - connection to RPC server lost.")
                         printDbg("Transaction sent. ID: %s" % txid)
                         mess2_text = "<p>Transaction successfully sent.</p>"
-                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
+                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text, parent=self.caller)
                         mess2.setDetailedText(txid)
                         mess2.exec_()
                         # remove spent rewards from DB
@@ -564,14 +555,6 @@ class TabRewards():
             self.ui.resetStatusLabel('<em><b style="color:purple">Checking explorer... %d%%</b></em>' % percent)
         else:
             self.display_mn_utxos()
-
-
-
-    def update_loading_rawtxes(self, percent):
-        if percent < 100:
-            self.ui.resetStatusLabel('<em><b style="color:purple">Getting raw tx inputs... %d%%</b></em>' % percent)
-        else:
-            self.ui.rewardsList.statusLabel.hide()
 
 
 

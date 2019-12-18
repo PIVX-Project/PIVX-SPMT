@@ -35,7 +35,6 @@ class SweepAll_dlg(QDialog):
         # Connect GUI buttons
         self.connectButtons()
          # Connect Signals
-        self.main_tab.caller.sig_RawTxesLoading.connect(self.update_loading_rawtxes)
         self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
 
 
@@ -77,6 +76,7 @@ class SweepAll_dlg(QDialog):
 
 
     def display_utxos(self):
+        required_confs = 16 if self.main_tab.caller.isTestnetRPC else 101
         rewards = self.main_tab.caller.parent.db.getRewardsList()
         self.rewardsArray = []
         for mn in [x for x in self.main_tab.caller.masternode_list if x['isHardware']]:
@@ -85,9 +85,9 @@ class SweepAll_dlg(QDialog):
             x['addr'] = mn['collateral'].get('address')
             x['path'] = "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
             x['utxos'] = [r for r in rewards
-                          if r['mn_name'] == x['name']                      # this mn's UTXOs
-                          and r['txid'] != mn['collateral'].get('txid')  # except the collateral
-                          and r['confirmations'] > 100]                     # and immature rewards
+                          if r['mn_name'] == x['name']                                       # this mn's UTXOs
+                          and r['txid'] != mn['collateral'].get('txid')                      # except the collateral
+                          and not (r['coinstake'] and r['confirmations'] < required_confs)]  # and immature rewards
             x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']])/1e8, 8)
             self.rewardsArray.append(x)
 
@@ -142,8 +142,9 @@ class SweepAll_dlg(QDialog):
 
 
     def onButtonSend(self):
-        dest_addr = self.ui.edt_destination.text().strip()
-        currFee = self.ui.feeLine.value() * 1e8
+        t_rewards = self.main_tab.caller.t_rewards
+        t_rewards.dest_addr = self.ui.edt_destination.text().strip()
+        t_rewards.currFee = self.ui.feeLine.value() * 1e8
         # Check HW device
         while self.main_tab.caller.hwStatus != 2:
             mess = "HW device not connected. Try to connect?"
@@ -156,11 +157,9 @@ class SweepAll_dlg(QDialog):
         self.ui.buttonSend.setEnabled(False)
         self.ui.buttonCancel.setEnabled(False)
         # SEND
-        self.main_tab.caller.t_rewards.SendRewards(dest_addr,
-                                                   currFee,
-                                                   self.useSwiftX(),
-                                                   self.rewardsArray,
-                                                   self)
+        t_rewards.SendRewards(self.useSwiftX(), self.rewardsArray, self)
+
+
 
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
@@ -174,59 +173,8 @@ class SweepAll_dlg(QDialog):
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
-        if not self.txFinished:
-            try:
-                self.txFinished = True
-                tx_hex = serialized_tx.hex()
-                printDbg("Raw signed transaction: " + tx_hex)
-                printDbg("Amount to send :" + amount_to_send)
-
-                if len(tx_hex) > 90000:
-                    mess = "Transaction's length exceeds 90000 bytes. Select less UTXOs and try again."
-                    myPopUp_sb(self.main_tab.caller, "crit", 'transaction Warning', mess)
-
-                else:
-                    decodedTx = None
-                    try:
-                        decodedTx = ParseTx(tx_hex, self.main_tab.caller.isTestnetRPC)
-                        destination = decodedTx.get("vout")[0].get("scriptPubKey").get("addresses")[0]
-                        amount = decodedTx.get("vout")[0].get("value")
-                        message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
-                        message += '<p>Amount: <b>%s</b> PIV<br>' % str(round(amount / 1e8, 8))
-                        message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
-                    except Exception as e:
-                        printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
-                        message = '<p>Unable to decode TX- Broadcast anyway?</p>'
-
-                    mess1 = QMessageBox(QMessageBox.Information, 'Send transaction', message)
-                    if decodedTx is not None:
-                        mess1.setDetailedText(json.dumps(decodedTx, indent=4, sort_keys=False))
-                    mess1.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-
-                    reply = mess1.exec_()
-                    if reply == QMessageBox.Yes:
-                        txid = self.main_tab.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
-                        if txid is None:
-                            raise Exception("Unable to send TX - connection to RPC server lost.")
-                        mess2_text = "<p>Transaction successfully sent.</p>"
-                        mess2 = QMessageBox(QMessageBox.Information, 'transaction Sent', mess2_text)
-                        mess2.setDetailedText(txid)
-                        mess2.exec_()
-                        # remove spent rewards (All of them except for collaterals)
-                        self.removeSpentRewards()
-                        # reload utxos
-                        self.main_tab.caller.t_rewards.display_mn_utxos()
-                        self.main_tab.caller.t_rewards.onCancel()
-
-                    else:
-                        myPopUp_sb(self.main_tab.caller, "warn", 'Transaction NOT sent', "Transaction NOT sent")
-
-            except Exception as e:
-                err_msg = "Exception in FinishSend"
-                printException(getCallerName(), getFunctionName(), err_msg, e)
-
-            finally:
-                self.close()
+        self.main_tab.caller.t_rewards.FinishSend_int(serialized_tx, amount_to_send)
+        self.close()
 
 
 
@@ -256,19 +204,6 @@ class SweepAll_dlg(QDialog):
             self.ui.buttonSend.setEnabled(True)
             self.ui.lblMessage.hide()
             self.display_utxos()
-
-
-
-    def update_loading_rawtxes(self, percent):
-        if percent < 100:
-            self.loading_txes = True
-            self.ui.buttonSend.setEnabled(False)
-            self.ui.lblMessage.show()
-            self.ui.lblMessage.setText("Loading raw tx inputs...%d%%" % percent)
-        else:
-            self.loading_txes = False
-            self.ui.buttonSend.setEnabled(True)
-            self.ui.lblMessage.hide()
 
 
 
