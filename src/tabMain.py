@@ -279,7 +279,7 @@ class TabMain():
             printOK("Masternode broadcast sent")
             message = "Start-message was successfully sent to the network.<br>"
             message += "If your remote server is correctly configured and connected to the network, "
-            message += "the output of the <b>./pivx-cli masternode status</b> command on the VPS should show:<br>"
+            message += "the output of the <b>./pivx-cli getmasternodestatus</b> command on the VPS should show:<br>"
             message += "<br><em>\"message\": \"Masternode successfully started\"</em>"
             myPopUp_sb(self.caller, "info", 'message relayed', message)
         else:
