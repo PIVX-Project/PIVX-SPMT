@@ -1,5 +1,5 @@
 {
- "number": "0.5.0",
- "tag": "b",
- "comments": ["Sign Messages"]
+ "number": "0.6.0",
+ "tag": "a",
+ "comments": []
  }
