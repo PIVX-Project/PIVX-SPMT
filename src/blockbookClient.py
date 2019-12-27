@@ -18,9 +18,9 @@ def process_blockbook_exceptions(func):
             return func(*args, **kwargs)
         except Exception as e:
             if client.isTestnet:
-                new_url = "https://testnet.pivx.link"
+                new_url = "https://blockbook-testnet.pivx.link"
             else:
-                new_url = "https://explorer.pivx.link"
+                new_url = "https://blockbook.pivx.link"
             message = "BlockBook Client exception on %s\nTrying backup server %s" % (client.url, new_url)
             printException(getCallerName(True), getFunctionName(True), message, str(e))
 
@@ -41,9 +41,9 @@ class BlockBookClient:
     def __init__(self, isTestnet=False):
         self.isTestnet = isTestnet
         if isTestnet:
-            self.url = "https://blockbook-testnet.pivx.link"
+            self.url = "https://testnet.pivx.link"
         else:
-            self.url = "https://blockbook.pivx.link"
+            self.url = "https://explorer.pivx.link"
 
 
 
