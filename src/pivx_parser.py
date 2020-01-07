@@ -21,6 +21,16 @@ class HexParser():
         self.cursor += nbytes * 2
         return res
 
+    def readVarInt(self):
+        r = self.readInt(1)
+        if r == 253:
+            return self.readInt(2, "little")
+        elif r == 254:
+            return self.readInt(4, "little")
+        elif r == 255:
+            return self.readInt(8, "little")
+        return r
+
     def readString(self, nbytes, byteorder="big"):
         if self.cursor + nbytes * 2 > len(self.hex_str):
             raise Exception("HexParser range error")
@@ -40,7 +50,7 @@ def ParseTxInput(p):
     vin = {}
     vin["txid"] = p.readString(32, "little")
     vin["vout"] = p.readInt(4, "little")
-    script_len = p.readInt(1, "little")
+    script_len = p.readVarInt()
     vin["scriptSig"] = {}
     vin["scriptSig"]["hex"] = p.readString(script_len, "big")
     vin["sequence"] = p.readInt(4, "little")
@@ -56,7 +66,7 @@ def ParseTxInput(p):
 def ParseTxOutput(p, isTestnet=False):
     vout = {}
     vout["value"] = p.readInt(8, "little")
-    script_len = p.readInt(1, "little")
+    script_len = p.readVarInt()
     vout["scriptPubKey"] = {}
     vout["scriptPubKey"]["hex"] = p.readString(script_len, "big")
     vout["scriptPubKey"]["addresses"] = []
@@ -77,12 +87,12 @@ def ParseTx(hex_string, isTestnet=False):
 
     tx["version"] = p.readInt(4, "little")
 
-    num_of_inputs = p.readInt(1, "little")
+    num_of_inputs = p.readVarInt()
     tx["vin"] = []
     for i in range(num_of_inputs):
         tx["vin"].append(ParseTxInput(p))
 
-    num_of_outputs = p.readInt(1, "little")
+    num_of_outputs = p.readVarInt()
     tx["vout"] = []
     for i in range(num_of_outputs):
         tx["vout"].append(ParseTxOutput(p, isTestnet))

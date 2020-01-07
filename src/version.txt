@@ -1,5 +1,5 @@
 {
  "number": "0.6.0",
- "tag": "a",
- "comments": []
+ "tag": "b",
+ "comments": ["fix varInt"]
  }
