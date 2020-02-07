@@ -72,7 +72,8 @@ def ParseTxOutput(p, isTestnet=False):
     vout["scriptPubKey"]["addresses"] = []
     try:
         locking_script = bytes.fromhex(vout["scriptPubKey"]["hex"])
-        if len(locking_script) > 0:
+        # add addresses only if P2PKH or P2PK
+        if len(locking_script) in [25, 35]:
             add_bytes = extract_pkh_from_locking_script(locking_script)
             address = pubkeyhash_to_address(add_bytes, isTestnet)
             vout["scriptPubKey"]["addresses"].append(address)
