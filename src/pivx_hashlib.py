@@ -9,7 +9,8 @@
 import bitcoin
 import hashlib
 
-from constants import WIF_PREFIX, MAGIC_BYTE, TESTNET_WIF_PREFIX, TESTNET_MAGIC_BYTE
+from constants import WIF_PREFIX, MAGIC_BYTE, TESTNET_WIF_PREFIX, TESTNET_MAGIC_BYTE, \
+    STAKE_MAGIC_BYTE, TESTNET_STAKE_MAGIC_BYTE
 from pivx_b58 import b58encode, b58decode
 
 def double_sha256(data):
@@ -42,16 +43,19 @@ def base58fromhex(hexstr, isTestnet):
     return b58encode(data + checksum)
 
 
-def pubkey_to_address(pubkey, isTestnet=False):
+def pubkey_to_address(pubkey, isTestnet=False, isCold=False):
     pubkey_bin = bytes.fromhex(pubkey)
     pkey_hash = bitcoin.bin_hash160(pubkey_bin)
-    return pubkeyhash_to_address(pkey_hash, isTestnet)
+    return pubkeyhash_to_address(pkey_hash, isTestnet, isCold)
 
 
 
-def pubkeyhash_to_address(pkey_hash, isTestnet=False):
-    base58_pubkey = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
-    data = bytes([base58_pubkey]) + pkey_hash
+def pubkeyhash_to_address(pkey_hash, isTestnet=False, isCold=False):
+    if isCold:
+        base58_secret = TESTNET_STAKE_MAGIC_BYTE if isTestnet else STAKE_MAGIC_BYTE
+    else:
+        base58_secret = TESTNET_MAGIC_BYTE if isTestnet else MAGIC_BYTE
+    data = bytes([base58_secret]) + pkey_hash
     checksum = bitcoin.bin_dbl_sha256(data)[0:4]
     return b58encode(data + checksum)
 

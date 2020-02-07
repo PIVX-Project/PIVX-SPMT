@@ -5,7 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from misc import getCallerName, getFunctionName, printException
-from utils import extract_pkh_from_locking_script
+import utils
 from pivx_hashlib import pubkeyhash_to_address
 
 class HexParser():
@@ -72,9 +72,11 @@ def ParseTxOutput(p, isTestnet=False):
     vout["scriptPubKey"]["addresses"] = []
     try:
         locking_script = bytes.fromhex(vout["scriptPubKey"]["hex"])
-        # add addresses only if P2PKH or P2PK
-        if len(locking_script) in [25, 35]:
-            add_bytes = extract_pkh_from_locking_script(locking_script)
+
+        # add addresses only if P2PKH, P2PK or P2CS
+        if len(locking_script) in [25, 35, 51]:
+            add_bytes = utils.extract_pkh_from_locking_script(locking_script)
+
             address = pubkeyhash_to_address(add_bytes, isTestnet)
             vout["scriptPubKey"]["addresses"].append(address)
     except Exception as e:
@@ -102,6 +104,20 @@ def ParseTx(hex_string, isTestnet=False):
     return tx
 
 
-def IsCoinStake(rawtx):
-    json_tx = ParseTx(rawtx)
-    return json_tx['vout'][0]["scriptPubKey"]["hex"] == ""
+def IsCoinStake(tx):
+    return tx['vout'][0]["scriptPubKey"]["hex"] == ""
+
+
+def IsPayToColdStaking(rawtx, out_n):
+    tx = ParseTx(rawtx)
+    script = tx['vout'][out_n]["scriptPubKey"]["hex"]
+    return utils.IsPayToColdStaking(bytes.fromhex(script)), IsCoinStake(tx)
+
+
+def GetDelegatedStaker(rawtx, out_n, isTestnet):
+    tx = ParseTx(rawtx)
+    script = tx['vout'][out_n]["scriptPubKey"]["hex"]
+    if not utils.IsPayToColdStaking(bytes.fromhex(script)):
+        return ""
+    pkh = utils.GetDelegatedStaker(bytes.fromhex(script))
+    return pubkeyhash_to_address(pkh, isTestnet, isCold=True)
