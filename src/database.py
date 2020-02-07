@@ -147,6 +147,7 @@ class Database():
             cursor.execute("CREATE TABLE IF NOT EXISTS REWARDS("
                            " tx_hash TEXT, tx_ouput_n INTEGER,"
                            " satoshis INTEGER, confirmations INTEGER, script TEXT, mn_name TEXT, coinstake BOOLEAN,"
+                           " staker TEXT,"
                            " PRIMARY KEY (tx_hash, tx_ouput_n))")
 
             cursor.execute("CREATE TABLE IF NOT EXISTS RAWTXES("
@@ -476,6 +477,7 @@ class Database():
             utxo['script'] = row[4]
             utxo['mn_name'] = row[5]
             utxo['coinstake'] = row[6]
+            utxo['staker'] = row[7]
             # add to list
             rewards.append(utxo)
 
@@ -489,9 +491,9 @@ class Database():
             cursor = self.getCursor()
 
             cursor.execute("INSERT OR REPLACE INTO REWARDS "
-                           "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                            (utxo['txid'], utxo['vout'], utxo['satoshis'],
-                            utxo['confirmations'], utxo['script'], utxo['mn_name'], utxo['coinstake'])
+                            utxo['confirmations'], utxo['script'], utxo['mn_name'], utxo['coinstake'], utxo['staker'])
                            )
 
         except Exception as e:

@@ -178,4 +178,5 @@ class TabMain_gui(QWidget):
         self.ledgerImg = QPixmap(os.path.join(self.caller.imgDir, 'ledger.png'))
         self.trezorImg = QPixmap(os.path.join(self.caller.imgDir, 'trezorModT.png'))
         self.trezorOneImg = QPixmap(os.path.join(self.caller.imgDir, 'trezorOne.png'))
+        self.coldStaking_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_coldstaking.png'))
         self.threeDots_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_3dots.png'))
