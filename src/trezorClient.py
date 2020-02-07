@@ -84,6 +84,9 @@ class TrezorApi(QObject):
 
     @process_trezor_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path, inputs):
+        if utxo['staker'] != "":
+            printException(getCallerName(), getFunctionName(), "Unable to sing P2CS on Trezor", "")
+            return
         # Update amount
         self.amount += int(utxo['satoshis'])
         # Add input
