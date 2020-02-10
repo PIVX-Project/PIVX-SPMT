@@ -34,10 +34,11 @@ class RpcWatchdog(QObject):
         while not self.shutdown_flag.is_set():
             # update status without printing on debug
             self.control_tab.updateRPCstatus(self.ctrl_obj, False)
+            with self.control_tab.lock:
+                connected = self.control_tab.rpcConnected
 
-            if not self.control_tab.rpcConnected:
+            if not connected:
                 sleep(self.timer_off)
-
             else:
                 sleep(self.timer_on)
 

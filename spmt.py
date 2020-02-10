@@ -89,10 +89,13 @@ if __name__ == '__main__':
     
     # Close Splashscreen
     splash.close()
-    
-    ##-- Launch RPC watchdog
-    ex.mainWindow.rpc_watchdogThread.start()
-    
+
+    try:
+        ##-- Launch RPC watchdog
+        ex.mainWindow.rpc_watchdogThread.start()
+    except Exception as e:
+        print(e)
+
     # Execute App
     app.exec_()
     try:
