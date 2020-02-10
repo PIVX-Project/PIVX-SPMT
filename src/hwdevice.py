@@ -128,16 +128,3 @@ class HWdevice(QObject):
         printDbg("HW: Signing message...")
         self.api.signMess(caller, path, message, isTestnet)
         printOK("HW: Message signed")
-
-
-    @check_api_init
-    def signTxSign(self, ctrl):
-        printDbg("HW: Signing TX...")
-        self.api.signTxSign(ctrl)
-
-
-    @check_api_init
-    def signTxFinish(self):
-        printDbg("HW: Finishing TX signature...")
-        self.api.signTxFinish()
-        printDbg("HW: TX signed")

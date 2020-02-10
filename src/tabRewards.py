@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QHeaderView
 from constants import MINIMUM_FEE
 from misc import printDbg, printError, printException, getCallerName, getFunctionName, \
     persistCacheSetting, myPopUp, myPopUp_sb, DisconnectedException, checkTxInputs
-from pivx_parser import ParseTx, IsCoinStake
+from pivx_parser import ParseTx, IsPayToColdStaking, GetDelegatedStaker
 from qt.gui_tabRewards import TabRewards_gui
 from threads import ThreadFuns
 from txCache import TxCache
@@ -100,6 +100,11 @@ class TabRewards():
                 self.ui.rewardsList.box.setItem(row, 2, item(txId))
                 self.ui.rewardsList.box.setItem(row, 3, item(str(utxo.get('vout', None))))
                 self.ui.rewardsList.box.showRow(row)
+                # mark cold utxos
+                if utxo['staker'] != "":
+                    self.ui.rewardsList.box.item(row, 2).setIcon(self.caller.tabMain.coldStaking_icon)
+                    self.ui.rewardsList.box.item(row, 2).setToolTip("Staked by <b>%s</b>" % utxo['staker'])
+
                 # MARK COLLATERAL UTXO
                 if txId == self.curr_txid:
                     for i in range(0,4):
@@ -112,8 +117,9 @@ class TabRewards():
                     if utxo['confirmations'] < required:
                         for i in range(0,4):
                             self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
+                            ttip = self.ui.rewardsList.box.item(row, i).toolTip()
                             self.ui.rewardsList.box.item(row, i).setToolTip(
-                                "Immature - 100 confirmations required")
+                                ttip + "\n(Immature - %d confirmations required)" % required)
 
             self.ui.rewardsList.box.resizeColumnsToContents()
 
@@ -217,7 +223,10 @@ class TabRewards():
                         mn_rewards[mn].remove(utxo)
                         continue
                     utxo['raw_tx'] = rawtx
-                    utxo['coinstake'] = IsCoinStake(rawtx)
+                    utxo['staker'] = ""
+                    p2cs, utxo['coinstake'] = IsPayToColdStaking(rawtx, utxo['vout'])
+                    if p2cs:
+                        utxo['staker'] = GetDelegatedStaker(rawtx, utxo['vout'], self.caller.isTestnetRPC)
                     # Add utxo to database
                     self.caller.parent.db.addReward(utxo)
 

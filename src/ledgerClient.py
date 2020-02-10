@@ -148,7 +148,8 @@ class LedgerApi(QObject):
             'pubkey': curr_pubkey,
             'bip32_path': bip32_path,
             'outputIndex': utxo['vout'],
-            'txid': utxo['txid']
+            'txid': utxo['txid'],
+            'p2cs': (utxo['staker'] != "")
         })
 
 
@@ -370,7 +371,10 @@ class LedgerApi(QObject):
                 inputTx.prevOut = bytearray.fromhex(new_input['txid'])[::-1] + int.to_bytes(new_input['outputIndex'], 4,
                                                                                             byteorder='little')
 
-                inputTx.script = bytearray([len(sig)]) + sig + bytearray([0x21]) + new_input['pubkey']
+                inputTx.script = bytearray([len(sig)]) + sig
+                if new_input['p2cs']:
+                    inputTx.script += bytearray([0x00])
+                inputTx.script += bytearray([0x21]) + new_input['pubkey']
 
                 inputTx.sequence = bytearray([0xFF, 0xFF, 0xFF, 0xFF])
 
