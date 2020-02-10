@@ -1,5 +1,5 @@
 {
- "number": "0.6.0",
- "tag": "b",
- "comments": ["fix varInt"]
+ "number": "0.6.1",
+ "tag": "a",
+ "comments": ["P2CS display"]
  }
