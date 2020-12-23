@@ -1,8 +1,8 @@
-python-bitcoinrpc>=1.0
-bitcoin>=1.1.42
-btchip-python>=0.1.27
-trezor==0.11.3
+python-bitcoinrpc==1.0
+bitcoin==1.1.42
+btchip-python==0.1.27
+trezor==0.11.1
 PyQt5>=5.9,<5.14.1
-requests>=2.18.4
-simplejson
-ecdsa
+requests>=2.18.4,<=2.23
+simplejson<=3.13.2
+ecdsa==0.13.3
