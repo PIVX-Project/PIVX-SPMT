@@ -447,7 +447,6 @@ def readCacheSettings():
         cache["splitter_y"] = settings.value('cache_splitterY', DefaultCache["splitter_y"], type=int)
         cache["mnList_order"] = json.loads(settings.value('cache_mnOrder', json.dumps(DefaultCache["mnList_order"]), type=str))
         cache["console_hidden"] = settings.value('cache_consoleHidden', DefaultCache["console_hidden"], type=bool)
-        cache["useSwiftX"] = settings.value('cache_useSwiftX', DefaultCache["useSwiftX"], type=bool)
         cache["votingMasternodes"] = json.loads(settings.value('cache_votingMNs', json.dumps(DefaultCache["votingMasternodes"]), type=str))
         cache["votingDelayCheck"] = settings.value('cache_vdCheck', DefaultCache["votingDelayCheck"], type=bool)
         cache["votingDelayNeg"] = settings.value('cache_vdNeg', DefaultCache["votingDelayNeg"], type=int)
@@ -488,7 +487,6 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
 def saveCacheSettings(cache):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
-    settings.setValue('cache_useSwiftX', cache.get('useSwiftX'))
     settings.setValue('cache_vdCheck', cache.get('votingDelayCheck'))
     settings.setValue('cache_vdNeg', cache.get('votingDelayNeg'))
     settings.setValue('cache_vdPos', cache.get('votingDelayPos'))

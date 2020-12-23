@@ -155,7 +155,7 @@ class LedgerApi(QObject):
 
 
     @process_ledger_exceptions
-    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, useSwiftX=False, isTestnet=False):
+    def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, isTestnet=False):
         with self.lock:
             # For each UTXO create a Ledger 'trusted input'
             self.trusted_inputs = []
@@ -204,10 +204,7 @@ class LedgerApi(QObject):
             # messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
             self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
             self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-            if useSwiftX:
-                self.messageText += "<p>Fees (SwiftX flat rate):<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
-            else:
-                self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+            self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
             messageText = self.messageText + "Signature Progress: 0 %"
             self.mBox2.setText(messageText)
             self.mBox2.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))

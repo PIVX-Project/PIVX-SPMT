@@ -45,9 +45,6 @@ class SweepAll_dlg(QDialog):
         self.ui.tableW.setRowCount(0)
         # load last used destination from cache
         self.ui.edt_destination.setText(self.main_tab.caller.parent.cache.get("lastAddress"))
-        # load useSwiftX check from cache
-        if self.main_tab.caller.parent.cache.get("useSwiftX"):
-            self.ui.swiftxCheck.setChecked(True)
         if self.loading_txes:
             self.display_utxos()
         else:
@@ -65,7 +62,6 @@ class SweepAll_dlg(QDialog):
     def connectButtons(self):
         self.ui.buttonSend.clicked.connect(lambda: self.onButtonSend())
         self.ui.buttonCancel.clicked.connect(lambda: self.onButtonCancel())
-        self.ui.swiftxCheck.clicked.connect(lambda: self.updateFee())
 
 
 
@@ -157,7 +153,7 @@ class SweepAll_dlg(QDialog):
         self.ui.buttonSend.setEnabled(False)
         self.ui.buttonCancel.setEnabled(False)
         # SEND
-        t_rewards.SendRewards(self.useSwiftX(), self.rewardsArray, self)
+        t_rewards.SendRewards(self.rewardsArray, self)
 
 
 
@@ -186,12 +182,8 @@ class SweepAll_dlg(QDialog):
 
 
     def updateFee(self):
-        if self.useSwiftX():
-            self.ui.feeLine.setValue(0.01)
-            self.ui.feeLine.setEnabled(False)
-        else:
-            self.ui.feeLine.setValue(self.suggestedFee)
-            self.ui.feeLine.setEnabled(True)
+        self.ui.feeLine.setValue(self.suggestedFee)
+        self.ui.feeLine.setEnabled(True)
 
 
 
@@ -215,12 +207,6 @@ class SweepAll_dlg(QDialog):
         else:
             self.ui.loadingLinePercent.hide()
         QApplication.processEvents()
-
-
-
-    def useSwiftX(self):
-        return self.ui.swiftxCheck.isChecked()
-
 
 
 
@@ -289,10 +275,6 @@ class Ui_SweepAllDlg(object):
         self.feeLine.setFixedWidth(120)
         self.feeLine.setSingleStep(0.001)
         hBox.addWidget(self.feeLine)
-        self.swiftxCheck = QCheckBox()
-        self.swiftxCheck.setToolTip("check for SwiftX instant transaction (flat fee rate of 0.01 PIV)")
-        hBox.addWidget(QLabel("Use SwiftX"))
-        hBox.addWidget(self.swiftxCheck)
         myForm.addRow(QLabel("Destination Address"), hBox)
         layout.addLayout(myForm)
         hBox = QHBoxLayout()

@@ -56,7 +56,6 @@ DefaultCache = {
     "splitter_y": 133,
     "mnList_order": {},
     "console_hidden": False,
-    "useSwiftX": False,
     "votingMasternodes": [],
     "votingDelayCheck": False,
     "votingDelayNeg": 0,

@@ -108,10 +108,6 @@ class TabRewards_gui(QWidget):
         self.selectedRewardsLine.setToolTip("PIVX to move away")
         hBox2.addWidget(self.selectedRewardsLine)
         hBox2.addStretch(1)
-        self.swiftxCheck = QCheckBox()
-        self.swiftxCheck.setToolTip("check for SwiftX instant transaction (flat fee rate of 0.01 PIV)")
-        hBox2.addWidget(QLabel("Use SwiftX"))
-        hBox2.addWidget(self.swiftxCheck)
         layout.addRow(hBox2)
         ##--- ROW 4
         hBox3 = QHBoxLayout()

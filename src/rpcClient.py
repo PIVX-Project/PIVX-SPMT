@@ -303,15 +303,13 @@ class RpcClient:
 
 
     @process_RPC_exceptions
-    def sendRawTransaction(self, tx_hex, use_swiftx):
+    def sendRawTransaction(self, tx_hex):
         dbg_mess = "RPC: Sending raw transaction"
-        if use_swiftx:
-            dbg_mess += " with SwiftX"
         dbg_mess += "..."
         printDbg(dbg_mess)
         tx_id = None
         with self.lock:
-            tx_id = self.conn.sendrawtransaction(tx_hex, True, bool(use_swiftx))
+            tx_id = self.conn.sendrawtransaction(tx_hex, True)
 
         return tx_id
 

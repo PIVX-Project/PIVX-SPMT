@@ -41,9 +41,6 @@ class TabRewards():
 
         # load last used destination from cache
         self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress"))
-        # load useSwiftX check from cache
-        if self.caller.parent.cache.get("useSwiftX"):
-            self.ui.swiftxCheck.setChecked(True)
 
         # init first selected MN
         self.loadMnSelect(True)         # loads masternodes list in MnSelect and display utxos
@@ -55,7 +52,6 @@ class TabRewards():
         self.ui.rewardsList.box.itemClicked.connect(lambda: self.updateSelection())
         self.ui.btn_selectAllRewards.clicked.connect(lambda: self.onSelectAllRewards())
         self.ui.btn_deselectAllRewards.clicked.connect(lambda: self.onDeselectAllRewards())
-        self.ui.swiftxCheck.clicked.connect(lambda: self.updateFee())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
         self.ui.btn_Cancel.clicked.connect(lambda: self.onCancel())
         self.ui.btn_ReloadUTXOs.clicked.connect(lambda: self.onReloadUTXOs())
@@ -325,10 +321,10 @@ class TabRewards():
             # re connect
             self.caller.onCheckHw()
         # SEND
-        self.SendRewards(self.useSwiftX())
+        self.SendRewards()
 
 
-    def SendRewards(self, useSwiftX, inputs=None, gui=None):
+    def SendRewards(self, inputs=None, gui=None):
         # Default slots on tabRewards
         if gui is None:
             gui = self
@@ -377,9 +373,8 @@ class TabRewards():
         self.ui.loadingLinePercent.show()
         QApplication.processEvents()
 
-        # save last destination address and swiftxCheck to cache and persist to settings
+        # save last destination address to cache and persist to settings
         self.caller.parent.cache["lastAddress"] = persistCacheSetting('cache_lastAddress', self.dest_addr)
-        self.caller.parent.cache["useSwiftX"] = persistCacheSetting('cache_useSwiftX', useSwiftX)
 
         try:
             self.txFinished = False
@@ -390,7 +385,6 @@ class TabRewards():
                                                          self.selectedRewards,
                                                          self.dest_addr,
                                                          self.currFee,
-                                                         useSwiftX,
                                                          self.caller.isTestnetRPC)
             else:
                 # bulk send
@@ -398,7 +392,6 @@ class TabRewards():
                                                               inputs,
                                                               self.dest_addr,
                                                               self.currFee,
-                                                              useSwiftX,
                                                               self.caller.isTestnetRPC)
 
         except DisconnectedException as e:
@@ -487,7 +480,7 @@ class TabRewards():
 
                     reply = mess1.exec_()
                     if reply == QMessageBox.Yes:
-                        txid = self.caller.rpcClient.sendRawTransaction(tx_hex, self.useSwiftX())
+                        txid = self.caller.rpcClient.sendRawTransaction(tx_hex)
                         if txid is None:
                             raise Exception("Unable to send TX - connection to RPC server lost.")
                         printDbg("Transaction sent. ID: %s" % txid)
@@ -520,12 +513,8 @@ class TabRewards():
 
 
     def updateFee(self):
-        if self.useSwiftX():
-            self.ui.feeLine.setValue(0.01)
-            self.ui.feeLine.setEnabled(False)
-        else:
-            self.ui.feeLine.setValue(self.suggestedFee)
-            self.ui.feeLine.setEnabled(True)
+        self.ui.feeLine.setValue(self.suggestedFee)
+        self.ui.feeLine.setEnabled(True)
 
 
 
@@ -575,9 +564,3 @@ class TabRewards():
 
         totalBalance = str(round(nAmount/1e8, 8))
         self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % totalBalance)
-
-
-
-    def useSwiftX(self):
-        return self.ui.swiftxCheck.isChecked()
-
