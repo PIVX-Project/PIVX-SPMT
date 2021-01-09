@@ -204,9 +204,9 @@ class RpcClient:
             # create proposal-projection dictionary
             new_proposal = {}
             new_proposal['Name'] = p.get('Name')
-            new_proposal['Allotted'] = float(p.get("Alloted"))
+            new_proposal['Allotted'] = float(p.get("Allotted"))
             new_proposal['Votes'] = p.get('Yeas') - p.get('Nays')
-            new_proposal['Total_Allotted'] = float(p.get('TotalBudgetAlloted'))
+            new_proposal['Total_Allotted'] = float(p.get('TotalBudgetAllotted'))
             # append dictionary to list
             proposals.append(new_proposal)
 
