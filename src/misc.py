@@ -117,7 +117,7 @@ def clean_v4_migration(wnd):
     if os.path.exists(rpc_file):
         # If RPC file exists
         try:
-            with open(rpc_file) as data_file:
+            with open(rpc_file, encoding="utf-8") as data_file:
                 rpc_config = json.load(data_file)
             # copy to database
             rpc_host = "%s:%d" % (rpc_config['rpc_ip'], rpc_config['rpc_port'])
@@ -142,7 +142,7 @@ def clean_v4_migration(wnd):
     if os.path.exists(mn_file):
         # If mn file exists
         try:
-            with open(mn_file) as data_file:
+            with open(mn_file, encoding="utf-8") as data_file:
                 mnList = json.load(data_file)
             # add to database
             for mn in mnList:
@@ -207,7 +207,7 @@ def getRemoteSPMTversion():
 def getSPMTVersion():
     version_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
-    with open(version_file) as data_file:
+    with open(version_file, encoding="utf-8") as data_file:
         data = json.load(data_file)
 
     return data
@@ -258,7 +258,7 @@ def is_hex(s):
 def loadMNConfFile(fileName):
     hot_masternodes = []
     try:
-        with open(fileName) as f:
+        with open(fileName, encoding="utf-8") as f:
             for line in f:
                 confline = line.strip()
 

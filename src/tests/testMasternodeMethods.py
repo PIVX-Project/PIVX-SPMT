@@ -24,7 +24,7 @@ class TestMasternodeMethods(unittest.TestCase):
             self.skipTest("RPC not connected")
 
         # read masternode data from file
-        with open('test_masternode.data.json') as data_file:
+        with open('test_masternode.data.json', encoding="utf-8") as data_file:
             input_data_list = json.load(data_file)
 
         self.mnode_list = []

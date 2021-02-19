@@ -350,7 +350,7 @@ class MainWindow(QWidget):
         try:
             if fileName:
                 printOK("Saving logs to %s" % fileName)
-                log_file = open(fileName, 'w+')
+                log_file = open(fileName, 'w+', encoding="utf-8")
                 log_text = self.consoleArea.toPlainText()
                 log_file.write(log_text)
                 log_file.close()

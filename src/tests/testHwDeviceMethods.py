@@ -34,7 +34,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     def test_transaction(self):
         # Read input data from file
         import simplejson as json
-        with open('test_transaction.data.json') as data_file:
+        with open('test_transaction.data.json', encoding="utf-8") as data_file:
             input_data = json.load(data_file)
         data_file.close()
 
@@ -66,7 +66,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     def test_scanForBip32(self):
         # Get accounts obtained from seed outside ledger
         # (5 accounts. 5 addresses per account)
-        with open('accounts.data.txt') as datafile:
+        with open('accounts.data.txt', encoding="utf-8") as datafile:
             # datafile has 4 lines of header (lines_offset)
             for _ in range(4):
                 datafile.readline()
@@ -81,7 +81,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     def test_scanForPubKey(self):
         # Get accounts obtained from seed outside ledger
         # (5 accounts. 5 addresses per account)
-        with open('accounts.data.txt') as datafile:
+        with open('accounts.data.txt', encoding="utf-8") as datafile:
             # datafile has 4 lines of header (lines_offset)
             for _ in range(4):
                 datafile.readline()
@@ -96,7 +96,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     def test_signature(self):
         # Get message and path from datafile
         import simplejson as json
-        with open('test_signature.data.json') as data_file:
+        with open('test_signature.data.json', encoding="utf-8") as data_file:
             input_data = json.load(data_file)
 
         # Rename input data

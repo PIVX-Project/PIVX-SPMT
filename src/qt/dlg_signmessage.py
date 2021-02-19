@@ -185,7 +185,7 @@ class TabSign:
                                                   "All Files (*);; Text Files (*.txt)", options=options)
         try:
             if fileName:
-                save_file = open(fileName, 'w')
+                save_file = open(fileName, 'w', encoding="utf-8")
                 save_file.write(self.ui.signatureTextEdt.toPlainText())
                 save_file.close()
                 myPopUp_sb(self.main_wnd, QMessageBox.Information, 'SPMT - saved', "Signature saved to file")
