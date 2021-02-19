@@ -1,0 +1,85 @@
+name: CI Actions for SPMT
+
+on: [push, pull_request]
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-16.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Initialize Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install flake8==3.8.4
+          pip install mypy==0.781
+          pip install vulture==2.3
+
+      - name: Lint
+        run: |
+          lint/lint-python.sh
+          lint/lint-python-mutable-default-parameters.sh
+          lint/lint-python-utf8-encoding.sh
+
+  build:
+    name: Build-${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    needs: lint
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Linux
+            os: ubuntu-16.04
+            cachepath: ~/.cache/pip
+            packages: libusb-1.0-0-dev libudev-dev
+
+          - name: macOS
+            os: macos-10.15
+            cachepath: ~/Library/Caches/pip
+
+          - name: Windows
+            os: windows-2019
+            cachepath: ~\AppData\Local\pip\Cache
+
+    steps:
+      - name: Get Source
+        uses: actions/checkout@v2
+      - name: Setup Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Setup pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.config.cachepath }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
+          fi
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install pyinstaller
+      - name: Build
+        run: |
+          pyinstaller SecurePivxMasternodeTool.spec
