@@ -32,7 +32,7 @@ class TabGovernance():
         self.successVotes = 0
         self.failedVotes = 0
 
-        ##--- Initialize GUI
+        # Initialize GUI
         self.ui = TabGovernance_gui(caller)
         self.updateSelectedMNlabel()
         self.caller.tabGovernance = self.ui

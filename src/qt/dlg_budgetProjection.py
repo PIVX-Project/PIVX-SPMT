@@ -32,7 +32,7 @@ class BudgetProjection_dlg(QDialog):
             return
 
         # header
-        ## blocks to next superBlock (== minutes)
+        # blocks to next superBlock (== minutes)
         blocks_to_SB = self.next_superBlock - self.main_wnd.caller.rpcLastBlock
 
         self.ui.nextSuperBlock_label.setText("<b>%s</b>" % str(self.next_superBlock))
@@ -61,9 +61,9 @@ class BudgetProjection_dlg(QDialog):
         if not self.main_wnd.caller.rpcConnected:
             printException(getCallerName(), getFunctionName(), "RPC server not connected", "")
             return
-        ## get next superBlock
+        # get next superBlock
         self.next_superBlock = self.main_wnd.caller.rpcClient.getNextSuperBlock()
-        ## get budget projection
+        # get budget projection
         self.projection = self.main_wnd.caller.rpcClient.getProposalsProjection()
 
 
@@ -72,15 +72,15 @@ class Ui_BudgetProjectionDlg(object):
         BudgetProjectionDlg.setModal(True)
         layout = QVBoxLayout(BudgetProjectionDlg)
         layout.setContentsMargins(8, 8, 8, 8)
-        ## tile
+        # tile
         title = QLabel("<b>Budget Projection Overview</b>")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
-        ## header
+        # header
         header = QGroupBox("Budget Projection Details")
         header_layout = QFormLayout()
         header_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        ## row 1
+        # row 1
         row = QHBoxLayout()
         self.availableBudget_label = QLabel("43200.0 PIV")
         row.addWidget(self.availableBudget_label)
@@ -89,14 +89,14 @@ class Ui_BudgetProjectionDlg(object):
         self.nextSuperBlock_label = QLabel("--")
         row.addWidget(self.nextSuperBlock_label)
         header_layout.addRow(QLabel("Available Budget: "), row)
-        ## row 2
+        # row 2
         row = QHBoxLayout()
         self.allottedBudget_label = QLabel("--")
         row.addWidget(self.allottedBudget_label)
         row.addStretch(1)
         row.addWidget(QLabel("Time to next SuperBlock (approx): "))
         header_layout.addRow(QLabel("Total Allotted Budget: "), row)
-        ## row 3       
+        # row 3
         row = QHBoxLayout()
         self.remainingBudget_label = QLabel("--")
         row.addWidget(self.remainingBudget_label)
@@ -104,13 +104,13 @@ class Ui_BudgetProjectionDlg(object):
         self.timeToNextSB_label = QLabel("--")
         row.addWidget(self.timeToNextSB_label)
         header_layout.addRow(QLabel("Remaining Budget: "), row)
-        ## row 4
+        # row 4
         self.passingProposals_label = QLabel("--")
         header_layout.addRow(QLabel("Passing Proposals: "), self.passingProposals_label)
-        ##
+        #
         header.setLayout(header_layout)
         layout.addWidget(header)
-        ## LIST
+        # LIST
         self.proposals_lst = QTableWidget()
         self.proposals_lst.setSelectionMode(QAbstractItemView.NoSelection)
         self.proposals_lst.setColumnCount(4)
@@ -133,7 +133,7 @@ class Ui_BudgetProjectionDlg(object):
         self.proposals_lst.setColumnWidth(2, 130)
         self.proposals_lst.setColumnWidth(3, 160)
         layout.addWidget(self.proposals_lst)
-        ## button ok
+        # button ok
         self.ok_btn = QPushButton("Ok")
         layout.addWidget(self.ok_btn)
         BudgetProjectionDlg.resize(650, 500)

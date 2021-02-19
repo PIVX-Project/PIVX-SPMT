@@ -23,16 +23,16 @@ class FindCollTx_dlg(QDialog):
     def setupUI(self):
         Ui_FindCollateralTxDlg.setupUi(self, self)
         self.setWindowTitle('Find Collateral Tx')
-        ##--- feedback
+        # --- feedback
         self.lblMessage.setVisible(False)
         self.lblMessage.setVisible(True)
         self.lblMessage.setText('Checking explorer...')
 
     def load_data(self, pivx_addr):
         self.pivx_addr = pivx_addr
-        ##--- PIVX Address
+        # --- PIVX Address
         self.edtAddress.setText(self.pivx_addr)
-        ##--- Load utxos
+        # --- Load utxos
         ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
 
     def display_utxos(self):

@@ -152,7 +152,7 @@ class Database():
                            " yeas INTEGER, nays INTEGER, abstains INTEGER, "
                            " totalPayment REAL, monthlyPayment REAL)")
 
-            #cursor.execute("CREATE TABLE IF NOT EXISTS PROJECTED_PROPOSALS("
+            # cursor.execute("CREATE TABLE IF NOT EXISTS PROJECTED_PROPOSALS("
             #               " name TEXT, hash TEXT PRIMARY KEY, "
             #               " allotted REAL, votes INTEGER, totaAllotted REAL)")
 
@@ -587,9 +587,9 @@ class Database():
         return None
 
     def clearRawTxes(self, minTime):
-        '''
+        """
         removes txes with lastfetch older than mintime
-        '''
+        """
         printDbg("Pruning table RAWTXES")
         try:
             cursor = self.getCursor()

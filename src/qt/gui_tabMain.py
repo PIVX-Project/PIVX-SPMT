@@ -17,20 +17,20 @@ class TabMain_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
         self.caller = caller
-        ###-- Initialize
+        # -- Initialize
         self.loadIcons()
         self.initGlobalButtons()
         self.initBody()
-        ###-- Compose layout
+        # -- Compose layout
         mainVertical = QVBoxLayout()
         mainVertical.setSpacing(10)
         mainVertical.addLayout(self.globalButtons)
         mainVertical.addWidget(self.body)
-        ###-- Set Layout
+        # -- Set Layout
         self.setLayout(mainVertical)
 
     def initGlobalButtons(self):
-        ###-- Global Buttons
+        # -- Global Buttons
         globalButtons = QHBoxLayout()
         self.button_startAll = QPushButton("Start All Masternodes")
         globalButtons.addWidget(self.button_startAll)
@@ -41,7 +41,7 @@ class TabMain_gui(QWidget):
         self.globalButtons = globalButtons
 
     def initBody(self):
-        ###-- CENTRAL PART
+        # -- CENTRAL PART
         self.body = QGroupBox()
         self.body.setTitle("My Masternodes")
         # masternode list
@@ -80,11 +80,11 @@ class TabMain_gui(QWidget):
         else:
             mnRow.setToolTip("EXTERNAL MASTERNODE - Drag rows to re-order.")
         mnRowLayout = QHBoxLayout()
-        ##--- Led
+        # --- Led
         self.mnLed[name] = QLabel()
         self.mnLed[name].setPixmap(self.caller.ledGrayV_icon)
         mnRowLayout.addWidget(self.mnLed[name])
-        ##--- Label & Balance
+        # --- Label & Balance
         self.mnLabel[name] = QLabel()
         if isHardware:
             self.mnLabel[name].setText("%s [<i>%s</i>]" % (name, ip))
@@ -95,24 +95,24 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.mnBalance[name])
         self.mnBalance[name].hide()
         mnRowLayout.addStretch(1)
-        ##--- Status Label
+        # --- Status Label
         self.mnStatusLabel[name] = QLabel()
         mnRowLayout.addWidget(self.mnStatusLabel[name])
         self.mnStatusLabel[name].hide()
-        ##--- Rank bar
+        # --- Rank bar
         self.mnStatusProgress[name] = QProgressBar()
         self.mnStatusProgress[name].setMaximumHeight(15)
         self.mnStatusProgress[name].setMaximumWidth(40)
         self.mnStatusProgress[name].setTextVisible(False)
         mnRowLayout.addWidget(self.mnStatusProgress[name])
         self.mnStatusProgress[name].hide()
-        ##--- Details button
+        # --- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
         self.btn_details[name].setToolTip('Check status details of masternode "%s"' % name)
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()
-        ##--- Rewards button
+        # --- Rewards button
         self.btn_rewards[name] = QPushButton()
         self.btn_rewards[name].setToolTip('Transfer rewards from "%s"' % name)
         self.btn_rewards[name].setIcon(self.rewards_icon)
@@ -121,7 +121,7 @@ class TabMain_gui(QWidget):
             self.btn_rewards[name].setDisabled(True)
             self.btn_rewards[name].setToolTip("EXTERNAL MN: unable to move rewards with SPMT")
         mnRowLayout.addWidget(self.btn_rewards[name])
-        ##--- Start button
+        # --- Start button
         self.btn_start[name] = QPushButton()
         self.btn_start[name].setToolTip('Start masternode "%s"' % name)
         self.btn_start[name].setIcon(self.startMN_icon)
@@ -130,7 +130,7 @@ class TabMain_gui(QWidget):
             self.btn_start[name].setDisabled(True)
             self.btn_start[name].setToolTip("EXTERNAL MN: unable to start with SPMT")
         mnRowLayout.addWidget(self.btn_start[name])
-        ##--- Edit button
+        # --- Edit button
         self.btn_edit[name] = QPushButton()
         self.btn_edit[name].setToolTip('Edit masternode "%s"' % name)
         self.btn_edit[name].setIcon(self.editMN_icon)
@@ -139,21 +139,21 @@ class TabMain_gui(QWidget):
             self.btn_edit[name].setDisabled(True)
             self.btn_edit[name].setToolTip("EXTERNAL MN: to edit, delete entry and load new 'masternode.conf'")
         mnRowLayout.addWidget(self.btn_edit[name])
-        ##--- Remove button
+        # --- Remove button
         self.btn_remove[name] = QPushButton()
         self.btn_remove[name].setToolTip('Delete masternode "%s"' % name)
         self.btn_remove[name].setIcon(self.removeMN_icon)
         self.btn_remove[name].alias = name
         mnRowLayout.addWidget(self.btn_remove[name])
-        ##--- Three Dots
+        # --- Three Dots
         threeDots = QLabel()
         threeDots.setPixmap(self.threeDots_icon.scaledToHeight(20, Qt.SmoothTransformation))
         mnRowLayout.addWidget(threeDots)
-        ##--- Set Row Layout
+        # --- Set Row Layout
         mnRow.setLayout(mnRowLayout)
-        ##--- Append Row
+        # --- Append Row
         self.current_mn[name] = QListWidgetItem()
-        #self.current_mn[name].setFlags(Qt.ItemIsSelectable)
+        # self.current_mn[name].setFlags(Qt.ItemIsSelectable)
         self.current_mn[name].setSizeHint(mnRow.sizeHint())
         if row is not None:
             self.myList.insertItem(row, self.current_mn[name])

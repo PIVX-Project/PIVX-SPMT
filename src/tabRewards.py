@@ -26,16 +26,16 @@ class TabRewards():
 
     def __init__(self, caller):
         self.caller = caller
-        ##--- Lock for loading UTXO thread
+        # --- Lock for loading UTXO thread
         self.runInThread = ThreadFuns.runInThread
         self.Lock = threading.Lock()
 
-        ##--- Initialize Selection
+        # --- Initialize Selection
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
 
-        ##--- Initialize GUI
+        # --- Initialize GUI
         self.ui = TabRewards_gui(caller.imgDir)
         self.caller.tabRewards = self.ui
 

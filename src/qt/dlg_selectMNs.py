@@ -24,7 +24,7 @@ class SelectMNs_dlg(QDialog):
         self.setWindowTitle('Masternode List')
         self.initUI()
         self.loadMasternodes()
-        ## connect buttons
+        # connect buttons
         self.ui.selectAll_btn.clicked.connect(lambda: self.selectAll())
         self.ui.deselectAll_btn.clicked.connect(lambda: self.ui.mnList.clearSelection())
         self.ui.ok_btn.clicked.connect(lambda: self.onOK())
@@ -80,7 +80,7 @@ class Ui_SelectMNsDlg(object):
         item.setTextAlignment(Qt.AlignCenter)
         self.mnList.setHorizontalHeaderItem(0, item)
         layout.addWidget(self.mnList)
-        ## buttons
+        # buttons
         hBox = QHBoxLayout()
         self.selectAll_btn = QPushButton("Select All")
         self.selectAll_btn.setToolTip("Select all masternodes")

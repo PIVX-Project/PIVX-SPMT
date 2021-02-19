@@ -115,7 +115,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         print("sig = %s\naddress=%s" % (signature, pivx_address))
         self.assertTrue(result)
 
-## -----------------------------------------------------------------------------------        
+    # -----------------------------------------------------------------------------------
     # from:
     # -- hwdevice.signMess
     # -- hwdevice.signMessSign

@@ -45,7 +45,7 @@ class ConfigureRPCservers_dlg(QDialog):
             server_text = "<em style='color: purple'>%s</em>" % server_text
         server_row.addWidget(QLabel(server_text))
         server_row.addStretch(1)
-        ## -- Edit button
+        # -- Edit button
         editBtn = QPushButton()
         editBtn.setIcon(self.main_wnd.mainWindow.tabMain.editMN_icon)
         editBtn.setToolTip("Edit server configuration")
@@ -54,7 +54,7 @@ class ConfigureRPCservers_dlg(QDialog):
             editBtn.setToolTip('Default servers are not editable')
         editBtn.clicked.connect(lambda: self.onAddServer(index))
         server_row.addWidget(editBtn)
-        ## -- Remove button
+        # -- Remove button
         removeBtn = QPushButton()
         removeBtn.setIcon(self.main_wnd.mainWindow.tabMain.removeMN_icon)
         removeBtn.setToolTip("Remove server configuration")
@@ -66,7 +66,7 @@ class ConfigureRPCservers_dlg(QDialog):
             removeBtn.setToolTip('Cannot remove default servers')
         removeBtn.clicked.connect(lambda: self.onRemoveServer(index))
         server_row.addWidget(removeBtn)
-        ## --
+        # --
         server_line.setLayout(server_row)
         self.serverItems[id] = QListWidgetItem()
         self.serverItems[id].setSizeHint(server_line.sizeHint())
@@ -162,19 +162,19 @@ class Ui_ConfigureRPCserversDlg(object):
         ## -- Layout
         self.layout  = QVBoxLayout(ConfigureRPCserversDlg)
         self.layout.setSpacing(10)
-        ## -- Servers List
+        # -- Servers List
         self.serversBox = QListWidget()
         self.layout.addWidget(self.serversBox)
         ## -- 'Add Server' button
         self.addServer_btn  = QPushButton("Add RPC Server")
         self.layout.addWidget(self.addServer_btn)
-        ## -- 'Close' button
+        # -- 'Close' button
         hBox = QHBoxLayout()
         hBox.addStretch(1)
         self.close_btn  = QPushButton("Close")
         hBox.addWidget(self.close_btn)
         self.layout.addLayout(hBox)
-        ## -- Edit section
+        # -- Edit section
         self.editFrame = QFrame()
         frameLayout = QFormLayout()
         frameLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)

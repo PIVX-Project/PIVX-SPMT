@@ -26,15 +26,15 @@ class SweepAll_dlg(QDialog):
         QDialog.__init__(self, parent=main_tab.ui)
         self.main_tab = main_tab
         self.setWindowTitle('Sweep All Rewards')
-        ##--- Initialize Selection
+        # --- Initialize Selection
         self.loading_txes = False
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
-        ##--- Initialize GUI
+        # --- Initialize GUI
         self.setupUI()
         # Connect GUI buttons
         self.connectButtons()
-         # Connect Signals
+        # Connect Signals
         self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
 
     # Called each time before exec_ in showDialog

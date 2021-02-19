@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # Create App
     app = QApplication(sys.argv)
 
-    ### -- style stuff        
+    # -- style stuff
     spmtLogo_file = os.path.join(imgDir, 'splashscreen.png')
     labelstyle = "QLabel { font-size: 14px; color: purple; font-style: italic; text-align: center;}"
     barStyle = "QProgressBar::chunk {background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,stop: 0 #372f43,stop: 0.6 #5c4c7a, stop: 0.8 #663399);border-bottom-right-radius: 7px;border-bottom-left-radius: 7px;border-top: 2px solid #8A2BE2;}"
@@ -82,8 +82,6 @@ if __name__ == '__main__':
         while time.time() < t + 0.01:
             app.processEvents()
 
-    ### --------------       
-
     # Create QMainWindow Widget
     ex = App(imgDir, app, args)
 
@@ -91,7 +89,7 @@ if __name__ == '__main__':
     splash.close()
 
     try:
-        ##-- Launch RPC watchdog
+        # -- Launch RPC watchdog
         ex.mainWindow.rpc_watchdogThread.start()
     except Exception as e:
         print(e)

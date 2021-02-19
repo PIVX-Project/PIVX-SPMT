@@ -28,7 +28,7 @@ class TabGovernance_gui(QWidget):
     def initLayout(self):
         layout = QVBoxLayout(self)
 
-        ## -- ROW 1
+        #  -- ROW 1
         row = QHBoxLayout()
         self.budgetProjection_btn = QPushButton()
         self.budgetProjection_btn.setToolTip("Check Budget Projection...")
@@ -53,7 +53,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.toggleExpiring_btn)
         layout.addLayout(row)
 
-        ## -- ROW 2
+        #  -- ROW 2
         self.proposalBox = QTableWidget()
         self.proposalBox.setMinimumHeight(280)
         self.proposalBox.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -63,7 +63,7 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setRowCount(0)
         self.proposalBox.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.proposalBox.setSortingEnabled(True)
-        #self.proposalBox.verticalHeader().hide
+        # self.proposalBox.verticalHeader().hide
         self.setProposalBoxHeader()
         self.proposalBox.setColumnWidth(1, 50)
         self.proposalBox.setColumnWidth(2, 50)
@@ -74,7 +74,7 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setColumnWidth(7, 50)
         layout.addWidget(self.proposalBox)
 
-        ## -- ROW 3
+        #  -- ROW 3
         row = QHBoxLayout()
         self.timeIconLabel = QLabel()
         self.timeIconLabel.setToolTip("Check to add a randomized time offset (positive or negative) to enhance privacy")
@@ -121,7 +121,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.questionLabel)
         layout.addLayout(row)
 
-        ## -- ROW 4
+        #  -- ROW 4
         row = QHBoxLayout()
         self.voteYes_btn = QPushButton("Vote YES")
         self.voteYes_btn.setToolTip("Vote YES on selected proposals")

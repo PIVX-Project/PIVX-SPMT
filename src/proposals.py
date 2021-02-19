@@ -34,7 +34,7 @@ class Proposal():
         self.Abstains = int(Abstains)
         self.ToalPayment = TotalPayment
         self.MonthlyPayment = MonthlyPayment
-        ## list of personal masternodes voting
+        # list of personal masternodes voting
         self.MyYeas = []
         self.MyAbstains = []
         self.MyNays = []

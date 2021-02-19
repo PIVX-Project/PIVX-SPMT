@@ -21,9 +21,9 @@ from utils import ecdsa_sign, ecdsa_sign_bin, num_to_varint, ipmap, serialize_in
 
 
 class Masternode(QObject):
-    '''
+    """
     Base class for all masternodes
-    '''
+    """
     mnCount = 0
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
@@ -78,7 +78,7 @@ class Masternode(QObject):
             printDbg("SerializedData: %s" % serializedData)
             # HW wallet signature
             device.signMess(self.tab_main.caller, self.nodePath, serializedData, self.isTestnet)
-            #wait for signal when device.sig1 is ready then --> finalizeStartMessage
+            # wait for signal when device.sig1 is ready then --> finalizeStartMessage
         except Exception as e:
             err_msg = "error in signature1"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
@@ -177,7 +177,7 @@ class Masternode(QObject):
         self.sigdone.emit(work)
 
     def startMessage(self, device, rpcClient):
-        # setuo rpc connection
+        # setup rpc connection
         self.rpcClient = rpcClient
         try:
             # update protocol version
