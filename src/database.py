@@ -388,7 +388,7 @@ class Database():
     def addMasternode(self, mn, old_mn=None):
         add_defaultKeys_to_dict(mn, DEFAULT_MN_CONF)
 
-        if not old_mn is None:
+        if old_mn is not None:
             printDbg("DB: Editing masternode %s" % old_mn)
             try:
                 cursor = self.getCursor()

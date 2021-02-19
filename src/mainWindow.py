@@ -259,7 +259,7 @@ class MainWindow(QWidget):
 
     def loadMNConf(self, fileName):
         hot_masternodes = loadMNConfFile(fileName)
-        if hot_masternodes == None:
+        if hot_masternodes is None:
             messText = "Unable to load data from file '%s'" % fileName
             myPopUp_sb(self, "warn", "SPMT - Load MN Conf", messText)
         else:

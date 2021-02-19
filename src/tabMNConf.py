@@ -207,7 +207,7 @@ class TabMNConf:
             mn_alias = self.ui.edt_name.text().strip()
             # if we are changing a masternode check for duplicate only if name is changed
             old_alias = None
-            if not self.caller.mnode_to_change is None:
+            if self.caller.mnode_to_change is not None:
                 old_alias = self.caller.mnode_to_change['name']
             if self.caller.isMasternodeInList(mn_alias) and old_alias != mn_alias:
                 mess_text = 'Attention! The name <b>%s</b> is already in use for another masternode.<br>' % mn_alias

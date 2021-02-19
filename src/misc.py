@@ -36,7 +36,7 @@ def appendMasternode(mainWnd, mn):
     printDbg("saving MN configuration for %s" % mn['name'])
 
     # If we are changing a MN, remove previous entry:
-    if not mainWnd.mnode_to_change is None:
+    if mainWnd.mnode_to_change is not None:
         # remove from cache and QListWidget only
         removeMNfromList(mainWnd, mainWnd.mnode_to_change, removeFromDB=False)
 

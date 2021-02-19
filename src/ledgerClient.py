@@ -291,7 +291,7 @@ class LedgerApi(QObject):
     def signMessageFinish(self):
         with self.lock:
             self.mBox.accept()
-        if self.signature != None:
+        if self.signature is not None:
             if len(self.signature) > 4:
                 rLength = self.signature[3]
                 r = self.signature[4: 4 + rLength]

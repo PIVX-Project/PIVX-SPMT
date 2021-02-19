@@ -128,7 +128,7 @@ class TestHwDeviceMethods(unittest.TestCase):
         message = message.encode('ascii', 'ignore')
         self.device.chip.signMessagePrepare(path, message)
         signature = self.device.chip.signMessageSign(None)
-        if signature != None:
+        if signature is not None:
             if len(signature) > 4:
                 rLength = signature[3]
                 r = signature[4: 4 + rLength]
