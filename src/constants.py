@@ -7,7 +7,7 @@
 import os
 from queue import Queue
 
-wqueue = Queue()
+wqueue = Queue()  # type: Queue[int]
 
 MPATH_LEDGER = "44'/77'/"
 MPATH_TREZOR = "44'/119'/"
