@@ -74,7 +74,7 @@ class FindCollTx_dlg(QDialog):
                     errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
                     printError(getCallerName(), getFunctionName(), errorMsg)
 
-        except Exception as e:
+        except Exception:
             pass
 
     def getSelection(self):

@@ -372,7 +372,7 @@ class TabRewards():
                                                               self.currFee,
                                                               self.caller.isTestnetRPC)
 
-        except DisconnectedException as e:
+        except DisconnectedException:
             self.caller.hwStatus = 0
             self.caller.updateHWleds()
 
