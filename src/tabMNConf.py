@@ -15,7 +15,7 @@ from qt.dlg_findCollTx import FindCollTx_dlg
 from threads import ThreadFuns
 
 
-class TabMNConf():
+class TabMNConf:
     def __init__(self, caller, masternode_alias=None):
         self.caller = caller
         self.ui = TabMNConf_gui(masternode_alias)

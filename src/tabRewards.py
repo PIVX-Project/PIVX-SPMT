@@ -22,7 +22,7 @@ from txCache import TxCache
 from utils import checkPivxAddr
 
 
-class TabRewards():
+class TabRewards:
 
     def __init__(self, caller):
         self.caller = caller

@@ -20,7 +20,7 @@ from qt.dlg_sweepAll import SweepAll_dlg
 from threads import ThreadFuns
 
 
-class TabMain():
+class TabMain:
     def __init__(self, caller):
         self.caller = caller
         self.all_masternodes = {}
