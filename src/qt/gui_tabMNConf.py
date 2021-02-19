@@ -7,7 +7,7 @@
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox,\
     QFrame, QLineEdit
-    
+
 
 class TabMNConf_gui(QWidget):
     def __init__(self, masternode_alias=None, *args, **kwargs):
@@ -22,10 +22,7 @@ class TabMNConf_gui(QWidget):
         mainVertical2.addLayout(vBox)
         mainVertical2.addLayout(self.footer)
         self.setLayout(mainVertical2)       
-        
-    
-        
-        
+
     def clearConfigForm(self):
         self.testnetCheck.setChecked(False)
         self.edt_name.setText('')
@@ -39,10 +36,7 @@ class TabMNConf_gui(QWidget):
         self.edt_txid.setText('')
         self.edt_txidn.setValue(0)
         self.configForm.setTitle('New Masternode')
-        
-        
-        
-        
+
     def fillConfigForm(self, masternode):
         self.edt_name.setText(masternode['name'])
         self.edt_masternodeIp.setText(masternode['ip'])
@@ -59,17 +53,14 @@ class TabMNConf_gui(QWidget):
         self.edt_txid.setText(masternode['collateral'].get('txid'))
         self.edt_txidn.setValue(masternode['collateral'].get('txidn'))
         self.configForm.setTitle("Edit Masternode") 
-         
-        
-            
-        
+
     def initConfigForm(self, masternode_alias=None):
         self.configForm = QGroupBox()
         if not masternode_alias:
             self.configForm.setTitle("New Masternode")
         else:
             self.configForm.setTitle("Edit Masternode [%s]" % masternode_alias)
-            
+
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         layout.setContentsMargins(10, 20, 10, 10)
@@ -168,4 +159,3 @@ class TabMNConf_gui(QWidget):
         self.btn_saveMNConf = QPushButton('Save')
         self.btn_saveMNConf.setToolTip("save configuration and go back to main list")
         self.footer.addWidget(self.btn_saveMNConf)
-            

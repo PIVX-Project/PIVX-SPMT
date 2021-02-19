@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel,\
 from misc import myPopUp, checkRPCstring
 from threads import ThreadFuns
 
+
 class ConfigureRPCservers_dlg(QDialog):
     def __init__(self, main_wnd):
         QDialog.__init__(self, parent=main_wnd)
@@ -20,21 +21,17 @@ class ConfigureRPCservers_dlg(QDialog):
         self.initUI()
         self.loadServers()
         self.main_wnd.mainWindow.sig_RPClistReloaded.connect(self.loadServers)
-            
-            
-            
+
     def clearEditFrame(self):
         self.ui.user_edt.clear()
         self.ui.passwd_edt.clear()
         self.ui.protocol_select.setCurrentIndex(0)
         self.ui.host_edt.clear()
 
-
     def initUI(self):
         self.ui = Ui_ConfigureRPCserversDlg()
         self.ui.setupUi(self)
-        
-        
+
     def insert_server_list(self, server):
         id = server['id']
         index = self.main_wnd.mainWindow.getServerListIndex(server)
@@ -75,8 +72,7 @@ class ConfigureRPCservers_dlg(QDialog):
         self.serverItems[id].setSizeHint(server_line.sizeHint())
         self.ui.serversBox.addItem(self.serverItems[id])
         self.ui.serversBox.setItemWidget(self.serverItems[id], server_line)
-        
-        
+
     def loadServers(self):
         # Clear serversBox
         self.ui.serversBox.clear()
@@ -84,8 +80,7 @@ class ConfigureRPCservers_dlg(QDialog):
         self.serverItems = {}
         for server in self.main_wnd.mainWindow.rpcServersList:
             self.insert_server_list(server)
-        
-        
+
     def loadEditFrame(self, index):
         server = self.main_wnd.mainWindow.rpcServersList[index]
         self.ui.user_edt.setText(server['user'])
@@ -95,8 +90,6 @@ class ConfigureRPCservers_dlg(QDialog):
         else:
             self.ui.protocol_select.setCurrentIndex(0)
         self.ui.host_edt.setText(server['host'])
-        
-    
 
     def onAddServer(self, index=None):
         # Save current index (None for new entry)
@@ -113,8 +106,6 @@ class ConfigureRPCservers_dlg(QDialog):
         # else pre-load data
         else:
             self.loadEditFrame(index)
-        
-    
 
     def onCancel(self):
         # Show 'Add' and 'Close' buttons and enable serversBox
@@ -125,14 +116,10 @@ class ConfigureRPCservers_dlg(QDialog):
         self.ui.editFrame.setHidden(True)
         # Clear edit-frame
         self.clearEditFrame()
-    
-    
 
     def onClose(self):
         # close dialog
         self.close()
-        
-        
 
     def onRemoveServer(self, index):
         mess = "Are you sure you want to remove server with index %d (%s) from list?" % (
@@ -142,8 +129,6 @@ class ConfigureRPCservers_dlg(QDialog):
             # Remove entry from database
             id = self.main_wnd.mainWindow.rpcServersList[index].get('id')
             self.main_wnd.db.removeRPCServer(id)
-
-    
 
     def onSave(self):
         # Get new config data
@@ -169,10 +154,8 @@ class ConfigureRPCservers_dlg(QDialog):
      
             # call onCancel
             self.onCancel()
-    
-        
-        
-        
+
+
 class Ui_ConfigureRPCserversDlg(object):
     def setupUi(self, ConfigureRPCserversDlg):
         ConfigureRPCserversDlg.setModal(True)
@@ -226,5 +209,3 @@ class Ui_ConfigureRPCserversDlg(object):
         self.close_btn.clicked.connect(lambda: ConfigureRPCserversDlg.onClose())
         self.cancel_btn.clicked.connect(lambda: ConfigureRPCserversDlg.onCancel())
         self.save_btn.clicked.connect(lambda: ConfigureRPCserversDlg.onSave())
-        
-        

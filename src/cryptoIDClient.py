@@ -13,7 +13,6 @@ api_keys = ["b62b40b5091e", "f1d66708a077", "ed85c85c0126", "ccc60d06f737"]
 
 
 def process_cryptoID_exceptions(func):
-
     def process_cryptoID_exceptions_int(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -23,7 +22,6 @@ def process_cryptoID_exceptions(func):
             return None
 
     return process_cryptoID_exceptions_int
-
 
 
 def UTXOS_cryptoID_to_trezor(utxos):
@@ -50,8 +48,6 @@ class CryptoIDClient:
         self.url = "http://chainz.cryptoid.info/pivx/api.dws"
         self.parameters = {}
 
-
-
     def checkResponse(self, parameters):
         key = choice(api_keys)
         parameters['key'] = key
@@ -60,8 +56,6 @@ class CryptoIDClient:
             data = resp.json()
             return data
         return None
-
-
 
     @process_cryptoID_exceptions
     def getAddressUtxos(self, address):
@@ -74,12 +68,9 @@ class CryptoIDClient:
         else:
             return UTXOS_cryptoID_to_trezor(res['unspent_outputs'])
 
-
-
     @process_cryptoID_exceptions
     def getBalance(self, address):
         self.parameters = {}
         self.parameters['q'] = 'getbalance'
         self.parameters['a'] = address
         return self.checkResponse(self.parameters)
-

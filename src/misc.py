@@ -65,8 +65,6 @@ def appendMasternode(mainWnd, mn):
     printDbg("saved")
 
 
-
-
 def checkRPCstring(urlstring, action_msg="Malformed credentials"):
     try:
         o = urlparse(urlstring)
@@ -86,7 +84,6 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         error_msg = "Unable to parse URL"
         printException(getCallerName(), getFunctionName(), error_msg, e)
         return False
-
 
 
 def checkTxInputs(parentWindow, num_of_inputs):
@@ -163,19 +160,14 @@ def clean_v4_migration(wnd):
         printDbg("old lastLogs.html file deleted")
 
 
-
-
-
 def clean_for_html(text):
     if text is None:
         return ""
     return text.replace("<", "{").replace(">","}")
 
 
-
 def clear_screen():
     os.system('clear')
-
 
 
 def getCallerName(inDecorator=False):
@@ -185,7 +177,6 @@ def getCallerName(inDecorator=False):
         return sys._getframe(2).f_code.co_name
     except Exception:
         return None
-
 
 
 def getFunctionName(inDecorator=False):
@@ -212,7 +203,6 @@ def getRemoteSPMTversion():
         return "0.0.0"
 
 
-
 def getSPMTVersion():
     version_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
@@ -222,13 +212,11 @@ def getSPMTVersion():
     return data
 
 
-
 def getTxidTxidn(txid, txidn):
     if txid is None or txidn is None:
         return None
     else:
         return txid + '-' + str(txidn)
-
 
 
 def initLogs():
@@ -241,7 +229,6 @@ def initLogs():
                         format=format,
                         level=level
                         )
-
 
 
 def ipport(ip, port):
@@ -259,7 +246,6 @@ def ipport(ip, port):
             raise Exception("invalid IP version number")
 
 
-
 def is_hex(s):
     try:
         int(s, 16)
@@ -268,9 +254,7 @@ def is_hex(s):
         return False
 
 
-
 def loadMNConfFile(fileName):
-
     hot_masternodes = []
     try:
         with open(fileName) as f:
@@ -321,7 +305,6 @@ def loadMNConfFile(fileName):
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)
 
 
-
 def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageBox.No):
     if messType in QT_MESSAGE_TYPE:
         type = QT_MESSAGE_TYPE[messType]
@@ -331,7 +314,6 @@ def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageB
     mess.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     mess.setDefaultButton(defaultButton)
     return mess.exec_()
-
 
 
 def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessageBox.Ok):
@@ -344,11 +326,8 @@ def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessag
     return mess.exec_()
 
 
-
 def now():
     return int(time.time())
-
-
 
 
 def persistCacheSetting(cache_key, cache_value):
@@ -365,12 +344,10 @@ def persistCacheSetting(cache_key, cache_value):
     return cache_value
 
 
-
 def printDbg(what):
     logging.info(what)
     log_line = printDbg_msg(what)
     redirect_print(log_line)
-
 
 
 def printDbg_msg(what):
@@ -378,7 +355,6 @@ def printDbg_msg(what):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
     log_line = '<b style="color: yellow">{}</b> : {}<br>'.format(timestamp, what)
     return log_line
-
 
 
 def printError(
@@ -389,7 +365,6 @@ def printError(
     logging.error("%s | %s | %s" % (caller_name, function_name, what))
     log_line = printException_msg(caller_name, function_name, what, None, True)
     redirect_print(log_line)
-
 
 
 def printException(
@@ -404,7 +379,6 @@ def printException(
     logging.warning("%s | %s | %s" % (caller_name, function_name, what))
     text = printException_msg(caller_name, function_name, err_msg, errargs)
     redirect_print(text)
-
 
 
 def printException_msg(
@@ -428,12 +402,10 @@ def printException_msg(
     return msg
 
 
-
 def printOK(what):
     logging.debug(what)
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
     redirect_print(msg)
-
 
 
 def readCacheSettings():
@@ -482,8 +454,6 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
         mainWnd.t_governance.clear()
 
 
-
-
 def saveCacheSettings(cache):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
@@ -503,8 +473,6 @@ def saveCacheSettings(cache):
     settings.setValue('cache_isTestnetRPC', cache.get('isTestnetRPC'))
 
 
-
-
 def sec_to_time(seconds):
     days = seconds//86400
     seconds -= days*86400
@@ -515,13 +483,9 @@ def sec_to_time(seconds):
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
 
 
-
-
 def splitString(text, n):
     arr = [text[i:i+n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
-
-
 
 
 def timeThis(function, *args):
@@ -532,8 +496,6 @@ def timeThis(function, *args):
         return val, (end-start)
     except Exception:
         return None, None
-
-
 
 
 def updateSplash(label, i):
@@ -564,8 +526,6 @@ class DisconnectedException(Exception):
         hwDevice.closeDevice(message)
 
 
-
-
 # Stream object to redirect sys.stdout and sys.stderr to a queue
 class WriteStream(object):
     def __init__(self, queue):
@@ -576,7 +536,6 @@ class WriteStream(object):
 
     def flush(self):
         pass
-
 
 
 # QObject (to be run in QThread) that blocks until data is available

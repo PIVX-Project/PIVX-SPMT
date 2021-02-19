@@ -59,8 +59,6 @@ class TabRewards():
         # Connect Signals
         self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
 
-
-
     def display_mn_utxos(self):
         if self.curr_name is None:
             return
@@ -131,8 +129,6 @@ class TabRewards():
                 else:
                     self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
 
-
-
     def getSelection(self):
         # Get selected rows indexes
         items = self.ui.rewardsList.box.selectedItems()
@@ -149,8 +145,6 @@ class TabRewards():
             selection.append(self.caller.parent.db.getReward(txid, txidn))
 
         return selection
-
-
 
     def loadMnSelect(self, isInitializing=False):
         # save previous index
@@ -176,8 +170,6 @@ class TabRewards():
             self.ui.mnSelect.setCurrentIndex(index)
 
         self.onChangeSelectedMN(isInitializing)
-
-
 
     def load_utxos_thread(self, ctrl):
         with self.Lock:
@@ -234,8 +226,6 @@ class TabRewards():
             printDbg("--# REWARDS table updated")
             self.caller.sig_UTXOsLoading.emit(100)
 
-
-
     def onCancel(self):
         self.ui.rewardsList.box.clearSelection()
         self.selectedRewards = None
@@ -246,15 +236,11 @@ class TabRewards():
         self.ui.collateralHidden = True
         self.AbortSend()
 
-
-
     def onChangedMNlist(self):
         # reload MnSelect
         self.loadMnSelect()
         # reload utxos
         self.onReloadUTXOs()
-
-
 
     def onChangeSelectedMN(self, isInitializing=False):
         self.curr_name = None
@@ -271,25 +257,18 @@ class TabRewards():
                 self.ui.resetStatusLabel()
                 self.display_mn_utxos()
 
-
-
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
         self.updateSelection()
-
-
 
     def onDeselectAllRewards(self):
         self.ui.rewardsList.box.clearSelection()
         self.updateSelection()
 
-
-
     def onReloadUTXOs(self):
         if not self.Lock.locked():
             self.ui.resetStatusLabel()
             self.runInThread(self.load_utxos_thread, ())
-
 
     def onSendRewards(self):
         self.dest_addr = self.ui.destinationLine.text().strip()
@@ -322,7 +301,6 @@ class TabRewards():
             self.caller.onCheckHw()
         # SEND
         self.SendRewards()
-
 
     def SendRewards(self, inputs=None, gui=None):
         # Default slots on tabRewards
@@ -404,7 +382,6 @@ class TabRewards():
             err_msg += "<b>Wait for full synchronization</b> then hit 'Clear/Reload'"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-
     def onToggleCollateral(self):
         if self.ui.rewardsList.box.collateralRow is not None:
             if not self.ui.collateralHidden:
@@ -431,8 +408,6 @@ class TabRewards():
         else:
             myPopUp_sb(self.caller, "warn", 'No Collateral', "No collateral selected")
 
-
-
     def removeSpentRewards(self):
         if self.selectedRewards is not None:
             for utxo in self.selectedRewards:
@@ -440,13 +415,10 @@ class TabRewards():
         else:
             self.caller.parent.db.clearTable('REWARDS')
 
-
-
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         self.FinishSend_int(serialized_tx, amount_to_send)
-
 
     def FinishSend_int(self, serialized_tx, amount_to_send):
         if not self.txFinished:
@@ -502,28 +474,20 @@ class TabRewards():
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-
-
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
 
-
-
     def updateFee(self):
         self.ui.feeLine.setValue(self.suggestedFee)
         self.ui.feeLine.setEnabled(True)
-
-
 
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
-
-
 
     def updateSelection(self, clicked_item=None):
         total = 0
@@ -546,15 +510,11 @@ class TabRewards():
 
         self.updateFee()
 
-
-
     def update_loading_utxos(self, percent):
         if percent < 100:
             self.ui.resetStatusLabel('<em><b style="color:purple">Checking explorer... %d%%</b></em>' % percent)
         else:
             self.display_mn_utxos()
-
-
 
     def updateTotalBalance(self, rewards):
         nAmount = 0

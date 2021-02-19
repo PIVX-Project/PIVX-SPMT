@@ -11,6 +11,7 @@ from btchip.btchipUtils import compress_public_key, bitcoinTransaction, bitcoinI
 from bitcoin import bin_hash160
 from utils import extract_pkh_from_locking_script, compose_tx_locking_script
 
+
 class TestHwDeviceMethods(unittest.TestCase):
     def setUp(self):
         self.device = HWdevice()
@@ -21,9 +22,7 @@ class TestHwDeviceMethods(unittest.TestCase):
             self.skipTest("Ledger not connected or pivx app closed")
         if not rpcStatus:
             self.skipTest("RPC not connected")
-        
-        
-    
+
     def tearDown(self):
         if hasattr(self.device, 'dongle'):
             self.device.dongle.close()
@@ -31,16 +30,14 @@ class TestHwDeviceMethods(unittest.TestCase):
             print("Dongle Closed")
         if hasattr(self.rpcClient, 'conn'):
             self.rpcClient.parent = None
-    
 
-    
     def test_transaction(self):
         # Read input data from file
         import simplejson as json
         with open('test_transaction.data.json') as data_file:
             input_data = json.load(data_file)
         data_file.close()
-        
+
         # Rename input data
         path = input_data['path']
         pivx_address_to = input_data['address_from']
@@ -66,8 +63,6 @@ class TestHwDeviceMethods(unittest.TestCase):
             self.assertIn(input_tx, decoded_inputs)
             decoded_inputs.remove(input_tx)
 
-        
-        
     def test_scanForBip32(self):
         # Get accounts obtained from seed outside ledger 
         # (5 accounts. 5 addresses per account)
@@ -78,13 +73,11 @@ class TestHwDeviceMethods(unittest.TestCase):
             for account_n in range(5):
                 for address_n in range(5):
                     address = datafile.readline().split()[0]
-                    
+
                     result, _ = self.device.scanForBip32(account_n, address, starting_spath=address_n, spath_count=1)
                     # Address found in account_n  with index.
                     self.assertTrue(result)       
-            
-            
-            
+
     def test_scanForPubKey(self):
         # Get accounts obtained from seed outside ledger 
         # (5 accounts. 5 addresses per account)
@@ -95,35 +88,33 @@ class TestHwDeviceMethods(unittest.TestCase):
             for account_n in range(5):
                 for address_n in range(5):
                     pubkey = datafile.readline().split()[1]
-                    
+
                     result = self.device.scanForPubKey(account_n, address_n)
                     # Pubkey checks out
                     self.assertEqual(result, pubkey)
-                
-                
-                      
+
     def test_signature(self):
         # Get message and path from datafile
         import simplejson as json
         with open('test_signature.data.json') as data_file:
             input_data = json.load(data_file)
-            
+
         # Rename input data
         message = input_data['message']
         path = input_data['path']
         pivx_address = self.device.chip.getWalletPublicKey(path).get('address')[12:-2]
-        
+
         # sign message on ledger
         print("=================================")
         print("   Press 'OK' on Ledger device   ")
         print("---------------------------------")
         signature = self.signMess(path, message)
-        
+
         # verify with rpc client
         result = self.rpcClient.verifyMessage(pivx_address, signature, message)
         print("sig = %s\naddress=%s" % (signature, pivx_address))
         self.assertTrue(result)
-        
+
 ## -----------------------------------------------------------------------------------        
     # from:
     # -- hwdevice.signMess
@@ -149,7 +140,7 @@ class TestHwDeviceMethods(unittest.TestCase):
                             r = r[1:]
                         if sLength == 33:
                             s = s[1:]
-            
+
                         work = bytes(chr(27 + 4 + (signature[0] & 0x01)), "utf-8") + r + s
                         print("Message signed")
                         sig1 = work.hex()
@@ -165,12 +156,9 @@ class TestHwDeviceMethods(unittest.TestCase):
         else:
             print("Signature refused by the user")
             sig1 = "None"
-            
+
         return b64encode(sig1)
-    
-    
-    
-    
+
     # from:
     # -- hwdevice.prepare_transfer_tx
     # -- hwdevice.signTxSign
@@ -181,17 +169,17 @@ class TestHwDeviceMethods(unittest.TestCase):
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
         self.arg_inputs = []
-        
+
         self.amount = 0
         for idx, utxo in enumerate(utxos_to_spend):
-            
+
             self.amount += int(utxo['value'])
 
             raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
 
             if not raw_tx:
                 raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
-            
+
             # parse the raw transaction, so that we can extract the UTXO locking script we refer to
             prev_transaction = bitcoinTransaction(raw_tx)
 
@@ -201,7 +189,7 @@ class TestHwDeviceMethods(unittest.TestCase):
 
             trusted_input = self.device.chip.getTrustedInput(prev_transaction, utxo_tx_index)
             self.trusted_inputs.append(trusted_input)
-           
+
             # Hash check
             curr_pubkey = compress_public_key(device.chip.getWalletPublicKey(bip32_path)['publicKey'])
             pubkey_hash = bin_hash160(curr_pubkey)
@@ -236,20 +224,20 @@ class TestHwDeviceMethods(unittest.TestCase):
             raise
         # join all outputs - will be used by Ledger for signing transaction
         self.all_outputs_raw = self.new_transaction.serializeOutputs()
-        
+
         starting = True
         # sign all inputs on Ledger and add inputs in the self.new_transaction object for serialization
         for idx, new_input in enumerate(self.arg_inputs):
             device.chip.startUntrustedTransaction(starting, idx, self.trusted_inputs, new_input['locking_script'])
-            
+
             device.chip.finalizeInputFull(self.all_outputs_raw)
 
             sig = device.chip.untrustedHashSign(new_input['bip32_path'], lockTime=0)
-            
+
             new_input['signature'] = sig
             inputTx = bitcoinInput()
             inputTx.prevOut = bytearray.fromhex(new_input['txid'])[::-1] + int.to_bytes(new_input['outputIndex'], 4, byteorder='little')
-            
+
             inputTx.script = bytearray([len(sig)]) + sig + bytearray([0x21]) + new_input['pubkey']
 
             inputTx.sequence = bytearray([0xFF, 0xFF, 0xFF, 0xFF])
@@ -257,7 +245,7 @@ class TestHwDeviceMethods(unittest.TestCase):
             self.new_transaction.inputs.append(inputTx)
 
             starting = False
-    
+
             self.new_transaction.lockTime = bytearray([0, 0, 0, 0])
             self.tx_raw = bytearray(self.new_transaction.serialize())
 
@@ -266,9 +254,6 @@ class TestHwDeviceMethods(unittest.TestCase):
         else:
             # transaction refused by user
             return (None, "")
-            
-        
-        
-    
+
     if __name__ == '__main__':
         unittest.main(verbosity=2)

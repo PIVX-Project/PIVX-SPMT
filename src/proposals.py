@@ -16,6 +16,7 @@ vote_type = {
     "-1": "NO"
     }
 
+
 class Proposal():
     def __init__(self, name, URL, Hash, FeeHash, BlockStart, BlockEnd, TotalPayCount, RemainingPayCount,
                  PayMentAddress, Yeas, Nays, Abstains, TotalPayment, MonthlyPayment):

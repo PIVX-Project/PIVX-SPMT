@@ -36,8 +36,6 @@ class TabMNConf():
         self.ui.btn_spathToAddress.clicked.connect(lambda: self.spathToAddress())
         self.ui.testnetCheck.clicked.connect(lambda: self.onChangeTestnet())
 
-
-
     def addressToSpath(self):
         printOK("addressToSpath pressed")
         self.spath_found = False
@@ -48,8 +46,6 @@ class TabMNConf():
             return None
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)
 
-
-
     def findSpath(self, ctrl, starting_spath, spath_count):
         currAddr = self.ui.edt_address.text().strip()
         currHwAcc = self.ui.edt_hwAccount.value()
@@ -58,8 +54,6 @@ class TabMNConf():
         printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, self.spath))
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
-
-
 
     def findSpath_done(self):
         currAddr = self.ui.edt_address.text().strip()
@@ -83,8 +77,6 @@ class TabMNConf():
             if ans == QMessageBox.Yes:
                 starting_spath += spath_count
                 self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
-
-
 
     def findPubKey(self):
         printDbg("Computing public key...")
@@ -120,35 +112,25 @@ class TabMNConf():
         printOK("Public Key: %s" % result)
         self.ui.edt_pubKey.setText(result)
 
-
-
     def findRow_mn_list(self, name):
         row = 0
         while self.caller.tabMain.myList.item(row)['name'] < name:
             row += 1
         return row
 
-
-
     def isTestnet(self):
         return self.ui.testnetCheck.isChecked()
-
-
 
     def onCancelMNConfig(self):
         self.caller.tabs.setCurrentIndex(0)
         self.caller.tabs.removeTab(1)
         self.caller.mnode_to_change = None
 
-
-
     def onChangeTestnet(self):
         if self.isTestnet():
             self.ui.edt_masternodePort.setValue(51474)
         else:
             self.ui.edt_masternodePort.setValue(51472)
-
-
 
     def onEditTx(self):
         if not self.ui.edt_txid.isEnabled():
@@ -165,14 +147,10 @@ class TabMNConf():
             self.ui.btn_findTxid.setEnabled(True)
             self.ui.btn_saveMNConf.setEnabled(True)
 
-
-
     def onFindSpathAndPrivKey(self):
         self.ui.edt_spath.setValue(0)
         self.ui.edt_pubKey.setText('')
         self.addressToSpath()
-
-
 
     def onLookupTx(self):
         # address check
@@ -194,8 +172,6 @@ class TabMNConf():
         except Exception as e:
             printDbg(e)
 
-
-
     def onGenerateMNkey(self):
         printDbg("Generate MNkey pressed")
         reply = QMessageBox.Yes
@@ -209,8 +185,6 @@ class TabMNConf():
 
         newkey = generate_privkey(self.isTestnet())
         self.ui.edt_mnPrivKey.setText(newkey)
-
-
 
     def onSaveMNConf(self):
         try:
@@ -273,8 +247,6 @@ class TabMNConf():
             error_msg = "ERROR: %s" % e
             printDbg(error_msg)
             myPopUp_sb(self.caller, "crit", 'ERROR', error_msg)
-
-
 
     def spathToAddress(self):
         printOK("spathToAddress pressed")

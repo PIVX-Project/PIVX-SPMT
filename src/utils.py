@@ -15,7 +15,6 @@ from misc import getCallerName, getFunctionName, printException
 from pivx_b58 import b58decode
 from pivx_hashlib import wif_to_privkey, pubkey_to_address
 
-
 # Bitcoin opcodes used in the application
 OP_DUP = b'\x76'
 OP_HASH160 = b'\xA9'
@@ -36,7 +35,6 @@ def b64encode(text):
     return base64.b64encode(bytearray.fromhex(text)).decode('utf-8')
 
 
-
 def checkPivxAddr(address, isTestnet=False):
     try:
         # check leading char 'D' or (for testnet) 'x' or 'y'
@@ -54,7 +52,6 @@ def checkPivxAddr(address, isTestnet=False):
         return True
     except Exception:
         return False
-
 
 
 def compose_tx_locking_script(dest_address, isTestnet):
@@ -91,7 +88,6 @@ def compose_tx_locking_script(dest_address, isTestnet):
     return scr
 
 
-
 def compose_tx_locking_script_OR(message):
     """
     Create a Locking script (ScriptPubKey) that will be assigned to a transaction output.
@@ -102,7 +98,6 @@ def compose_tx_locking_script_OR(message):
     scr = OP_RETURN + int.to_bytes(len(data), 1, byteorder='little') + data
 
     return scr
-
 
 
 def ecdsa_sign(msg, priv):
@@ -120,14 +115,12 @@ def ecdsa_verify_addr(msg, sig, addr):
     return pubkey_to_address(Qenc, isTestnet) == addr
 
 
-
 def electrum_sig_hash(message):
     """
     Based on project: https://github.com/chaeplin/dashmnb.
     """
     padded = b'\x18DarkNet Signed Message:\n' + num_to_varint(len(message)) + from_string_to_bytes(message)
     return dbl_sha256(padded)
-
 
 
 def ecdsa_sign_bin(msgbin, priv):
@@ -139,7 +132,6 @@ def ecdsa_sign_bin(msgbin, priv):
     if not ok:
         raise Exception('Bad signature!')
     return sig
-
 
 
 def extract_pkh_from_locking_script(script):
@@ -171,13 +163,13 @@ def IsPayToColdStaking(script):
             script[49] == int.from_bytes(OP_EQUALVERIFY, 'little') and
             script[50] == int.from_bytes(OP_CHECKSIG, 'little'))
 
+
 def GetDelegatedStaker(script):
     return script[6:26]
 
 
 def from_string_to_bytes(a):
     return a if isinstance(a, bytes) else bytes(a, 'utf-8')
-
 
 
 def ipmap(ip, port):
@@ -207,7 +199,6 @@ def ipmap(ip, port):
         else:
             raise Exception("invalid version number (%d)" % ipAddr.version)
 
-
         ipv6map += int(port).to_bytes(2, byteorder='big').hex()
         if len(ipv6map) != 36:
             raise Exception("Problems! len is %d" % len(ipv6map))
@@ -216,7 +207,6 @@ def ipmap(ip, port):
     except Exception as e:
             err_msg = "error in ipmap"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
 
 
 def num_to_varint(a):
@@ -232,7 +222,6 @@ def num_to_varint(a):
         return int(254).to_bytes(1, byteorder='big') + x.to_bytes(4, byteorder='little')
     else:
         return int(255).to_bytes(1, byteorder='big') + x.to_bytes(8, byteorder='little')
-
 
 
 def read_varint(buffer, offset):
@@ -251,7 +240,6 @@ def read_varint(buffer, offset):
     else:
         raise Exception("Invalid varint size")
     return value, value_size
-
 
 
 def serialize_input_str(tx, prevout_n, sequence, script_sig):

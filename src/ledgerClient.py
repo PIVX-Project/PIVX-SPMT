@@ -64,7 +64,6 @@ class LedgerApi(QObject):
     # signal: sig_disconnected -emitted with DisconnectedException
     sig_disconnected = pyqtSignal(str)
 
-
     def __init__(self, main_wnd, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.main_wnd = main_wnd
@@ -79,9 +78,6 @@ class LedgerApi(QObject):
         self.status = 0
         self.dongle = None
         printDbg("Creating HW device class")
-
-
-
 
     @process_ledger_exceptions
     def initDevice(self):
@@ -101,8 +97,6 @@ class LedgerApi(QObject):
             self.status = 2
         self.sig_progress.connect(self.updateSigProgress)
 
-
-
     def closeDevice(self, message=''):
         printDbg("Closing LEDGER client")
         self.sig_disconnected.emit(message)
@@ -114,7 +108,6 @@ class LedgerApi(QObject):
                 except:
                     pass
                 self.dongle = None
-
 
     @process_ledger_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path):
@@ -151,8 +144,6 @@ class LedgerApi(QObject):
             'txid': utxo['txid'],
             'p2cs': (utxo['staker'] != "")
         })
-
-
 
     @process_ledger_exceptions
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, isTestnet=False):
@@ -215,8 +206,6 @@ class LedgerApi(QObject):
 
         ThreadFuns.runInThread(self.signTxSign, (), self.signTxFinish)
 
-
-
     @process_ledger_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
         with self.lock:
@@ -230,8 +219,6 @@ class LedgerApi(QObject):
 
         return curr_addr
 
-
-
     @process_ledger_exceptions
     def scanForPubKey(self, account, spath, isTestnet=False):
         hwpath = "%d'/0/%d" % (account, spath)
@@ -244,8 +231,6 @@ class LedgerApi(QObject):
             nodeData = self.chip.getWalletPublicKey(curr_path)
 
         return compress_public_key(nodeData.get('publicKey')).hex()
-
-
 
     @process_ledger_exceptions
     def signMess(self, caller, hwpath, message, isTestnet=False):
@@ -294,8 +279,6 @@ class LedgerApi(QObject):
         # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (), self.signMessageFinish)
 
-
-
     @process_ledger_exceptions
     def signMessageSign(self, ctrl):
         self.signature = None
@@ -304,8 +287,6 @@ class LedgerApi(QObject):
                 self.signature = self.chip.signMessageSign()
             except:
                 pass
-
-
 
     def signMessageFinish(self):
         with self.lock:
@@ -340,8 +321,6 @@ class LedgerApi(QObject):
             sig1 = "None"
 
         self.sig1done.emit(sig1)
-
-
 
     @process_ledger_exceptions
     def signTxSign(self, ctrl):
@@ -388,8 +367,6 @@ class LedgerApi(QObject):
             self.tx_raw = bytearray(self.new_transaction.serialize())
             self.sig_progress.emit(100)
 
-
-
     def signTxFinish(self):
         self.mBox2.accept()
 
@@ -399,8 +376,6 @@ class LedgerApi(QObject):
         else:
             printOK("Transaction refused by the user")
             self.sigTxabort.emit()
-
-
 
     def updateSigProgress(self, percent):
         messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"

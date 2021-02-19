@@ -40,15 +40,11 @@ class TabMain():
             self.ui.btn_start[name].clicked.connect(lambda: self.onStartMN())
             self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())
 
-
-
     def displayMNlistUpdated(self):
         for masternode in self.caller.masternode_list:
             printDbg("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('txid')))
             self.displayMNStatus(masternode)
             time.sleep(0.1)
-
-
 
     def displayMNStatus(self, currMN):
         statusData = None
@@ -99,8 +95,6 @@ class TabMain():
             self.ui.btn_details[masternode_alias].setEnabled(True)
         QApplication.processEvents()
 
-
-
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
@@ -117,8 +111,6 @@ class TabMain():
             err_msg = "error in checkAllMN"
             printException(getCallerName(), getFunctionName(), err_msg, e)
 
-
-
     def onDisplayStatusDetails(self, masternode_alias, statusData):
         try:
             ui = MnStatus_dlg(self.ui, masternode_alias, statusData)
@@ -127,8 +119,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error in displayStatusDetails"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def onEditMN(self, data=None):
         if not data:
@@ -143,14 +133,10 @@ class TabMain():
                     self.caller.tabMNConf.fillConfigForm(masternode)
                     break
 
-
-
     def onNewMasternode(self):
         self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
         self.caller.tabMNConf.clearConfigForm()
         self.caller.tabs.setCurrentIndex(1)
-
-
 
     def onRemoveMN(self, data=None):
         if not data:
@@ -169,8 +155,6 @@ class TabMain():
                     removeMNfromList(self.caller, masternode)
                     break
 
-
-
     def onRewardsMN(self, data=None):
         if not data:
             target = self.ui.sender()
@@ -178,8 +162,6 @@ class TabMain():
             tab_index = self.caller.tabs.indexOf(self.caller.tabRewards)
             self.caller.tabs.setCurrentIndex(tab_index)
             self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)
-
-
 
     def onStartAllMN(self):
         printOK("Start-All pressed")
@@ -206,8 +188,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     def onStartMN(self, data=None):
         # Check RPC & HW device
@@ -237,8 +217,6 @@ class TabMain():
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
 
-
-
     def onSweepAllRewards(self):
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - rpc check', "Connect to wallet / RPC server first")
@@ -249,8 +227,6 @@ class TabMain():
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     # Activated by signal 'sigdone' from masternode
     def sendBroadcast(self, text):
@@ -288,14 +264,10 @@ class TabMain():
 
         self.sendBroadcastCheck()
 
-
-
     def sendBroadcastCheck(self):
         # If list is not empty, start other masternodes
         if self.mnToStartList:
             self.startMN()
-
-
 
     def startMN(self):
         if self.caller.hwStatus != 2:
@@ -307,8 +279,6 @@ class TabMain():
             printDbg("Starting...%s" % self.masternodeToStart.name)
             self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
             # wait for signal when masternode.work is ready then ---> sendBroadcast
-
-
 
     def updateAllMasternodes_thread(self, ctrl):
         self.all_masternodes = self.caller.rpcClient.getMasternodes()

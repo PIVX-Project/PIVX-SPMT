@@ -8,6 +8,7 @@ from misc import getCallerName, getFunctionName, printException
 import utils
 from pivx_hashlib import pubkeyhash_to_address
 
+
 class HexParser():
     def __init__(self, hex_str):
         self.cursor = 0

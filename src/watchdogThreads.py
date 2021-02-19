@@ -17,6 +17,7 @@ from misc import printOK
 class CtrlObject(object):
     pass
 
+
 class RpcWatchdog(QObject):
     def __init__(self, control_tab, timer_off=10, timer_on=120, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -27,8 +28,6 @@ class RpcWatchdog(QObject):
         self.timer_on = timer_on        #delay when connected
         self.ctrl_obj = CtrlObject()
         self.ctrl_obj.finish = False
-
-
 
     def run(self):
         while not self.shutdown_flag.is_set():
@@ -43,4 +42,3 @@ class RpcWatchdog(QObject):
                 sleep(self.timer_on)
 
         printOK("Exiting Rpc Watchdog Thread")
-

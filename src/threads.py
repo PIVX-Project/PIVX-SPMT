@@ -13,6 +13,7 @@ import traceback
 from functools import partial
 from workerThread import WorkerThread
 
+
 class ThreadFuns:
     @staticmethod
     def runInThread(worker_fun, worker_fun_args, on_thread_finish=None, on_thread_exception=None,

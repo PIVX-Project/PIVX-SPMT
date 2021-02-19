@@ -46,7 +46,6 @@ def  process_trezor_exceptions(func):
     return process_trezor_exceptions_int
 
 
-
 class TrezorApi(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
@@ -60,7 +59,6 @@ class TrezorApi(QObject):
     sig_progress = pyqtSignal(int)
     # signal: sig_disconnected -emitted with DisconnectedException
     sig_disconnected = pyqtSignal(str)
-
 
     def __init__(self, model, main_wnd, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
@@ -80,8 +78,6 @@ class TrezorApi(QObject):
         printDbg("Creating HW device class")
         self.sig_progress.connect(self.updateSigProgress)
 
-
-
     @process_trezor_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path, inputs):
         if utxo['staker'] != "":
@@ -99,14 +95,11 @@ class TrezorApi(QObject):
         )
         inputs.append(it)
 
-
-
     def checkModel(self, model):
         if HW_devices[self.model][0] == "TREZOR One":
             return model == "1"
         else:
             return model == "T"
-
 
     def closeDevice(self, message=''):
         printDbg("Closing TREZOR client")
@@ -119,8 +112,6 @@ class TrezorApi(QObject):
                 except:
                     pass
                 self.client = None
-
-
 
     @process_trezor_exceptions
     def initDevice(self):
@@ -158,8 +149,6 @@ class TrezorApi(QObject):
             _ = btc.get_address(self.client, 'PIVX', bip32_path, False)
             self.status = 2
 
-
-
     def load_prev_txes(self, rewardsArray):
         curr_utxo_checked = 0
         txes = {}
@@ -179,7 +168,6 @@ class TrezorApi(QObject):
         self.tx_progress.emit(100)
         return txes
 
-
     def json_to_tx(self, jtx):
         t = trezor_proto.TransactionType()
         t.version = jtx["version"]
@@ -187,7 +175,6 @@ class TrezorApi(QObject):
         t.inputs = [self.json_to_input(input) for input in jtx["vin"]]
         t.bin_outputs = [self.json_to_bin_output(output) for output in jtx["vout"]]
         return t
-
 
     def json_to_input(self, input):
         i = trezor_proto.TxInputType()
@@ -202,13 +189,11 @@ class TrezorApi(QObject):
         i.sequence = input["sequence"]
         return i
 
-
     def json_to_bin_output(self, output):
         o = trezor_proto.TxOutputBinType()
         o.amount = int(output["value"])
         o.script_pubkey = bytes.fromhex(output["scriptPubKey"]["hex"])
         return o
-
 
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, isTestnet=False):
         inputs = []
@@ -261,8 +246,6 @@ class TrezorApi(QObject):
 
         ThreadFuns.runInThread(self.signTxSign, (inputs, outputs, txes, isTestnet), self.signTxFinish)
 
-
-
     @process_trezor_exceptions
     def scanForAddress(self, account, spath, isTestnet=False):
         with self.lock:
@@ -274,8 +257,6 @@ class TrezorApi(QObject):
                 curr_addr = btc.get_address(self.client, 'PIVX Testnet', curr_path, False)
 
         return curr_addr
-
-
 
     @process_trezor_exceptions
     def scanForPubKey(self, account, spath, isTestnet=False):
@@ -291,15 +272,11 @@ class TrezorApi(QObject):
 
         return result.node.public_key.hex()
 
-
-
     def setBoxIcon(self, box, caller):
         if HW_devices[self.model][0] == "TREZOR One":
             box.setIconPixmap(caller.tabMain.trezorOneImg.scaledToHeight(200, Qt.SmoothTransformation))
         else:
             box.setIconPixmap(caller.tabMain.trezorImg.scaledToHeight(200, Qt.SmoothTransformation))
-
-
 
     def signMess(self, caller, hwpath, message, isTestnet=False):
         if isTestnet:
@@ -319,8 +296,6 @@ class TrezorApi(QObject):
         # Sign message
         ThreadFuns.runInThread(self.signMessageSign, (path, message, isTestnet), self.signMessageFinish)
 
-
-
     @process_trezor_exceptions
     def signMessageSign(self, ctrl, path, mess, isTestnet):
         self.signature = None
@@ -333,9 +308,6 @@ class TrezorApi(QObject):
             signed_mess = btc.sign_message(self.client, hw_coin, bip32_path, mess)
             self.signature = signed_mess.signature
 
-
-
-
     def signMessageFinish(self):
         with self.lock:
             self.mBox.accept()
@@ -344,8 +316,6 @@ class TrezorApi(QObject):
             self.sig1done.emit("None")
         else:
             self.sig1done.emit(self.signature.hex())
-
-
 
     @process_trezor_exceptions
     def signTxSign(self, ctrl, inputs, outputs, txes, isTestnet=False):
@@ -360,8 +330,6 @@ class TrezorApi(QObject):
         self.tx_raw = bytearray(signed[1])
         self.sig_progress.emit(100)
 
-
-
     def signTxFinish(self):
         self.mBox2.accept()
         if self.tx_raw is not None:
@@ -372,8 +340,6 @@ class TrezorApi(QObject):
             printOK("Transaction refused by the user")
             self.sigTxabort.emit()
 
-
-
     def updateSigProgress(self, percent):
         # -1 simply adds a waiting message to the actual progress
         if percent == -1:
@@ -383,7 +349,6 @@ class TrezorApi(QObject):
             messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"
         self.mBox2.setText(messageText)
         QApplication.processEvents()
-
 
 
 # From trezorlib.btc
@@ -503,8 +468,6 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
     return signatures, serialized_tx
 
 
-
-
 class TrezorUi(object):
     def __init__(self):
         self.prompt_shown = False
@@ -536,8 +499,6 @@ class TrezorUi(object):
             pass
 
         self.prompt_shown = True
-
-
 
 
 def ask_for_pin_callback(msg, hide_numbers=True):

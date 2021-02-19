@@ -46,7 +46,6 @@ class Masternode(QObject):
         Masternode.mnCount += 1
         printOK("Initializing MNode with collateral: %s" % self.nodePath)
 
-
     def getOldBroadcastMessage(self):
         self.sig_time = int(time.time())
         serializedData = ipport(self.ip, self.port)
@@ -55,7 +54,6 @@ class Masternode(QObject):
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
         serializedData += str(self.protocol_version)
         return serializedData
-
 
     def getNewBroadcastMessage(self):
         self.sig_time = int(time.time())
@@ -69,7 +67,6 @@ class Masternode(QObject):
         ss += (self.protocol_version).to_bytes(4, byteorder='little')
         res = bitcoin.bin_dbl_sha256(ss)[::-1]
         return res.hex()
-
 
     def signature1(self, device):
         try:
@@ -90,8 +87,6 @@ class Masternode(QObject):
             printException(getCallerName(), getFunctionName(), err_msg, '')
         return None
 
-
-
     def getPingMessage(self, fNewSigs, block_hash):
         if fNewSigs:
             ss = bytes.fromhex(self.collateral["txid"])[::-1]
@@ -105,7 +100,6 @@ class Masternode(QObject):
             sequence = 0xffffffff
             return serialize_input_str(self.collateral['txid'], self.collateral['txidn'], sequence, scriptSig) + \
                    block_hash + str(self.sig_time)
-
 
     def signature2(self, block_hash):
         try:
@@ -123,8 +117,6 @@ class Masternode(QObject):
         except Exception as e:
             err_msg = "error in signature2"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def finalizeStartMessage(self, text):
         sig1 = text
@@ -183,8 +175,6 @@ class Masternode(QObject):
         # Emit signal
         printDbg("EMITTING: %s" % work)
         self.sigdone.emit(work)
-
-
 
     def startMessage(self, device, rpcClient):
         # setuo rpc connection

@@ -37,8 +37,6 @@ class SweepAll_dlg(QDialog):
          # Connect Signals
         self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
 
-
-
     # Called each time before exec_ in showDialog
     def load_data(self):
         # clear table
@@ -51,25 +49,17 @@ class SweepAll_dlg(QDialog):
             # Reload UTXOs
             ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
 
-
-
     def showDialog(self):
         self.load_data()
         self.exec_()
-
-
 
     def connectButtons(self):
         self.ui.buttonSend.clicked.connect(lambda: self.onButtonSend())
         self.ui.buttonCancel.clicked.connect(lambda: self.onButtonCancel())
 
-
-
     def setupUI(self):
         self.ui = Ui_SweepAllDlg()
         self.ui.setupUi(self)
-
-
 
     def display_utxos(self):
         required_confs = 16 if self.main_tab.caller.isTestnetRPC else 101
@@ -129,13 +119,9 @@ class SweepAll_dlg(QDialog):
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.updateFee()
 
-
-
     def onButtonCancel(self):
         self.AbortSend()
         self.close()
-
-
 
     def onButtonSend(self):
         t_rewards = self.main_tab.caller.t_rewards
@@ -155,8 +141,6 @@ class SweepAll_dlg(QDialog):
         # SEND
         t_rewards.SendRewards(self.rewardsArray, self)
 
-
-
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.buttonSend.setEnabled(True)
@@ -164,28 +148,20 @@ class SweepAll_dlg(QDialog):
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.hide()
 
-
-
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         self.main_tab.caller.t_rewards.FinishSend_int(serialized_tx, amount_to_send)
         self.close()
 
-
-
     def removeSpentRewards(self):
         for mn in self.rewardsArray:
             for utxo in mn['utxos']:
                 self.main_tab.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
 
-
-
     def updateFee(self):
         self.ui.feeLine.setValue(self.suggestedFee)
         self.ui.feeLine.setEnabled(True)
-
-
 
     def update_loading_utxos(self, percent):
         if percent < 100:
@@ -197,8 +173,6 @@ class SweepAll_dlg(QDialog):
             self.ui.lblMessage.hide()
             self.display_utxos()
 
-
-
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
         if percent < 100:
@@ -207,7 +181,6 @@ class SweepAll_dlg(QDialog):
         else:
             self.ui.loadingLinePercent.hide()
         QApplication.processEvents()
-
 
 
 class Ui_SweepAllDlg(object):

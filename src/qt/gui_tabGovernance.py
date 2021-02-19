@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView
     QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar,\
     QSpinBox, QScrollArea, QDialog
 
+
 class TabGovernance_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)
@@ -23,7 +24,6 @@ class TabGovernance_gui(QWidget):
         self.timeIconLabel.setPixmap(self.time_icon.scaledToHeight(20, Qt.SmoothTransformation))
         self.questionLabel.setPixmap(self.question_icon.scaledToHeight(15, Qt.SmoothTransformation))
         self.loadCacheData()
-
 
     def initLayout(self):
         layout = QVBoxLayout(self)
@@ -134,8 +134,6 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.voteNo_btn)
         layout.addLayout(row)
 
-
-
     def loadCacheData(self):
         if self.caller.parent.cache.get("votingDelayCheck"):
             negative_delay = self.caller.parent.cache.get("votingDelayNeg")
@@ -143,7 +141,6 @@ class TabGovernance_gui(QWidget):
             self.randomDelayCheck.setChecked(True)
             self.randomDelayNeg_edt.setValue(negative_delay)
             self.randomDelayPos_edt.setValue(positive_delay)
-
 
     def setProposalBoxHeader(self):
         item = QTableWidgetItem()
@@ -194,7 +191,6 @@ class TabGovernance_gui(QWidget):
         item.setToolTip("Check Proposal Details")
         self.proposalBox.setHorizontalHeaderItem(7, item)
 
-
     def loadIcons(self):
         self.refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
         self.time_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_clock.png'))
@@ -203,15 +199,12 @@ class TabGovernance_gui(QWidget):
         self.list_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_list.png'))
         self.question_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_question.png'))
 
-
-
     def resetStatusLabel(self, message=None):
         if message is None:
             self.statusLabel.setText('<em><b style="color:purple">Loading proposals...</b></em>')
         else:
             self.statusLabel.setText(message)
         self.statusLabel.setVisible(True)
-
 
 
 class ScrollMessageBox(QDialog):

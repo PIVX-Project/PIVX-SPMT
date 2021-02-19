@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QGridLayo
 
 from misc import myPopUp_sb
 
+
 class PinMatrix_dlg(QDialog):
     def __init__(self, text='', title='Enter PIN', fHideBtns=True):
         QDialog.__init__(self)
@@ -19,25 +20,20 @@ class PinMatrix_dlg(QDialog):
         self.setWindowTitle(title)
         self.setupUI()
 
-
     def btn_clicked(self, num):
         self.pin += num
         self.lbl_pin.setText('*' * len(self.pin))
 
-
     def getPin(self):
         return self.pin
-
 
     def onCancel(self):
         self.pin = ''
         self.reject()
 
-
     def onDel(self):
         self.pin = self.pin[:-1]
         self.lbl_pin.setText('*' * len(self.pin))
-
 
     def onOK(self):
         if self.pin:
@@ -50,7 +46,6 @@ class PinMatrix_dlg(QDialog):
             text = "No PIN entered"
             myPopUp_sb(self, "warn", 'Wrong PIN!', text)
 
-
     def setupUI(self):
         Ui_pinMatrixDlg.setupUi(self, self)
         # Connect buttons matrix
@@ -60,8 +55,6 @@ class PinMatrix_dlg(QDialog):
         self.btn_del.clicked.connect(self.onDel)
         self.btn_ok.clicked.connect(self.onOK)
         self.btn_cancel.clicked.connect(self.onCancel)
-
-
 
 
 class Ui_pinMatrixDlg(object):

@@ -29,8 +29,6 @@ class TabMain_gui(QWidget):
         ###-- Set Layout
         self.setLayout(mainVertical)
 
-
-
     def initGlobalButtons(self):
         ###-- Global Buttons
         globalButtons = QHBoxLayout()
@@ -41,8 +39,6 @@ class TabMain_gui(QWidget):
         self.button_sweepAllRewards = QPushButton("Sweep All Rewards")
         globalButtons.addWidget(self.button_sweepAllRewards)
         self.globalButtons = globalButtons
-
-
 
     def initBody(self):
         ###-- CENTRAL PART
@@ -75,8 +71,6 @@ class TabMain_gui(QWidget):
         vBox.addWidget(self.button_addMasternode)
         vBox.stretch(1)
         self.body.setLayout(vBox)
-
-
 
     def insert_mn_list(self, name, ip, port, row=None, isHardware=True):
         mnRow = QWidget()
@@ -166,8 +160,6 @@ class TabMain_gui(QWidget):
         else:
             self.myList.addItem(self.current_mn[name])
         self.myList.setItemWidget(self.current_mn[name], mnRow)
-
-
 
     def loadIcons(self):
         self.removeMN_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_delete.png'))

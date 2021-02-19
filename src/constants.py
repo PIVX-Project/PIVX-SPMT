@@ -32,10 +32,12 @@ NEW_SIGS_HEIGHT_TESTNET = 1347000
 SECONDS_IN_2_MONTHS = 60 * 24 * 60 * 60
 MAX_INPUTS_NO_WARNING = 75
 
+
 def NewSigsActive(nHeight, fTestnet=False):
     if fTestnet:
         return (nHeight >= NEW_SIGS_HEIGHT_TESTNET)
     return (nHeight >= NEW_SIGS_HEIGHT_MAINNET)
+
 
 DEFAULT_MN_CONF = {
     "name": "",
@@ -66,12 +68,10 @@ DefaultCache = {
     "isTestnetRPC": False
     }
 
-
 trusted_RPC_Servers = [
     ["https", "amsterdam.randomzebra.party:8080", "spmtUser_ams", "WUss6sr8956S5Paex254"],
     ["https", "losangeles.randomzebra.party:8080", "spmtUser_la", "8X88u7TuefPm7mQaJY52"],
     ["https", "singapore.randomzebra.party:8080", "spmtUser_sing", "ZyD936tm9dvqmMP8A777"]]
-
 
 HW_devices = [
     # (model name, api index)

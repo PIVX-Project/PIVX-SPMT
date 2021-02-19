@@ -26,8 +26,6 @@ class TabRewards_gui(QWidget):
         mainVertical.addLayout(buttonbox)
         self.setLayout(mainVertical)
 
-
-
     def initRewardsForm(self):
         self.collateralHidden = True
         self.rewardsForm = QGroupBox()
@@ -143,12 +141,9 @@ class TabRewards_gui(QWidget):
         #--- ROW 5
         self.btn_Cancel = QPushButton("Clear/Reload")
 
-
-
     def resetStatusLabel(self, message=None):
         if message is None:
             self.rewardsList.statusLabel.setText('<em><b style="color:purple">Checking explorer...</b></em>')
         else:
             self.rewardsList.statusLabel.setText(message)
         self.rewardsList.statusLabel.setVisible(True)
-

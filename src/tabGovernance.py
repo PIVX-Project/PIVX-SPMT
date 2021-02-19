@@ -22,6 +22,7 @@ from qt.dlg_budgetProjection import BudgetProjection_dlg
 from threads import ThreadFuns
 from utils import ecdsa_sign, ecdsa_sign_bin
 
+
 class TabGovernance():
     def __init__(self, caller):
         self.caller = caller
@@ -50,15 +51,10 @@ class TabGovernance():
         # Connect Signals
         self.caller.sig_ProposalsLoaded.connect(self.displayProposals)
 
-
-
     def clear(self):
         # Clear voting masternodes and update cache
         self.votingMasternodes = []
         self.caller.parent.cache['votingMasternodes'] = persistCacheSetting('cache_votingMNs', self.votingMasternodes)
-
-
-
 
     def coutMyVotes(self, prop):
         myVotes = self.caller.parent.db.getMyVotes(prop.Hash)
@@ -75,8 +71,6 @@ class TabGovernance():
             myAbstains += 1
 
         return myYeas, myAbstains, myNays
-
-
 
     def displayProposals(self):
         # clear box
@@ -177,8 +171,6 @@ class TabGovernance():
         self.ui.proposalBox.setSortingEnabled(True)
         self.ui.proposalBox.sortByColumn(3, Qt.DescendingOrder)
 
-
-
     def loadProposals_thread(self, ctrl):
         if not self.caller.rpcConnected:
             printException(getCallerName(), getFunctionName(), "RPC server not connected", "")
@@ -208,8 +200,6 @@ class TabGovernance():
         self.proposalsLoaded = True
         self.caller.sig_ProposalsLoaded.emit()
 
-
-
     def getSelection(self):
         proposals = self.caller.parent.db.getProposalsList()
         items = self.ui.proposalBox.selectedItems()
@@ -222,14 +212,9 @@ class TabGovernance():
         hashesList = [self.ui.proposalBox.item(row,1).text() for row in rowsList]
         return [p for p in proposals if p.Hash in hashesList]
 
-
-
-
     def onRefreshProposals(self):
         self.ui.resetStatusLabel()
         ThreadFuns.runInThread(self.loadProposals_thread, (),)
-
-
 
     def onToggleExpiring(self):
         if self.ui.toggleExpiring_btn.text() == "Hide Expiring":
@@ -250,8 +235,6 @@ class TabGovernance():
             self.ui.toggleExpiring_btn.setToolTip("Hide expiring proposals (yellow background) from list")
             self.ui.toggleExpiring_btn.setText("Hide Expiring")
 
-
-
     def onVote(self, vote_code):
         if len(self.selectedProposals) == 0:
             message = "NO PROPOSAL SELECTED. Select proposals from the list."
@@ -267,8 +250,6 @@ class TabGovernance():
         if reply == 1:
             ThreadFuns.runInThread(self.vote_thread, ([vote_code]), self.vote_thread_end)
 
-
-
     def summaryDlg(self, vote_code):
         message = "Voting <b>%s</b> on the following proposal(s):<br><br>" % str(self.vote_codes[vote_code]).upper()
         for prop in self.selectedProposals:
@@ -282,8 +263,6 @@ class TabGovernance():
 
         return dlg.exec_()
 
-
-
     def updateMyVotes(self):
         proposals = self.caller.parent.db.getProposalsList()
         for prop in proposals:
@@ -295,12 +274,8 @@ class TabGovernance():
             for v in myVotes:
                 self.caller.parent.db.addMyVote(v[0], prop.Hash, v[1])
 
-
-
     def updateMyVotes_thread(self, ctrl):
         self.updateMyVotes()
-
-
 
     def updateSelectedMNlabel(self):
         selected_MN = len(self.votingMasternodes)
@@ -310,16 +285,12 @@ class TabGovernance():
             label = "<em><b>%d</b> masternodes selected for voting</em>" % selected_MN
         self.ui.selectedMNlabel.setText(label)
 
-
-
     def updateSelection(self):
         self.selectedProposals = self.getSelection()
         if len(self.selectedProposals) == 1:
             self.ui.selectedPropLabel.setText("<em><b>1</b> proposal selected")
         else:
             self.ui.selectedPropLabel.setText("<em><b>%d</b> proposals selected" % len(self.selectedProposals))
-
-
 
     def getBudgetVoteMess(self, fNewSigs, txid, txidn, hash, vote_code, sig_time):
         if fNewSigs:
@@ -334,8 +305,6 @@ class TabGovernance():
             serialize_for_sig = '%s-%d' % (txid, txidn)
             serialize_for_sig += hash + str(vote_code) + str(sig_time)
             return serialize_for_sig
-
-
 
     def vote_thread(self, ctrl, vote_code):
         # vote_code index for ["yes", "abstain", "no"]
@@ -391,7 +360,6 @@ class TabGovernance():
                     else:
                         vote_sig = ecdsa_sign(serialize_for_sig, mnPrivKey)
 
-
                     # Broadcast the vote
                     v_res = self.caller.rpcClient.mnBudgetRawVote(
                         mn_tx_hash=currNode['collateral'].get('txid'),
@@ -411,8 +379,6 @@ class TabGovernance():
                 except Exception as e:
                     err_msg = "Exception in vote_thread - check MN privKey"
                     printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def vote_thread_end(self):
         message = '<p>Votes sent</p>'

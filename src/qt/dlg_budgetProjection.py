@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QAbstractItemVie
 from misc import printException, sec_to_time
 from threads import ThreadFuns
 
+
 class BudgetProjection_dlg(QDialog):
     def __init__(self, main_wnd):
         QDialog.__init__(self, parent=main_wnd.ui)
@@ -20,23 +21,20 @@ class BudgetProjection_dlg(QDialog):
         self.ui.ok_btn.clicked.connect(lambda: self.accept())
         self.next_superBlock = 0
         ThreadFuns.runInThread(self.loadBudgetProjection_thread, (), self.displayBudgetProjection)
-        
-        
+
     def initUI(self):
         self.ui = Ui_BudgetProjectionDlg()
         self.ui.setupUi(self)
-        
-        
-        
+
     def displayBudgetProjection(self):
         total_num_of_proposals = len(self.projection)
         if total_num_of_proposals == 0 or self.next_superBlock == 0:
             return
-        
+
         # header
         ## blocks to next superBlock (== minutes)
         blocks_to_SB = self.next_superBlock - self.main_wnd.caller.rpcLastBlock
-        
+
         self.ui.nextSuperBlock_label.setText("<b>%s</b>" % str(self.next_superBlock))
         timeToNextSB = "<em style='color: blue'>%s</em>" % sec_to_time(60*blocks_to_SB)
         self.ui.timeToNextSB_label.setText(timeToNextSB)
@@ -45,21 +43,19 @@ class BudgetProjection_dlg(QDialog):
         self.ui.allottedBudget_label.setText(total_label)
         self.ui.remainingBudget_label.setText("%s PIV" % str(round(43200.0-total,8)))
         self.ui.passingProposals_label.setText("<b style='color: purple'>%s</b>" % str(len(self.projection)))
-        
+
         def item(value):
             item = QTableWidgetItem(str(value))
             item.setTextAlignment(Qt.AlignCenter)
             return item
-        
+
         self.ui.proposals_lst.setRowCount(total_num_of_proposals)
         for row, prop in enumerate(self.projection):
             self.ui.proposals_lst.setItem(row, 0, item(self.projection[row].get('Name')))
             self.ui.proposals_lst.setItem(row, 1, item(self.projection[row].get('Allotted')))
             self.ui.proposals_lst.setItem(row, 2, item(self.projection[row].get('Votes')))
             self.ui.proposals_lst.setItem(row, 3, item(self.projection[row].get('Total_Allotted')))
-            
-        
-        
+
     def loadBudgetProjection_thread(self, ctrl):
         self.projection = []
         if not self.main_wnd.caller.rpcConnected:
@@ -69,8 +65,6 @@ class BudgetProjection_dlg(QDialog):
         self.next_superBlock = self.main_wnd.caller.rpcClient.getNextSuperBlock()
         ## get budget projection
         self.projection = self.main_wnd.caller.rpcClient.getProposalsProjection()
-        
-
 
 
 class Ui_BudgetProjectionDlg(object):
