@@ -36,12 +36,12 @@ class BudgetProjection_dlg(QDialog):
         blocks_to_SB = self.next_superBlock - self.main_wnd.caller.rpcLastBlock
 
         self.ui.nextSuperBlock_label.setText("<b>%s</b>" % str(self.next_superBlock))
-        timeToNextSB = "<em style='color: blue'>%s</em>" % sec_to_time(60*blocks_to_SB)
+        timeToNextSB = "<em style='color: blue'>%s</em>" % sec_to_time(60 * blocks_to_SB)
         self.ui.timeToNextSB_label.setText(timeToNextSB)
         total = self.projection[-1].get('Total_Allotted')
         total_label = "<em style='color: purple'>%s PIV</em>" % str(total)
         self.ui.allottedBudget_label.setText(total_label)
-        self.ui.remainingBudget_label.setText("%s PIV" % str(round(43200.0-total,8)))
+        self.ui.remainingBudget_label.setText("%s PIV" % str(round(43200.0 - total, 8)))
         self.ui.passingProposals_label.setText("<b style='color: purple'>%s</b>" % str(len(self.projection)))
 
         def item(value):

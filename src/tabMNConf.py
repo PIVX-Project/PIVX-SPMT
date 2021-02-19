@@ -70,7 +70,7 @@ class TabMNConf():
             self.findPubKey()
 
         else:
-            mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath+spath_count-1, currHwAcc)
+            mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath + spath_count - 1, currHwAcc)
             mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
             mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
             ans = myPopUp(self.caller, "crit", 'SPMT - spath search', mess)
@@ -178,7 +178,7 @@ class TabMNConf():
 
         if self.ui.edt_mnPrivKey.text() != "":
             reply = myPopUp(self.caller, "warn", "GENERATE PRIV KEY",
-                                 "Are you sure?\nThis will overwrite current private key", QMessageBox.No)
+                            "Are you sure?\nThis will overwrite current private key", QMessageBox.No)
 
         if reply == QMessageBox.No:
             return

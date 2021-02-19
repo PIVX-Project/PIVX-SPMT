@@ -28,7 +28,7 @@ class Masternode(QObject):
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
 
-    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral = {}, isTestnet=False, *args, **kwargs):
+    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral={}, isTestnet=False, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
         self.tab_main = tab_main
         self.name = name
@@ -107,7 +107,7 @@ class Masternode(QObject):
             mnping = self.getPingMessage(fNewSigs, block_hash)
             if fNewSigs:
                 printDbg("mnping: %s" % mnping.hex())
-                sig2 = ecdsa_sign_bin(mnping, self.mnWIF) # local
+                sig2 = ecdsa_sign_bin(mnping, self.mnWIF)  # local
             else:
                 printDbg("mnping: %s" % mnping)
                 sig2 = ecdsa_sign(mnping, self.mnWIF)
@@ -143,8 +143,8 @@ class Masternode(QObject):
             vinsig = num_to_varint(len(scriptSig) / 2).hex() + bytes.fromhex(scriptSig)[::-1].hex()
             vinseq = sequence.to_bytes(4, byteorder='big')[::-1].hex()
             ipv6map = ipmap(self.ip, self.port)
-            collateral_in = num_to_varint(len(self.collateral['pubKey'])/2).hex() + self.collateral['pubKey']
-            delegate_in = num_to_varint(len(self.mnPubKey)/2).hex() + self.mnPubKey
+            collateral_in = num_to_varint(len(self.collateral['pubKey']) / 2).hex() + self.collateral['pubKey']
+            delegate_in = num_to_varint(len(self.mnPubKey) / 2).hex() + self.mnPubKey
 
         except Exception as e:
             err_msg = "error in startMessage"

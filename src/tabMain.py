@@ -84,7 +84,7 @@ class TabMain():
                 display_text += '%d/%d' % (position, total_count)
 
                 self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
-                self.ui.mnStatusProgress[masternode_alias].setValue(total_count-position)
+                self.ui.mnStatusProgress[masternode_alias].setValue(total_count - position)
                 self.ui.mnStatusProgress[masternode_alias].show()
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
@@ -97,11 +97,13 @@ class TabMain():
 
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
-            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check',
+                       "RPC server must be connected to perform this action.")
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
             return
         if self.caller.masternode_list is None or self.caller.masternode_list == []:
-            myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes', "No masternode in list. Add masternodes first.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes',
+                       "No masternode in list. Add masternodes first.")
             return
         try:
             printDbg("Check-All pressed")
@@ -144,7 +146,7 @@ class TabMain():
             masternode_alias = target.alias
 
             reply = myPopUp(self.caller, "warn", 'Confirm REMOVE',
-                                 "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
+                            "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
 
             if reply == QMessageBox.No:
                 return
@@ -173,12 +175,13 @@ class TabMain():
 
         try:
             reply = myPopUp(self.caller, "quest", 'Confirm START',
-                                                 "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
+                            "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
             if reply == QMessageBox.Yes:
                 mnList = [x for x in self.caller.masternode_list if x['isHardware']]
                 for mn_conf in mnList:
                     self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
-                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'], mn_conf['isTestnet'])
+                                                        mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'],
+                                                        mn_conf['isTestnet'])
                     # connect signal
                     self.masternodeToStart.sigdone.connect(self.sendBroadcast)
                     self.mnToStartList.append(self.masternodeToStart)
@@ -203,10 +206,12 @@ class TabMain():
                 for mn_conf in self.caller.masternode_list:
                     if mn_conf['name'] == masternode_alias:
                         reply = myPopUp(self.caller, QMessageBox.Question, 'Confirm START',
-                                                 "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'], QMessageBox.Yes)
+                                        "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'],
+                                        QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
                             self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
-                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'], mn_conf['isTestnet'])
+                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'],
+                                                                mn_conf['collateral'], mn_conf['isTestnet'])
                             # connect signal
                             self.masternodeToStart.sigdone.connect(self.sendBroadcast)
                             self.mnToStartList.append(self.masternodeToStart)

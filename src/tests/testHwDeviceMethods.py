@@ -47,13 +47,13 @@ class TestHwDeviceMethods(unittest.TestCase):
         print("=================================")
         print("   Press 'OK' on Ledger device   ")
         print("---------------------------------")
-        txraw, amount = self.signTx(self.device, path, utxos, pivx_address_to, fee, rawtransactions)      
-        
+        txraw, amount = self.signTx(self.device, path, utxos, pivx_address_to, fee, rawtransactions)
+
         # Check total amount
         total = sum([int(utxo['value']) for utxo in utxos], 0)
-        amount = round(float(amount)*1e8)
-        self.assertEqual(total-fee, amount)     
-        
+        amount = round(float(amount) * 1e8)
+        self.assertEqual(total - fee, amount)
+
         # Decode Raw Tx to inspect and check inputs
         inputs = [utxo["tx_hash"] for utxo in utxos]
         decodedTx = self.rpcClient.decodeRawTx(txraw.hex())
@@ -64,7 +64,7 @@ class TestHwDeviceMethods(unittest.TestCase):
             decoded_inputs.remove(input_tx)
 
     def test_scanForBip32(self):
-        # Get accounts obtained from seed outside ledger 
+        # Get accounts obtained from seed outside ledger
         # (5 accounts. 5 addresses per account)
         with open('accounts.data.txt') as datafile:
             # datafile has 4 lines of header (lines_offset)
@@ -76,10 +76,10 @@ class TestHwDeviceMethods(unittest.TestCase):
 
                     result, _ = self.device.scanForBip32(account_n, address, starting_spath=address_n, spath_count=1)
                     # Address found in account_n  with index.
-                    self.assertTrue(result)       
+                    self.assertTrue(result)
 
     def test_scanForPubKey(self):
-        # Get accounts obtained from seed outside ledger 
+        # Get accounts obtained from seed outside ledger
         # (5 accounts. 5 addresses per account)
         with open('accounts.data.txt') as datafile:
             # datafile has 4 lines of header (lines_offset)
@@ -122,7 +122,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     # -- hwdevice.signMessFinish
     # without gui
     def signMess(self, path, message):
-        from utils import b64encode 
+        from utils import b64encode
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
@@ -131,10 +131,10 @@ class TestHwDeviceMethods(unittest.TestCase):
         if signature != None:
             if len(signature) > 4:
                 rLength = signature[3]
-                r = signature[4 : 4 + rLength]
-                if len(signature) > 4 + rLength + 1:               
+                r = signature[4: 4 + rLength]
+                if len(signature) > 4 + rLength + 1:
                     sLength = signature[4 + rLength + 1]
-                    if len(signature) > 4 + rLength + 2: 
+                    if len(signature) > 4 + rLength + 2:
                         s = signature[4 + rLength + 2:]
                         if rLength == 33:
                             r = r[1:]
@@ -164,7 +164,7 @@ class TestHwDeviceMethods(unittest.TestCase):
     # -- hwdevice.signTxSign
     # -- hwdevice.signTxFinish
     # without gui
-    def signTx(self, device, bip32_path,  utxos_to_spend, dest_address, tx_fee, rawtransactions):
+    def signTx(self, device, bip32_path, utxos_to_spend, dest_address, tx_fee, rawtransactions):
         # For each UTXO create a Ledger 'trusted input'
         self.trusted_inputs = []
         #    https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand)
@@ -211,7 +211,7 @@ class TestHwDeviceMethods(unittest.TestCase):
 
         self.amount -= int(tx_fee)
         self.amount = int(self.amount)
-        arg_outputs = [{'address': dest_address, 'valueSat': self.amount}] # there will be multiple outputs soon
+        arg_outputs = [{'address': dest_address, 'valueSat': self.amount}]  # there will be multiple outputs soon
         self.new_transaction = bitcoinTransaction()  # new transaction object to be used for serialization at the last stage
         self.new_transaction.version = bytearray([0x01, 0x00, 0x00, 0x00])
         try:

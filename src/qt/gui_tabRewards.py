@@ -7,7 +7,7 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
     QProgressBar, QLineEdit, QComboBox, QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, \
     QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
 from PyQt5.Qt import QIcon

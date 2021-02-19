@@ -7,7 +7,7 @@
 from time import strftime, gmtime
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit,\
+from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit, \
     QScrollArea, QFrame, QPushButton
 
 

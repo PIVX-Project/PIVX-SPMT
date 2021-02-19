@@ -46,7 +46,7 @@ if __name__ == '__main__':
     from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
 
     from misc import updateSplash
-    from spmtApp import App 
+    from spmtApp import App
 
     # Create App
     app = QApplication(sys.argv)

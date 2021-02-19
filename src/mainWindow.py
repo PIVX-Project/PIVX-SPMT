@@ -125,8 +125,8 @@ class MainWindow(QWidget):
         self.splitter = QSplitter(Qt.Vertical)
         self.splitter.addWidget(self.tabs)
         self.splitter.addWidget(self.console)
-        self.splitter.setStretchFactor(0,0)
-        self.splitter.setStretchFactor(1,1)
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
         self.layout.addWidget(self.splitter)
 
         # -- Set Layout
@@ -188,7 +188,7 @@ class MainWindow(QWidget):
 
     def getRPCserver(self):
         itemData = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())
-        rpc_index  = self.header.rpcClientsBox.currentIndex()
+        rpc_index = self.header.rpcClientsBox.currentIndex()
         rpc_protocol = itemData["protocol"]
         rpc_host = itemData["host"]
         rpc_user = itemData["user"]
@@ -286,7 +286,7 @@ class MainWindow(QWidget):
                 final_message = "%d External Masternodes " % new_nodes
             final_message += "added to the list."
             if new_nodes > 0:
-                final_message +=  "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
+                final_message += "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
             printOK(final_message)
             if len(skip_masternodes) > 0:
                 final_message = "Following entries skipped due to duplicate names:<br>"
@@ -299,7 +299,7 @@ class MainWindow(QWidget):
         self.showHWstatus()
 
     def onCheckRpc(self):
-        self.runInThread(self.updateRPCstatus, (True,),)
+        self.runInThread(self.updateRPCstatus, (True,), )
 
     def onCheckVersion(self):
         printDbg("Checking SPMT version...")
@@ -312,8 +312,9 @@ class MainWindow(QWidget):
         remote_version = self.gitVersion.split('.')
 
         if (remote_version[0] > local_version[0]) or \
-        (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
-        (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] > local_version[2]):
+                (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
+                (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] >
+                 local_version[2]):
             self.versionMess = '<b style="color:red">New Version Available:</b> %s  ' % (self.gitVersion)
             self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
         else:
@@ -329,13 +330,13 @@ class MainWindow(QWidget):
         self.clearHWstatus()
 
         # Persist setting
-        self.parent.cache['selectedHW_index'] = persistCacheSetting('cache_HWindex',i)
+        self.parent.cache['selectedHW_index'] = persistCacheSetting('cache_HWindex', i)
 
     def onChangeSelectedRPC(self, i):
         # Don't update when we are clearing the box
         if not self.updatingRPCbox:
             # persist setting
-            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', i)
             self.runInThread(self.updateRPCstatus, (True,), )
 
     def onCleanConsole(self):
@@ -345,7 +346,7 @@ class MainWindow(QWidget):
         timestamp = strftime('%Y-%m-%d_%H-%M-%S', gmtime(now()))
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Save Logs to file","SPMT_Logs_%s.txt" % timestamp,"All Files (*);; Text Files (*.txt)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Logs to file", "SPMT_Logs_%s.txt" % timestamp, "All Files (*);; Text Files (*.txt)", options=options)
         try:
             if fileName:
                 printOK("Saving logs to %s" % fileName)
@@ -522,8 +523,8 @@ class MainWindow(QWidget):
             return
 
         rpcResponseTime = None
-        if r_time1 is not None and r_time2 !=0:
-            rpcResponseTime = round((r_time1+r_time2)/2, 3)
+        if r_time1 is not None and r_time2 != 0:
+            rpcResponseTime = round((r_time1 + r_time2) / 2, 3)
 
         # Do not update status if the user has selected a different server since the start of updateRPCStatus()
         if rpc_index != self.header.rpcClientsBox.currentIndex():

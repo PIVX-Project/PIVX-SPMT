@@ -8,8 +8,8 @@ import os
 
 from PyQt5.Qt import QPixmap, QIcon
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
-    QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar,\
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView, \
+    QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar, \
     QSpinBox, QScrollArea, QDialog
 
 

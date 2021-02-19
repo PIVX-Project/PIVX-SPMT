@@ -5,7 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from PyQt5.Qt import QLabel, QFormLayout, QSpinBox
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox,\
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QCheckBox, \
     QFrame, QLineEdit
 
 
@@ -16,12 +16,12 @@ class TabMNConf_gui(QWidget):
         # -- Compose tab2 layout
         mainVertical2 = QVBoxLayout()
         mainVertical2.setSpacing(10)
-        mainVertical2.addWidget(self.configForm)      
+        mainVertical2.addWidget(self.configForm)
         vBox = QVBoxLayout()
         vBox.addStretch(1)
         mainVertical2.addLayout(vBox)
         mainVertical2.addLayout(self.footer)
-        self.setLayout(mainVertical2)       
+        self.setLayout(mainVertical2)
 
     def clearConfigForm(self):
         self.testnetCheck.setChecked(False)
@@ -52,7 +52,7 @@ class TabMNConf_gui(QWidget):
         self.edt_pubKey.setText(masternode['collateral'].get('pubKey'))
         self.edt_txid.setText(masternode['collateral'].get('txid'))
         self.edt_txidn.setValue(masternode['collateral'].get('txidn'))
-        self.configForm.setTitle("Edit Masternode") 
+        self.configForm.setTitle("Edit Masternode")
 
     def initConfigForm(self, masternode_alias=None):
         self.configForm = QGroupBox()
@@ -103,7 +103,7 @@ class TabMNConf_gui(QWidget):
         self.edt_hwAccount = QSpinBox()
         self.edt_hwAccount.setFixedWidth(50)
         self.edt_hwAccount.setToolTip("account number of the hardware wallet.\nIf unsure put 0")
-        self.edt_hwAccount.setValue(0)      
+        self.edt_hwAccount.setValue(0)
         hBox3.addWidget(self.edt_hwAccount)
         hBox3.addWidget(QLabel("PIVX Address"))
         self.edt_address = QLineEdit()
@@ -136,7 +136,7 @@ class TabMNConf_gui(QWidget):
         self.btn_editTxid = QPushButton("Edit")
         self.btn_editTxid.setToolTip("edit txid and txidn manually")
         hBox5.addWidget(self.btn_editTxid)
-        hBox5.addWidget(QLabel("txid"))        
+        hBox5.addWidget(QLabel("txid"))
         self.edt_txid = QLineEdit()
         self.edt_txid.setToolTip("txid for the collateral")
         self.edt_txid.setEnabled(False)

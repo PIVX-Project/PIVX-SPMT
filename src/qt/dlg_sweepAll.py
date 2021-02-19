@@ -74,7 +74,7 @@ class SweepAll_dlg(QDialog):
                           if r['mn_name'] == x['name']                                       # this mn's UTXOs
                           and r['txid'] != mn['collateral'].get('txid')                      # except the collateral
                           and not (r['coinstake'] and r['confirmations'] < required_confs)]  # and immature rewards
-            x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']])/1e8, 8)
+            x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']]) / 1e8, 8)
             self.rewardsArray.append(x)
 
         # update fee per Kb
@@ -111,11 +111,11 @@ class SweepAll_dlg(QDialog):
             self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
             total = sum([float(mnode['total_rewards']) for mnode in self.rewardsArray])
-            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total,8)))
+            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total, 8)))
             self.ui.noOfUtxosLine.setText("<b>%s</b>" % str(numOfInputs))
 
             # update fee
-            estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
+            estimatedTxSize = (44 + numOfInputs * 148) * 1.0 / 1000  # kB
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.updateFee()
 

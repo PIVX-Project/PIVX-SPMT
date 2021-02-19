@@ -29,7 +29,7 @@ class TestPivx_b58Methods(unittest.TestCase):
         decoded_text = b58decode(text)
         print("\nDecoded Text: %s\n" % decoded_text)
         # verify
-        self.assertEqual(b58encode(decoded_text), text)  
+        self.assertEqual(b58encode(decoded_text), text)
 
     def randomBytesString(self, length):
         randomString = bytes()

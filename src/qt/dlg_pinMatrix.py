@@ -50,7 +50,7 @@ class PinMatrix_dlg(QDialog):
         Ui_pinMatrixDlg.setupUi(self, self)
         # Connect buttons matrix
         for i in range(9):
-            self.btn[i].clicked.connect(lambda _, b=i+1: self.btn_clicked(str(b)))
+            self.btn[i].clicked.connect(lambda _, b=i + 1: self.btn_clicked(str(b)))
         # Connect del/ok/cancel
         self.btn_del.clicked.connect(self.onDel)
         self.btn_ok.clicked.connect(self.onOK)
@@ -85,7 +85,7 @@ class Ui_pinMatrixDlg(object):
                     """
         self.btn = []
         for i in range(9):
-            btn_lab = '\u2022' if PinMatrixDlg.hideBtns else str(i+1)
+            btn_lab = '\u2022' if PinMatrixDlg.hideBtns else str(i + 1)
             btn = QPushButton(btn_lab)
             self.btn.append(btn)
 

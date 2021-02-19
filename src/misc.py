@@ -22,7 +22,7 @@ QT_MESSAGE_TYPE = {
     "warn": QMessageBox.Warning,
     "crit": QMessageBox.Critical,
     "quest": QMessageBox.Question
-    }
+}
 
 
 def add_defaultKeys_to_dict(dictObj, defaultObj):
@@ -73,10 +73,10 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         if o.netloc is None or o.netloc == '':
             raise Exception("Malformed host network location part.")
         if o.port is None or o.port == '':
-            raise  Exception("Wrong IP port number")
+            raise Exception("Wrong IP port number")
         if o.username is None:
             raise Exception("Malformed username")
-        if  o.password is None:
+        if o.password is None:
             raise Exception("Malformed password")
         return True
 
@@ -163,7 +163,7 @@ def clean_v4_migration(wnd):
 def clean_for_html(text):
     if text is None:
         return ""
-    return text.replace("<", "{").replace(">","}")
+    return text.replace("<", "{").replace(">", "}")
 
 
 def clear_screen():
@@ -474,17 +474,17 @@ def saveCacheSettings(cache):
 
 
 def sec_to_time(seconds):
-    days = seconds//86400
-    seconds -= days*86400
-    hrs = seconds//3600
-    seconds -= hrs*3600
-    mins = seconds//60
-    seconds -= mins*60
+    days = seconds // 86400
+    seconds -= days * 86400
+    hrs = seconds // 3600
+    seconds -= hrs * 3600
+    mins = seconds // 60
+    seconds -= mins * 60
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
 
 
 def splitString(text, n):
-    arr = [text[i:i+n] for i in range(0, len(text), n)]
+    arr = [text[i:i + n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
 
 
@@ -493,28 +493,28 @@ def timeThis(function, *args):
         start = time.clock()
         val = function(*args)
         end = time.clock()
-        return val, (end-start)
+        return val, (end - start)
     except Exception:
         return None, None
 
 
 def updateSplash(label, i):
-    if i==10:
+    if i == 10:
         progressText = "Loading configuration data..."
         label.setText(progressText)
-    elif i==40:
+    elif i == 40:
         progressText = "Opening database..."
         label.setText(progressText)
-    elif i==50:
+    elif i == 50:
         progressText = "Creating user interface..."
         label.setText(progressText)
-    elif i==70:
+    elif i == 70:
         progressText = "Releasing the watchdogs..."
         label.setText(progressText)
-    elif i==90:
+    elif i == 90:
         progressText = "SPMT ready"
         label.setText(progressText)
-    elif i==99:
+    elif i == 99:
         time.sleep(0.1)
 
 

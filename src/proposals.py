@@ -8,7 +8,7 @@ vote_index = {
     "YES": 1,
     "ABSTAIN": 0,
     "NO": -1
-    }
+}
 
 vote_type = {
     "1": "YES",
@@ -21,7 +21,7 @@ class Proposal():
     def __init__(self, name, URL, Hash, FeeHash, BlockStart, BlockEnd, TotalPayCount, RemainingPayCount,
                  PayMentAddress, Yeas, Nays, Abstains, TotalPayment, MonthlyPayment):
         self.name = name
-        self.URL = URL if URL.startswith('http') or URL.startswith('https') else 'http://'+URL
+        self.URL = URL if URL.startswith('http') or URL.startswith('https') else 'http://' + URL
         self.Hash = Hash
         self.FeeHash = FeeHash
         self.BlockStart = int(BlockStart)

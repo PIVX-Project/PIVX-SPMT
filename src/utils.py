@@ -60,7 +60,7 @@ def compose_tx_locking_script(dest_address, isTestnet):
     :param dest_address: destination address in Base58Check format
     :return: sequence of opcodes and its arguments, defining logic of the locking script
     """
-    pubkey_hash = bytearray.fromhex(b58check_to_hex(dest_address)) # convert address to a public key hash
+    pubkey_hash = bytearray.fromhex(b58check_to_hex(dest_address))  # convert address to a public key hash
     if len(pubkey_hash) != 20:
         raise Exception('Invalid length of the public key hash: ' + str(len(pubkey_hash)))
 
@@ -74,7 +74,7 @@ def compose_tx_locking_script(dest_address, isTestnet):
               OP_EQUALVERIFY + \
               OP_CHECKSIG
     elif (((not isTestnet) and (dest_address[0] in P2SH_PREFIXES))
-            or (isTestnet and (dest_address[0] in P2SH_PREFIXES_TNET))):
+          or (isTestnet and (dest_address[0] in P2SH_PREFIXES_TNET))):
         # sequence of opcodes/arguments for p2sh (pay-to-script-hash)
         scr = OP_HASH160 + \
               int.to_bytes(len(pubkey_hash), 1, byteorder='little') + \
@@ -177,9 +177,9 @@ def ipmap(ip, port):
         ipv6map = ''
 
         if len(ip) > 6 and ip.endswith('.onion'):
-            pchOnionCat = bytearray([0xFD,0x87,0xD8,0x7E,0xEB,0x43])
+            pchOnionCat = bytearray([0xFD, 0x87, 0xD8, 0x7E, 0xEB, 0x43])
             vchAddr = base64.b32decode(ip[0:-6], True)
-            if len(vchAddr) != 16-len(pchOnionCat):
+            if len(vchAddr) != 16 - len(pchOnionCat):
                 raise Exception('Invalid onion %s' % str(ip))
             return pchOnionCat.hex() + vchAddr.hex() + int(port).to_bytes(2, byteorder='big').hex()
 
@@ -205,8 +205,8 @@ def ipmap(ip, port):
         return ipv6map
 
     except Exception as e:
-            err_msg = "error in ipmap"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        err_msg = "error in ipmap"
+        printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
 
 def num_to_varint(a):

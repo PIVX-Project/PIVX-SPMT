@@ -41,8 +41,8 @@ class TabGovernance():
         self.vote_codes = ["abstains", "yes", "no"]
         self.ui.refreshProposals_btn.clicked.connect(lambda: self.onRefreshProposals())
         self.ui.toggleExpiring_btn.clicked.connect(lambda: self.onToggleExpiring())
-        self.ui.selectMN_btn.clicked.connect(lambda:  SelectMNs_dlg(self).exec_())
-        self.ui.budgetProjection_btn.clicked.connect(lambda:  BudgetProjection_dlg(self).exec_())
+        self.ui.selectMN_btn.clicked.connect(lambda: SelectMNs_dlg(self).exec_())
+        self.ui.budgetProjection_btn.clicked.connect(lambda: BudgetProjection_dlg(self).exec_())
         self.ui.proposalBox.itemClicked.connect(lambda: self.updateSelection())
         self.ui.voteYes_btn.clicked.connect(lambda: self.onVote(1))
         self.ui.voteAbstain_btn.clicked.connect(lambda: self.onVote(0))
@@ -209,18 +209,18 @@ class TabGovernance():
             row = items[i].row()
             rows.add(row)
         rowsList = list(rows)
-        hashesList = [self.ui.proposalBox.item(row,1).text() for row in rowsList]
+        hashesList = [self.ui.proposalBox.item(row, 1).text() for row in rowsList]
         return [p for p in proposals if p.Hash in hashesList]
 
     def onRefreshProposals(self):
         self.ui.resetStatusLabel()
-        ThreadFuns.runInThread(self.loadProposals_thread, (),)
+        ThreadFuns.runInThread(self.loadProposals_thread, (), )
 
     def onToggleExpiring(self):
         if self.ui.toggleExpiring_btn.text() == "Hide Expiring":
             # Hide expiring proposals
             for row in range(0, self.ui.proposalBox.rowCount()):
-                if self.ui.proposalBox.item(row,5).background() == Qt.yellow:
+                if self.ui.proposalBox.item(row, 5).background() == Qt.yellow:
                     self.ui.proposalBox.hideRow(row)
             # Update button
             self.ui.toggleExpiring_btn.setToolTip("Show expiring proposals (yellow background) in list")
@@ -229,7 +229,7 @@ class TabGovernance():
         else:
             # Show expiring proposals
             for row in range(0, self.ui.proposalBox.rowCount()):
-                if self.ui.proposalBox.item(row,5).background() == Qt.yellow:
+                if self.ui.proposalBox.item(row, 5).background() == Qt.yellow:
                     self.ui.proposalBox.showRow(row)
             # Update button
             self.ui.toggleExpiring_btn.setToolTip("Hide expiring proposals (yellow background) from list")
@@ -327,7 +327,7 @@ class TabGovernance():
 
                 try:
                     # Get mnPrivKey
-                    currNode = next(x for x in self.caller.masternode_list if x['name']==mn[1])
+                    currNode = next(x for x in self.caller.masternode_list if x['name'] == mn[1])
                     if currNode is None:
                         printDbg("currNode not found for current voting masternode %s" % mn[1])
                         self.clear()
@@ -340,7 +340,7 @@ class TabGovernance():
                         minuns_max = int(self.ui.randomDelayNeg_edt.value())
                         plus_max = int(self.ui.randomDelayPos_edt.value())
                         delay_secs = random.randint(-minuns_max, plus_max)
-                        sig_time +=  delay_secs
+                        sig_time += delay_secs
 
                     # Print Debug line to console
                     mess = "Processing '%s' vote on behalf of masternode [%s]" % (self.vote_codes[vote_code], mn[1])

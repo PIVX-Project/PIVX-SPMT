@@ -5,7 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
+from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView, \
     QTableWidgetItem, QLabel, QHBoxLayout, QPushButton
 
 from misc import persistCacheSetting

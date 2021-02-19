@@ -23,7 +23,7 @@ class TestMasternodeMethods(unittest.TestCase):
         if not rpcStatus:
             self.skipTest("RPC not connected")
 
-        # read masternode data from file    
+        # read masternode data from file
         with open('test_masternode.data.json') as data_file:
             input_data_list = json.load(data_file)
 
@@ -55,8 +55,8 @@ class TestMasternodeMethods(unittest.TestCase):
             mnode.finalizeStartMessage(mnode.sig1)
             sleep(3)
 
-    # Activated by signal from masternode       
-    @pyqtSlot(str)    
+    # Activated by signal from masternode
+    @pyqtSlot(str)
     def finalizeStartMessage_end(self, text):
         # decode message
         ret = self.caller.rpcClient.decodemasternodebroadcast(text)
@@ -82,4 +82,4 @@ class TestMasternodeMethods(unittest.TestCase):
                 self.assertEqual(ret['vchSig'], node_sig)
 
     if __name__ == '__main__':
-        unittest.main(verbosity=2)    
+        unittest.main(verbosity=2)

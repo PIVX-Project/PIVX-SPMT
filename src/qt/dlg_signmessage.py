@@ -271,8 +271,8 @@ class TabSign:
         self.ui.hiddenLine.setVisible(not enabled)
         tooltip = ""
         if not enabled:
-            tooltip = "You need to find the address PK in your hardware device first.\n"\
-                      "Insert the account number (usually 0) and either a PIVX address\n"\
+            tooltip = "You need to find the address PK in your hardware device first.\n" \
+                      "Insert the account number (usually 0) and either a PIVX address\n" \
                       "or the spath_id (address number) and click 'Search HW'."
             self.ui.addressLabel.setText("")
         self.ui.signBtn.setToolTip(tooltip)

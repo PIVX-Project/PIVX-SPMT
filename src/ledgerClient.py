@@ -269,7 +269,7 @@ class LedgerApi(QObject):
             printOK('Signing Message')
             self.mBox = QMessageBox(caller)
             messageText = "Check display of your hardware device\n\n- message hash:\n\n%s\n\n-path:\t%s\n" % (
-            message_sha, path)
+                message_sha, path)
             self.mBox.setText(messageText)
             self.mBox.setIconPixmap(caller.tabMain.ledgerImg.scaledToHeight(200, Qt.SmoothTransformation))
             self.mBox.setWindowTitle("CHECK YOUR LEDGER")

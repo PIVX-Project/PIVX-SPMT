@@ -44,7 +44,7 @@ class FindCollTx_dlg(QDialog):
 
         self.tableW.setRowCount(len(self.utxos))
         for row, utxo in enumerate(self.utxos):
-            pivxAmount = round(int(utxo.get('satoshis', 0))/1e8, 8)
+            pivxAmount = round(int(utxo.get('satoshis', 0)) / 1e8, 8)
             self.tableW.setItem(row, 0, item(str(pivxAmount)))
             self.tableW.setItem(row, 1, item(str(utxo['confirmations'])))
             self.tableW.setItem(row, 2, item(utxo.get('txid', None)))
@@ -67,7 +67,8 @@ class FindCollTx_dlg(QDialog):
                 try:
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
                     utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)
-                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('satoshis', 0))/1e8, 8) == 10000.00000000]
+                    self.utxos = [utxo for utxo in utxos if
+                                  round(int(utxo.get('satoshis', 0)) / 1e8, 8) == 10000.00000000]
 
                 except Exception as e:
                     errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)

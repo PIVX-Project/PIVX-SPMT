@@ -186,7 +186,7 @@ class Database():
     General methods
     '''
 
-    def clearTable(self,  table_name):
+    def clearTable(self, table_name):
         printDbg("DB: Clearing table %s..." % table_name)
         cleared_RPC = False
         try:
@@ -558,7 +558,7 @@ class Database():
         logging.debug("DB: Deleting rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash, ))
+            cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash,))
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'
@@ -572,7 +572,7 @@ class Database():
             cursor = self.getCursor()
 
             cursor.execute("SELECT * FROM RAWTXES"
-                           " WHERE tx_hash = ?", (tx_hash, ))
+                           " WHERE tx_hash = ?", (tx_hash,))
             rows = cursor.fetchall()
 
         except Exception as e:
@@ -593,7 +593,7 @@ class Database():
         printDbg("Pruning table RAWTXES")
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM RAWTXES WHERE lastfetch < ?", (minTime, ))
+            cursor.execute("DELETE FROM RAWTXES WHERE lastfetch < ?", (minTime,))
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'

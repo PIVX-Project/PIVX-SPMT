@@ -21,11 +21,11 @@ class CtrlObject(object):
 class RpcWatchdog(QObject):
     def __init__(self, control_tab, timer_off=10, timer_on=120, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
-        self.firstLoop  = True
+        self.firstLoop = True
         self.shutdown_flag = Event()
         self.control_tab = control_tab
-        self.timer_off = timer_off      #delay when not connected
-        self.timer_on = timer_on        #delay when connected
+        self.timer_off = timer_off  # delay when not connected
+        self.timer_on = timer_on  # delay when connected
         self.ctrl_obj = CtrlObject()
         self.ctrl_obj.finish = False
 

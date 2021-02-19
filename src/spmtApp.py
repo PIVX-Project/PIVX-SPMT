@@ -102,7 +102,7 @@ class App(QMainWindow):
 
         # Sort masternode list (by alias if no previous order set)
         if self.cache.get('mnList_order') != {} and (
-            len(self.cache.get('mnList_order')) == len(masternode_list)):
+                len(self.cache.get('mnList_order')) == len(masternode_list)):
             try:
                 masternode_list.sort(key=self.extract_order)
             except Exception as e:

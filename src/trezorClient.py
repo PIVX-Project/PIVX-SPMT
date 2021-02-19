@@ -26,7 +26,7 @@ from txCache import TxCache
 from qt.dlg_pinMatrix import PinMatrix_dlg
 
 
-def  process_trezor_exceptions(func):
+def process_trezor_exceptions(func):
     def process_trezor_exceptions_int(*args, **kwargs):
         hwDevice = args[0]
         try:
@@ -453,7 +453,7 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
         elif res.request_type == R.TXEXTRADATA:
             o, l = res.details.extra_data_offset, res.details.extra_data_len
             msg = trezor_proto.TransactionType()
-            msg.extra_data = current_tx.extra_data[o : o + l]
+            msg.extra_data = current_tx.extra_data[o: o + l]
             res = client.call(trezor_proto.TxAck(tx=msg))
 
     if isinstance(res, trezor_proto.Failure):

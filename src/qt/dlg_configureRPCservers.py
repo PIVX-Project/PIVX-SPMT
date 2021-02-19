@@ -4,8 +4,8 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel,\
-    QListWidget, QFrame, QFormLayout, QComboBox, QLineEdit, QListWidgetItem,\
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, \
+    QListWidget, QFrame, QFormLayout, QComboBox, QLineEdit, QListWidgetItem, \
     QWidget, QPushButton, QMessageBox
 
 from misc import myPopUp, checkRPCstring
@@ -85,7 +85,7 @@ class ConfigureRPCservers_dlg(QDialog):
         server = self.main_wnd.mainWindow.rpcServersList[index]
         self.ui.user_edt.setText(server['user'])
         self.ui.passwd_edt.setText(server['password'])
-        if server['protocol']  == 'https':
+        if server['protocol'] == 'https':
             self.ui.protocol_select.setCurrentIndex(1)
         else:
             self.ui.protocol_select.setCurrentIndex(0)
@@ -138,7 +138,7 @@ class ConfigureRPCservers_dlg(QDialog):
         passwd = self.ui.passwd_edt.text()
         # Check malformed URL
         url_string = "%s://%s:%s@%s" % (protocol, user, passwd, host)
-        if checkRPCstring(url_string):            
+        if checkRPCstring(url_string):
             if self.changing_index is None:
                 # Save new entry in DB.
                 self.main_wnd.db.addRPCServer(protocol, host, user, passwd)
@@ -150,8 +150,8 @@ class ConfigureRPCservers_dlg(QDialog):
                 clients = self.main_wnd.mainWindow.header.rpcClientsBox
                 data = clients.itemData(clients.currentIndex())
                 if data.get('id') == id and data.get('isCustom'):
-                    ThreadFuns.runInThread(self.main_wnd.mainWindow.updateRPCstatus, (True,),)
-     
+                    ThreadFuns.runInThread(self.main_wnd.mainWindow.updateRPCstatus, (True,), )
+
             # call onCancel
             self.onCancel()
 
@@ -159,19 +159,19 @@ class ConfigureRPCservers_dlg(QDialog):
 class Ui_ConfigureRPCserversDlg(object):
     def setupUi(self, ConfigureRPCserversDlg):
         ConfigureRPCserversDlg.setModal(True)
-        ## -- Layout
-        self.layout  = QVBoxLayout(ConfigureRPCserversDlg)
+        # -- Layout
+        self.layout = QVBoxLayout(ConfigureRPCserversDlg)
         self.layout.setSpacing(10)
         # -- Servers List
         self.serversBox = QListWidget()
         self.layout.addWidget(self.serversBox)
-        ## -- 'Add Server' button
-        self.addServer_btn  = QPushButton("Add RPC Server")
+        # -- 'Add Server' button
+        self.addServer_btn = QPushButton("Add RPC Server")
         self.layout.addWidget(self.addServer_btn)
         # -- 'Close' button
         hBox = QHBoxLayout()
         hBox.addStretch(1)
-        self.close_btn  = QPushButton("Close")
+        self.close_btn = QPushButton("Close")
         hBox.addWidget(self.close_btn)
         self.layout.addLayout(hBox)
         # -- Edit section

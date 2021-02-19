@@ -67,7 +67,7 @@ def wif_to_privkey(string):
     check = double_sha256(vs)[0:4]
 
     if (wifversion == WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex()) \
-    or (wifversion == TESTNET_WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex()):
+            or (wifversion == TESTNET_WIF_PREFIX.to_bytes(1, byteorder='big').hex() and checksum == check.hex()):
 
         if wif_compressed:
             privkey = pvkeyencoded[2:-10]
