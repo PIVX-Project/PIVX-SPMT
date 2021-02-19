@@ -28,8 +28,10 @@ class Masternode(QObject):
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
 
-    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral={}, isTestnet=False, *args, **kwargs):
+    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral=None, isTestnet=False, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        if collateral is None:
+            collateral = {}
         self.tab_main = tab_main
         self.name = name
         self.ip = ip
