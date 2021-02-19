@@ -27,7 +27,7 @@ class Database():
         self.conn = None
         printDbg("DB: Initialized")
 
-    def open(self):
+    def openDB(self):
         printDbg("DB: Opening...")
         if self.isOpen:
             raise Exception("Database already open")

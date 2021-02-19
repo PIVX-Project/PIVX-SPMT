@@ -58,7 +58,7 @@ class App(QMainWindow):
 
         # Open database
         self.db = Database(self)
-        self.db.open()
+        self.db.openDB()
 
         # Clean v4 migration (read data from old files and delete them)
         clean_v4_migration(self)
@@ -180,7 +180,7 @@ class App(QMainWindow):
 
         # Clear Rewards and Governance DB
         try:
-            self.db.open()
+            self.db.openDB()
         except Exception:
             pass
         self.db.removeTable('REWARDS')
