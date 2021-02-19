@@ -4,14 +4,15 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
-import os, sys
+import logging
+import os
+import sys
+import time
 from contextlib import redirect_stdout
 from ipaddress import ip_address
-import logging
-import simplejson as json
-import time
 from urllib.parse import urlparse
 
+import simplejson as json
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 from PyQt5.QtWidgets import QMessageBox
 

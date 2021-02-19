@@ -4,20 +4,14 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
-import simplejson as json
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
-    QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
-    QApplication, QProgressBar, QCheckBox
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
+    QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox, \
+    QApplication, QProgressBar
 
 from constants import MINIMUM_FEE
-from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, \
-    myPopUp_sb, DisconnectedException, myPopUp
-from pivx_parser import ParseTx
+from misc import myPopUp
 from threads import ThreadFuns
-from txCache import TxCache
-from utils import checkPivxAddr
 
 
 class SweepAll_dlg(QDialog):

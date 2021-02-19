@@ -18,8 +18,8 @@ from apiClient import ApiClient
 from constants import starting_height, DefaultCache, wqueue
 from hwdevice import HWdevice
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, \
-    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
-    persistCacheSetting,  appendMasternode, myPopUp_sb
+    WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
+    persistCacheSetting, appendMasternode, myPopUp_sb
 from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf

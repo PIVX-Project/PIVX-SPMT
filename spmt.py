@@ -43,7 +43,7 @@ if __name__ == '__main__':
         imgDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img')
 
     from PyQt5.QtWidgets import QApplication
-    from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QColor, QPalette, QLabel
+    from PyQt5.Qt import Qt, QPixmap, QSplashScreen, QProgressBar, QLabel
 
     from misc import updateSplash
     from spmtApp import App

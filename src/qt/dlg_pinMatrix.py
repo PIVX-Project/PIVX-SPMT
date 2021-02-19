@@ -6,7 +6,7 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QLineEdit, QHBoxLayout, QWidget
+    QHBoxLayout, QWidget
 
 from misc import myPopUp_sb
 

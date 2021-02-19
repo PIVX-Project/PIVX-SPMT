@@ -5,10 +5,8 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from bitcoinrpc.authproxy import AuthServiceProxy
-try:
-    import http.client as httplib
-except ImportError:
-    import httplib
+
+import http.client as httplib
 import ssl
 import threading
 
