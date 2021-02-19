@@ -95,7 +95,7 @@ class TabMNConf():
         warningText += "might have taken over the USB communication with the device.<br><br>"
         warningText += "To continue click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button."
         mBox = QMessageBox(QMessageBox.Critical, "WARNING", warningText, QMessageBox.Retry)
-        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
+        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
 
         while result is None:
             ans = mBox.exec_()

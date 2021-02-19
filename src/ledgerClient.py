@@ -241,7 +241,7 @@ class LedgerApi(QObject):
         # Ledger doesn't accept characters other that ascii printable:
         # https://ledgerhq.github.io/btchip-doc/bitcoin-technical.html#_sign_message
         message = message.encode('ascii', 'ignore')
-        message_sha = splitString(single_sha256(message).hex(), 32);
+        message_sha = splitString(single_sha256(message).hex(), 32)
 
         # Connection pop-up
         mBox = QMessageBox(caller)
@@ -250,7 +250,7 @@ class LedgerApi(QObject):
         warningText += "click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button"
         mBox.setText(warningText)
         mBox.setWindowTitle("WARNING")
-        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort);
+        mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
 
         # Ask confirmation
         with self.lock:
