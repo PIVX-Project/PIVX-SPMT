@@ -7,19 +7,19 @@
 import os
 from queue import Queue
 
-wqueue = Queue()
+wqueue = Queue()  # type: Queue[str]
 
 MPATH_LEDGER = "44'/77'/"
 MPATH_TREZOR = "44'/119'/"
 MPATH_TESTNET = "44'/1'/"
-WIF_PREFIX = 212 # 212 = d4
+WIF_PREFIX = 212  # 212 = d4
 MAGIC_BYTE = 30
 STAKE_MAGIC_BYTE = 63
 TESTNET_WIF_PREFIX = 239
 TESTNET_MAGIC_BYTE = 139
 TESTNET_STAKE_MAGIC_BYTE = 73
 DEFAULT_PROTOCOL_VERSION = 70915
-MINIMUM_FEE = 0.0001    # minimum PIV/kB
+MINIMUM_FEE = 0.0001  # minimum PIV/kB
 starting_width = 933
 starting_height = 666
 APPDATA_DIRNAME = ".SecurePivxMasternodeTool"
@@ -32,10 +32,12 @@ NEW_SIGS_HEIGHT_TESTNET = 1347000
 SECONDS_IN_2_MONTHS = 60 * 24 * 60 * 60
 MAX_INPUTS_NO_WARNING = 75
 
+
 def NewSigsActive(nHeight, fTestnet=False):
     if fTestnet:
         return (nHeight >= NEW_SIGS_HEIGHT_TESTNET)
     return (nHeight >= NEW_SIGS_HEIGHT_MAINNET)
+
 
 DEFAULT_MN_CONF = {
     "name": "",
@@ -46,7 +48,7 @@ DEFAULT_MN_CONF = {
     "isHardware": True,
     "hwAcc": 0,
     "collateral": {}
-    }
+}
 
 DefaultCache = {
     "lastAddress": "",
@@ -64,14 +66,12 @@ DefaultCache = {
     "selectedRPC_index": 0,
     "MN_count": 1,
     "isTestnetRPC": False
-    }
-
+}
 
 trusted_RPC_Servers = [
     ["https", "amsterdam.randomzebra.party:8080", "spmtUser_ams", "WUss6sr8956S5Paex254"],
     ["https", "losangeles.randomzebra.party:8080", "spmtUser_la", "8X88u7TuefPm7mQaJY52"],
     ["https", "singapore.randomzebra.party:8080", "spmtUser_sing", "ZyD936tm9dvqmMP8A777"]]
-
 
 HW_devices = [
     # (model name, api index)

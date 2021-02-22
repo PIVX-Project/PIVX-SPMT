@@ -20,26 +20,20 @@ class FindCollTx_dlg(QDialog):
         self.blockCount = 0
         self.setupUI()
 
-
-
     def setupUI(self):
         Ui_FindCollateralTxDlg.setupUi(self, self)
         self.setWindowTitle('Find Collateral Tx')
-        ##--- feedback
+        # --- feedback
         self.lblMessage.setVisible(False)
         self.lblMessage.setVisible(True)
         self.lblMessage.setText('Checking explorer...')
 
-
-
     def load_data(self, pivx_addr):
         self.pivx_addr = pivx_addr
-        ##--- PIVX Address
+        # --- PIVX Address
         self.edtAddress.setText(self.pivx_addr)
-        ##--- Load utxos
+        # --- Load utxos
         ThreadFuns.runInThread(self.load_utxos_thread, (), self.display_utxos)
-
-
 
     def display_utxos(self):
         def item(value):
@@ -50,7 +44,7 @@ class FindCollTx_dlg(QDialog):
 
         self.tableW.setRowCount(len(self.utxos))
         for row, utxo in enumerate(self.utxos):
-            pivxAmount = round(int(utxo.get('satoshis', 0))/1e8, 8)
+            pivxAmount = round(int(utxo.get('satoshis', 0)) / 1e8, 8)
             self.tableW.setItem(row, 0, item(str(pivxAmount)))
             self.tableW.setItem(row, 1, item(str(utxo['confirmations'])))
             self.tableW.setItem(row, 2, item(utxo.get('txid', None)))
@@ -65,8 +59,6 @@ class FindCollTx_dlg(QDialog):
             self.lblMessage.setText('<b style="color:purple">No UTXO found for current address.\nEnter tx manually</b>')
             self.lblMessage.setVisible(True)
 
-
-
     def load_utxos_thread(self, ctrl):
         try:
             if not self.mainTab.caller.rpcClient.getStatus():
@@ -75,16 +67,15 @@ class FindCollTx_dlg(QDialog):
                 try:
                     self.blockCount = self.mainTab.caller.rpcClient.getBlockCount()
                     utxos = self.mainTab.caller.apiClient.getAddressUtxos(self.pivx_addr)
-                    self.utxos = [utxo for utxo in utxos if round(int(utxo.get('satoshis', 0))/1e8, 8) == 10000.00000000]
+                    self.utxos = [utxo for utxo in utxos if
+                                  round(int(utxo.get('satoshis', 0)) / 1e8, 8) == 10000.00000000]
 
                 except Exception as e:
                     errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
                     printError(getCallerName(), getFunctionName(), errorMsg)
 
-        except Exception as e:
+        except Exception:
             pass
-
-
 
     def getSelection(self):
         items = self.tableW.selectedItems()
@@ -93,9 +84,6 @@ class FindCollTx_dlg(QDialog):
             return self.utxos[row]['txid'], self.utxos[row]['vout']
         else:
             return None, 0
-
-
-
 
 
 class Ui_FindCollateralTxDlg(object):

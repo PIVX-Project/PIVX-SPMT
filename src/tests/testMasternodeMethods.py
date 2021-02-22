@@ -15,17 +15,18 @@ from pivx_hashlib import pubkey_to_address
 from utils import b64encode
 import time
 
+
 class TestMasternodeMethods(unittest.TestCase):
     def setUp(self):
         self.rpcClient = RpcClient()
         rpcStatus, _ = self.rpcClient.getStatus()
         if not rpcStatus:
             self.skipTest("RPC not connected")
-            
-        # read masternode data from file    
-        with open('test_masternode.data.json') as data_file:
+
+        # read masternode data from file
+        with open('test_masternode.data.json', encoding="utf-8") as data_file:
             input_data_list = json.load(data_file)
-        
+
         self.mnode_list = []
         for input_data in input_data_list:
             # Rename input data
@@ -43,26 +44,19 @@ class TestMasternodeMethods(unittest.TestCase):
             mnode.protocol_version = self.rpcClient.getProtocolVersion()
             # Add it to list
             self.mnode_list.append(mnode)
-        
-        
-        
+
     def tearDown(self):
         if hasattr(self.rpcClient, 'conn'):
             self.rpcClient.parent = None
-            
-            
-    
+
     def test_finalizeStartMessage(self):
         for mnode in self.mnode_list:
             # Test message construction
             mnode.finalizeStartMessage(mnode.sig1)
             sleep(3)
-        
-        
-        
-        
-    # Activated by signal from masternode       
-    @pyqtSlot(str)    
+
+    # Activated by signal from masternode
+    @pyqtSlot(str)
     def finalizeStartMessage_end(self, text):
         # decode message
         ret = self.caller.rpcClient.decodemasternodebroadcast(text)
@@ -86,7 +80,6 @@ class TestMasternodeMethods(unittest.TestCase):
                 # check masternode signature
                 node_sig = b64encode(text[320:450])
                 self.assertEqual(ret['vchSig'], node_sig)
-                
-                
+
     if __name__ == '__main__':
-        unittest.main(verbosity=2)    
+        unittest.main(verbosity=2)

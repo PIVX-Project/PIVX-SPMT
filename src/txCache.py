@@ -9,11 +9,12 @@ from time import time
 '''
 Connects with database and rpc clients to keep a cache for rawtxes
 '''
+
+
 class TxCache():
 
     def __init__(self, main_wnd):
         self.main_wnd = main_wnd
-
 
     '''
     tries to fetch rawtx from database.

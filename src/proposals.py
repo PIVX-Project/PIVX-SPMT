@@ -8,7 +8,7 @@ vote_index = {
     "YES": 1,
     "ABSTAIN": 0,
     "NO": -1
-    }
+}
 
 vote_type = {
     "1": "YES",
@@ -16,11 +16,12 @@ vote_type = {
     "-1": "NO"
     }
 
+
 class Proposal():
     def __init__(self, name, URL, Hash, FeeHash, BlockStart, BlockEnd, TotalPayCount, RemainingPayCount,
                  PayMentAddress, Yeas, Nays, Abstains, TotalPayment, MonthlyPayment):
         self.name = name
-        self.URL = URL if URL.startswith('http') or URL.startswith('https') else 'http://'+URL
+        self.URL = URL if URL.startswith('http') or URL.startswith('https') else 'http://' + URL
         self.Hash = Hash
         self.FeeHash = FeeHash
         self.BlockStart = int(BlockStart)
@@ -33,7 +34,7 @@ class Proposal():
         self.Abstains = int(Abstains)
         self.ToalPayment = TotalPayment
         self.MonthlyPayment = MonthlyPayment
-        ## list of personal masternodes voting
+        # list of personal masternodes voting
         self.MyYeas = []
         self.MyAbstains = []
         self.MyNays = []

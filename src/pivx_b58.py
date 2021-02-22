@@ -21,7 +21,7 @@ def b58encode(v):
     """
     long_value = 0
     for (i, c) in enumerate(v[::-1]):
-        long_value += (256**i) * _bord(c)
+        long_value += (256 ** i) * _bord(c)
 
     result = ''
     while long_value >= __b58base:
@@ -42,13 +42,12 @@ def b58encode(v):
     return (__b58chars[0] * nPad) + result
 
 
-
 def b58decode(v, length=None):
     """ decode v into a string of len bytes
     """
     long_value = 0
     for (i, c) in enumerate(v[::-1]):
-        long_value += __b58chars.find(c) * (__b58base**i)
+        long_value += __b58chars.find(c) * (__b58base ** i)
 
     result = bytes()
     while long_value >= 256:

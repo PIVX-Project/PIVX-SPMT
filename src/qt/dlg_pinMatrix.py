@@ -6,9 +6,10 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QLineEdit, QHBoxLayout, QWidget
+    QHBoxLayout, QWidget
 
 from misc import myPopUp_sb
+
 
 class PinMatrix_dlg(QDialog):
     def __init__(self, text='', title='Enter PIN', fHideBtns=True):
@@ -19,25 +20,20 @@ class PinMatrix_dlg(QDialog):
         self.setWindowTitle(title)
         self.setupUI()
 
-
     def btn_clicked(self, num):
         self.pin += num
         self.lbl_pin.setText('*' * len(self.pin))
 
-
     def getPin(self):
         return self.pin
-
 
     def onCancel(self):
         self.pin = ''
         self.reject()
 
-
     def onDel(self):
         self.pin = self.pin[:-1]
         self.lbl_pin.setText('*' * len(self.pin))
-
 
     def onOK(self):
         if self.pin:
@@ -50,18 +46,15 @@ class PinMatrix_dlg(QDialog):
             text = "No PIN entered"
             myPopUp_sb(self, "warn", 'Wrong PIN!', text)
 
-
     def setupUI(self):
         Ui_pinMatrixDlg.setupUi(self, self)
         # Connect buttons matrix
         for i in range(9):
-            self.btn[i].clicked.connect(lambda _, b=i+1: self.btn_clicked(str(b)))
+            self.btn[i].clicked.connect(lambda _, b=i + 1: self.btn_clicked(str(b)))
         # Connect del/ok/cancel
         self.btn_del.clicked.connect(self.onDel)
         self.btn_ok.clicked.connect(self.onOK)
         self.btn_cancel.clicked.connect(self.onCancel)
-
-
 
 
 class Ui_pinMatrixDlg(object):
@@ -92,7 +85,7 @@ class Ui_pinMatrixDlg(object):
                     """
         self.btn = []
         for i in range(9):
-            btn_lab = '\u2022' if PinMatrixDlg.hideBtns else str(i+1)
+            btn_lab = '\u2022' if PinMatrixDlg.hideBtns else str(i + 1)
             btn = QPushButton(btn_lab)
             self.btn.append(btn)
 

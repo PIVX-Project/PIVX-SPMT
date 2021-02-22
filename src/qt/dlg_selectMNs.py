@@ -5,15 +5,17 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
+from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QAbstractItemView, QHeaderView, \
     QTableWidgetItem, QLabel, QHBoxLayout, QPushButton
-    
+
 from misc import persistCacheSetting
-    
+
+
 class masternodeItem(QTableWidgetItem):
     def __init__(self, name, txid):
         super().__init__(name)
         self.txid = txid
+
 
 class SelectMNs_dlg(QDialog):
     def __init__(self, main_wnd):
@@ -22,20 +24,19 @@ class SelectMNs_dlg(QDialog):
         self.setWindowTitle('Masternode List')
         self.initUI()
         self.loadMasternodes()
-        ## connect buttons
+        # connect buttons
         self.ui.selectAll_btn.clicked.connect(lambda: self.selectAll())
         self.ui.deselectAll_btn.clicked.connect(lambda: self.ui.mnList.clearSelection())
         self.ui.ok_btn.clicked.connect(lambda: self.onOK())
-    
-        
+
     def getSelection(self):
         items = self.ui.mnList.selectedItems()
         return [[x.txid, x.text()] for x in items]
-        
+
     def initUI(self):
         self.ui = Ui_SelectMNsDlg()
         self.ui.setupUi(self)
-        
+
     def loadMasternodes(self):
         for row, mn in enumerate(self.main_wnd.caller.masternode_list):
             name = mn.get('name')
@@ -47,21 +48,19 @@ class SelectMNs_dlg(QDialog):
             # check if already selected
             if name in [x[1] for x in self.main_wnd.votingMasternodes]:
                 item.setSelected(True)
-            
-            
+
     def onOK(self):
         self.main_wnd.votingMasternodes = self.getSelection()
         self.main_wnd.updateSelectedMNlabel()
         # persist voting masternodes to cache
         self.main_wnd.caller.parent.cache['votingMasternodes'] = persistCacheSetting('cache_votingMNs', self.main_wnd.votingMasternodes)
         self.accept()
-        
-        
+
     def selectAll(self):
         self.ui.mnList.selectAll()
         self.ui.mnList.setFocus()
-    
-        
+
+
 class Ui_SelectMNsDlg(object):
     def setupUi(self, SelectMNsDlg):
         SelectMNsDlg.setModal(True)
@@ -81,7 +80,7 @@ class Ui_SelectMNsDlg(object):
         item.setTextAlignment(Qt.AlignCenter)
         self.mnList.setHorizontalHeaderItem(0, item)
         layout.addWidget(self.mnList)
-        ## buttons
+        # buttons
         hBox = QHBoxLayout()
         self.selectAll_btn = QPushButton("Select All")
         self.selectAll_btn.setToolTip("Select all masternodes")

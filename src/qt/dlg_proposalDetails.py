@@ -7,7 +7,7 @@
 from time import strftime, gmtime
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit,\
+from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QLineEdit, \
     QScrollArea, QFrame, QPushButton
 
 
@@ -25,7 +25,6 @@ class ProposalDetails_dlg(QDialog):
     def setupUI(self):
         Ui_proposalDetailsDlg.setupUi(self, self)
 
-
     def selectable_line(self, item):
         line = QLineEdit(item)
         line.setMinimumWidth(420)
@@ -33,7 +32,6 @@ class ProposalDetails_dlg(QDialog):
         line.setReadOnly(True)
         line.setFrame(QFrame.NoFrame)
         return line
-
 
     def scroll(self, item):
         if isinstance(item, list):
@@ -48,7 +46,6 @@ class ProposalDetails_dlg(QDialog):
         label.setContentsMargins(5, 5, 5, 5)
         scroll.setWidget(label)
         return scroll
-
 
 
 class Ui_proposalDetailsDlg(object):

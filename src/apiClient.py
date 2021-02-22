@@ -9,8 +9,8 @@ from cryptoIDClient import CryptoIDClient
 
 from misc import getCallerName, getFunctionName, printException, printError
 
-def process_api_exceptions(func):
 
+def process_api_exceptions(func):
     def process_api_exceptions_int(*args, **kwargs):
         client = args[0]
         try:
@@ -28,19 +28,17 @@ def process_api_exceptions(func):
 
     return process_api_exceptions_int
 
+
 class ApiClient:
 
     def __init__(self, isTestnet=False):
         self.isTestnet = isTestnet
         self.api = BlockBookClient(isTestnet)
 
-
     @process_api_exceptions
     def getAddressUtxos(self, address):
         return self.api.getAddressUtxos(address)
 
-
     @process_api_exceptions
     def getBalance(self, address):
         return self.api.getBalance(address)
-

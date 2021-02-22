@@ -4,20 +4,14 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
-import simplejson as json
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,\
-    QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox,\
-    QApplication, QProgressBar, QCheckBox
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
+    QAbstractScrollArea, QHeaderView, QLabel, QLineEdit, QFormLayout, QDoubleSpinBox, QMessageBox, \
+    QApplication, QProgressBar
 
 from constants import MINIMUM_FEE
-from misc import printDbg, getCallerName, getFunctionName, printException, persistCacheSetting, \
-    myPopUp_sb, DisconnectedException, myPopUp
-from pivx_parser import ParseTx
+from misc import myPopUp
 from threads import ThreadFuns
-from txCache import TxCache
-from utils import checkPivxAddr
 
 
 class SweepAll_dlg(QDialog):
@@ -26,18 +20,16 @@ class SweepAll_dlg(QDialog):
         QDialog.__init__(self, parent=main_tab.ui)
         self.main_tab = main_tab
         self.setWindowTitle('Sweep All Rewards')
-        ##--- Initialize Selection
+        # --- Initialize Selection
         self.loading_txes = False
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
-        ##--- Initialize GUI
+        # --- Initialize GUI
         self.setupUI()
         # Connect GUI buttons
         self.connectButtons()
-         # Connect Signals
+        # Connect Signals
         self.main_tab.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
-
-
 
     # Called each time before exec_ in showDialog
     def load_data(self):
@@ -51,25 +43,17 @@ class SweepAll_dlg(QDialog):
             # Reload UTXOs
             ThreadFuns.runInThread(self.main_tab.caller.t_rewards.load_utxos_thread, ())
 
-
-
     def showDialog(self):
         self.load_data()
         self.exec_()
-
-
 
     def connectButtons(self):
         self.ui.buttonSend.clicked.connect(lambda: self.onButtonSend())
         self.ui.buttonCancel.clicked.connect(lambda: self.onButtonCancel())
 
-
-
     def setupUI(self):
         self.ui = Ui_SweepAllDlg()
         self.ui.setupUi(self)
-
-
 
     def display_utxos(self):
         required_confs = 16 if self.main_tab.caller.isTestnetRPC else 101
@@ -84,7 +68,7 @@ class SweepAll_dlg(QDialog):
                           if r['mn_name'] == x['name']                                       # this mn's UTXOs
                           and r['txid'] != mn['collateral'].get('txid')                      # except the collateral
                           and not (r['coinstake'] and r['confirmations'] < required_confs)]  # and immature rewards
-            x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']])/1e8, 8)
+            x['total_rewards'] = round(sum([reward['satoshis'] for reward in x['utxos']]) / 1e8, 8)
             self.rewardsArray.append(x)
 
         # update fee per Kb
@@ -121,21 +105,17 @@ class SweepAll_dlg(QDialog):
             self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
             total = sum([float(mnode['total_rewards']) for mnode in self.rewardsArray])
-            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total,8)))
+            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total, 8)))
             self.ui.noOfUtxosLine.setText("<b>%s</b>" % str(numOfInputs))
 
             # update fee
-            estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
+            estimatedTxSize = (44 + numOfInputs * 148) * 1.0 / 1000  # kB
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             self.updateFee()
-
-
 
     def onButtonCancel(self):
         self.AbortSend()
         self.close()
-
-
 
     def onButtonSend(self):
         t_rewards = self.main_tab.caller.t_rewards
@@ -155,8 +135,6 @@ class SweepAll_dlg(QDialog):
         # SEND
         t_rewards.SendRewards(self.rewardsArray, self)
 
-
-
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.buttonSend.setEnabled(True)
@@ -164,28 +142,20 @@ class SweepAll_dlg(QDialog):
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.hide()
 
-
-
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         self.main_tab.caller.t_rewards.FinishSend_int(serialized_tx, amount_to_send)
         self.close()
 
-
-
     def removeSpentRewards(self):
         for mn in self.rewardsArray:
             for utxo in mn['utxos']:
                 self.main_tab.caller.parent.db.deleteReward(utxo['txid'], utxo['vout'])
 
-
-
     def updateFee(self):
         self.ui.feeLine.setValue(self.suggestedFee)
         self.ui.feeLine.setEnabled(True)
-
-
 
     def update_loading_utxos(self, percent):
         if percent < 100:
@@ -197,8 +167,6 @@ class SweepAll_dlg(QDialog):
             self.ui.lblMessage.hide()
             self.display_utxos()
 
-
-
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
         if percent < 100:
@@ -207,7 +175,6 @@ class SweepAll_dlg(QDialog):
         else:
             self.ui.loadingLinePercent.hide()
         QApplication.processEvents()
-
 
 
 class Ui_SweepAllDlg(object):

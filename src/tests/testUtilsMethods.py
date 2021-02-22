@@ -10,8 +10,9 @@ from pivx_hashlib import generate_privkey, pubkey_to_address
 from bitcoin import privkey_to_pubkey
 from bitcoin.main import b58check_to_hex
 
+
 class TestUtilsMethods(unittest.TestCase):
-    
+
     def test_checkPivxAddr(self):
         # Generate Valid PIVX address
         pK = privkey_to_pubkey(generate_privkey())
@@ -28,9 +29,7 @@ class TestUtilsMethods(unittest.TestCase):
         for _ in range(10):
             pivxAddr3 += self.getRandomChar()
         self.assertFalse(checkPivxAddr(pivxAddr3))
-        
-        
-        
+
     def test_compose_tx_locking_script(self):
         # check with P2PKH addresses
         # Generate Valid PIVX address
@@ -50,17 +49,11 @@ class TestUtilsMethods(unittest.TestCase):
         self.assertEqual(result[23], int('88', 16))
         # check OP_CHECKSIG
         self.assertEqual(result[24], int('AC', 16))
-        
-        
-        
-        
-    
+
     def getRandomChar(self):
         import string
         import random
         return random.choice(string.ascii_letters)
-    
-    
-    
+
     if __name__ == '__main__':
         unittest.main(verbosity=2)

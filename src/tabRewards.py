@@ -22,20 +22,20 @@ from txCache import TxCache
 from utils import checkPivxAddr
 
 
-class TabRewards():
+class TabRewards:
 
     def __init__(self, caller):
         self.caller = caller
-        ##--- Lock for loading UTXO thread
+        # --- Lock for loading UTXO thread
         self.runInThread = ThreadFuns.runInThread
         self.Lock = threading.Lock()
 
-        ##--- Initialize Selection
+        # --- Initialize Selection
         self.selectedRewards = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
 
-        ##--- Initialize GUI
+        # --- Initialize GUI
         self.ui = TabRewards_gui(caller.imgDir)
         self.caller.tabRewards = self.ui
 
@@ -43,7 +43,7 @@ class TabRewards():
         self.ui.destinationLine.setText(self.caller.parent.cache.get("lastAddress"))
 
         # init first selected MN
-        self.loadMnSelect(True)         # loads masternodes list in MnSelect and display utxos
+        self.loadMnSelect(True)  # loads masternodes list in MnSelect and display utxos
         self.updateFee()
 
         # Connect GUI buttons
@@ -58,8 +58,6 @@ class TabRewards():
 
         # Connect Signals
         self.caller.sig_UTXOsLoading.connect(self.update_loading_utxos)
-
-
 
     def display_mn_utxos(self):
         if self.curr_name is None:
@@ -90,7 +88,7 @@ class TabRewards():
             # Insert items
             for row, utxo in enumerate(rewards):
                 txId = utxo.get('txid', None)
-                pivxAmount = round(int(utxo.get('satoshis', 0))/1e8, 8)
+                pivxAmount = round(int(utxo.get('satoshis', 0)) / 1e8, 8)
                 self.ui.rewardsList.box.setItem(row, 0, item(str(pivxAmount)))
                 self.ui.rewardsList.box.setItem(row, 1, item(str(utxo.get('confirmations', None))))
                 self.ui.rewardsList.box.setItem(row, 2, item(txId))
@@ -103,7 +101,7 @@ class TabRewards():
 
                 # MARK COLLATERAL UTXO
                 if txId == self.curr_txid:
-                    for i in range(0,4):
+                    for i in range(0, 4):
                         self.ui.rewardsList.box.item(row, i).setFont(QFont("Arial", 9, QFont.Bold))
                     self.ui.rewardsList.box.collateralRow = row
 
@@ -111,7 +109,7 @@ class TabRewards():
                 if utxo['coinstake']:
                     required = 16 if self.caller.isTestnetRPC else 101
                     if utxo['confirmations'] < required:
-                        for i in range(0,4):
+                        for i in range(0, 4):
                             self.ui.rewardsList.box.item(row, i).setFlags(Qt.NoItemFlags)
                             ttip = self.ui.rewardsList.box.item(row, i).toolTip()
                             self.ui.rewardsList.box.item(row, i).setToolTip(
@@ -120,7 +118,7 @@ class TabRewards():
             self.ui.rewardsList.box.resizeColumnsToContents()
 
             if self.ui.rewardsList.box.collateralRow is not None:
-                    self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
+                self.ui.rewardsList.box.hideRow(self.ui.rewardsList.box.collateralRow)
 
             if len(rewards) > 1:  # (collateral is a reward)
                 self.ui.rewardsList.statusLabel.setVisible(False)
@@ -130,8 +128,6 @@ class TabRewards():
                     self.ui.resetStatusLabel('<b style="color:red">PIVX wallet not connected</b>')
                 else:
                     self.ui.resetStatusLabel('<b style="color:red">Found no Rewards for %s</b>' % self.curr_addr)
-
-
 
     def getSelection(self):
         # Get selected rows indexes
@@ -149,8 +145,6 @@ class TabRewards():
             selection.append(self.caller.parent.db.getReward(txid, txidn))
 
         return selection
-
-
 
     def loadMnSelect(self, isInitializing=False):
         # save previous index
@@ -176,8 +170,6 @@ class TabRewards():
             self.ui.mnSelect.setCurrentIndex(index)
 
         self.onChangeSelectedMN(isInitializing)
-
-
 
     def load_utxos_thread(self, ctrl):
         with self.Lock:
@@ -234,8 +226,6 @@ class TabRewards():
             printDbg("--# REWARDS table updated")
             self.caller.sig_UTXOsLoading.emit(100)
 
-
-
     def onCancel(self):
         self.ui.rewardsList.box.clearSelection()
         self.selectedRewards = None
@@ -246,15 +236,11 @@ class TabRewards():
         self.ui.collateralHidden = True
         self.AbortSend()
 
-
-
     def onChangedMNlist(self):
         # reload MnSelect
         self.loadMnSelect()
         # reload utxos
         self.onReloadUTXOs()
-
-
 
     def onChangeSelectedMN(self, isInitializing=False):
         self.curr_name = None
@@ -271,25 +257,18 @@ class TabRewards():
                 self.ui.resetStatusLabel()
                 self.display_mn_utxos()
 
-
-
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
         self.updateSelection()
-
-
 
     def onDeselectAllRewards(self):
         self.ui.rewardsList.box.clearSelection()
         self.updateSelection()
 
-
-
     def onReloadUTXOs(self):
         if not self.Lock.locked():
             self.ui.resetStatusLabel()
             self.runInThread(self.load_utxos_thread, ())
-
 
     def onSendRewards(self):
         self.dest_addr = self.ui.destinationLine.text().strip()
@@ -297,7 +276,7 @@ class TabRewards():
         # Check spending collateral
         if (not self.ui.collateralHidden and
                 self.ui.rewardsList.box.collateralRow is not None and
-                self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected() ):
+                self.ui.rewardsList.box.item(self.ui.rewardsList.box.collateralRow, 0).isSelected()):
             warning1 = "Are you sure you want to transfer the collateral?"
             warning2 = "Really?"
             warning3 = "Take a deep breath. Do you REALLY want to transfer your collateral?"
@@ -322,7 +301,6 @@ class TabRewards():
             self.caller.onCheckHw()
         # SEND
         self.SendRewards()
-
 
     def SendRewards(self, inputs=None, gui=None):
         # Default slots on tabRewards
@@ -394,7 +372,7 @@ class TabRewards():
                                                               self.currFee,
                                                               self.caller.isTestnetRPC)
 
-        except DisconnectedException as e:
+        except DisconnectedException:
             self.caller.hwStatus = 0
             self.caller.updateHWleds()
 
@@ -403,7 +381,6 @@ class TabRewards():
             err_msg += "Probably Blockchain wasn't synced when trying to fetch raw TXs.<br>"
             err_msg += "<b>Wait for full synchronization</b> then hit 'Clear/Reload'"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
 
     def onToggleCollateral(self):
         if self.ui.rewardsList.box.collateralRow is not None:
@@ -431,8 +408,6 @@ class TabRewards():
         else:
             myPopUp_sb(self.caller, "warn", 'No Collateral', "No collateral selected")
 
-
-
     def removeSpentRewards(self):
         if self.selectedRewards is not None:
             for utxo in self.selectedRewards:
@@ -440,13 +415,10 @@ class TabRewards():
         else:
             self.caller.parent.db.clearTable('REWARDS')
 
-
-
     # Activated by signal sigTxdone from hwdevice
     def FinishSend(self, serialized_tx, amount_to_send):
         self.AbortSend()
         self.FinishSend_int(serialized_tx, amount_to_send)
-
 
     def FinishSend_int(self, serialized_tx, amount_to_send):
         if not self.txFinished:
@@ -468,7 +440,7 @@ class TabRewards():
                         amount = decodedTx.get("vout")[0].get("value")
                         message = '<p>Broadcast signed transaction?</p><p>Destination address:<br><b>%s</b></p>' % destination
                         message += '<p>Amount: <b>%s</b> PIV<br>' % str(round(amount / 1e8, 8))
-                        message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8) ), len(tx_hex)/2)
+                        message += 'Fees: <b>%s</b> PIV <br>Size: <b>%d</b> Bytes</p>' % (str(round(self.currFee / 1e8, 8)), len(tx_hex) / 2)
                     except Exception as e:
                         printException(getCallerName(), getFunctionName(), "decoding exception", str(e))
                         message = '<p>Unable to decode TX- Broadcast anyway?</p>'
@@ -502,28 +474,20 @@ class TabRewards():
                 err_msg = "Exception in FinishSend"
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-
-
     # Activated by signal sigTxabort from hwdevice
     def AbortSend(self):
         self.ui.loadingLine.hide()
         self.ui.loadingLinePercent.setValue(0)
         self.ui.loadingLinePercent.hide()
 
-
-
     def updateFee(self):
         self.ui.feeLine.setValue(self.suggestedFee)
         self.ui.feeLine.setEnabled(True)
-
-
 
     # Activated by signal tx_progress from hwdevice
     def updateProgressPercent(self, percent):
         self.ui.loadingLinePercent.setValue(percent)
         QApplication.processEvents()
-
-
 
     def updateSelection(self, clicked_item=None):
         total = 0
@@ -534,19 +498,17 @@ class TabRewards():
                 total += int(self.selectedRewards[i].get('satoshis'))
 
             # update suggested fee and selected rewards
-            estimatedTxSize = (44+numOfInputs*148)*1.0 / 1000   # kB
+            estimatedTxSize = (44 + numOfInputs * 148) * 1.0 / 1000  # kB
             self.suggestedFee = round(self.feePerKb * estimatedTxSize, 8)
             printDbg("estimatedTxSize is %s kB" % str(estimatedTxSize))
             printDbg("suggested fee is %s PIV (%s PIV/kB)" % (str(self.suggestedFee), str(self.feePerKb)))
 
-            self.ui.selectedRewardsLine.setText(str(round(total/1e8, 8)))
+            self.ui.selectedRewardsLine.setText(str(round(total / 1e8, 8)))
 
         else:
             self.ui.selectedRewardsLine.setText("")
 
         self.updateFee()
-
-
 
     def update_loading_utxos(self, percent):
         if percent < 100:
@@ -554,13 +516,11 @@ class TabRewards():
         else:
             self.display_mn_utxos()
 
-
-
     def updateTotalBalance(self, rewards):
         nAmount = 0
         if rewards is not None:
             for utxo in rewards:
                 nAmount = nAmount + utxo['satoshis']
 
-        totalBalance = str(round(nAmount/1e8, 8))
+        totalBalance = str(round(nAmount / 1e8, 8))
         self.ui.addrAvailLine.setText("<i>%s PIVs</i>" % totalBalance)

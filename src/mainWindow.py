@@ -18,8 +18,8 @@ from apiClient import ApiClient
 from constants import starting_height, DefaultCache, wqueue
 from hwdevice import HWdevice
 from misc import printDbg, printException, printOK, getCallerName, getFunctionName, \
-    WriteStream, WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
-    persistCacheSetting,  appendMasternode, myPopUp_sb
+    WriteStreamReceiver, now, getRemoteSPMTversion, loadMNConfFile, \
+    persistCacheSetting, appendMasternode, myPopUp_sb
 from tabGovernance import TabGovernance
 from tabMain import TabMain
 from tabMNConf import TabMNConf
@@ -31,7 +31,6 @@ from watchdogThreads import RpcWatchdog
 
 
 class MainWindow(QWidget):
-
     # signal: clear RPC status label and icons (emitted by updateRPCstatus)
     sig_clearRPCstatus = pyqtSignal()
 
@@ -54,10 +53,10 @@ class MainWindow(QWidget):
         self.runInThread = ThreadFuns.runInThread
         self.lock = threading.Lock()
 
-        ###-- Masternode list
+        # -- Masternode list
         self.masternode_list = masternode_list
 
-        ###-- Create clients and statuses
+        # -- Create clients and statuses
         self.hwStatus = 0
         self.hwModel = 0
         self.hwStatusMess = "Not Connected"
@@ -69,33 +68,34 @@ class MainWindow(QWidget):
         # Changes when an RPC client is connected (affecting API client)
         self.isTestnetRPC = self.parent.cache['isTestnetRPC']
 
-        ###-- Load icons & images
+        # -- Load icons & images
         self.loadIcons()
-        ###-- Create main layout
+
+        # -- Create main layout
         self.layout = QVBoxLayout()
         self.header = GuiHeader(self)
         self.initConsole()
         self.layout.addWidget(self.header)
 
-        ##-- Load RPC Servers list (init selection and self.isTestnet)
+        # -- Load RPC Servers list (init selection and self.isTestnet)
         self.updateRPClist()
 
-        ##-- Init HW selection
+        # -- Init HW selection
         self.header.hwDevices.setCurrentIndex(self.parent.cache['selectedHW_index'])
 
-        ##-- init HW Client
+        # -- init HW Client
         self.hwdevice = HWdevice(self)
 
-        ##-- init Api Client
+        # -- init Api Client
         self.apiClient = ApiClient(self.isTestnetRPC)
 
-        ###-- Create Queue to redirect stdout
+        # -- Create Queue to redirect stdout
         self.queue = wqueue
 
-        ###-- Init last logs
+        # -- Init last logs
         logging.debug("STARTING SPMT")
 
-        ###-- Create the thread to update console log for stdout
+        # -- Create the thread to update console log for stdout
         self.consoleLogThread = QThread()
         self.myWSReceiver = WriteStreamReceiver(self.queue)
         self.myWSReceiver.mysignal.connect(self.append_to_console)
@@ -104,60 +104,56 @@ class MainWindow(QWidget):
         self.consoleLogThread.start()
         printDbg("Console Log thread started")
 
-        ###-- Initialize tabs
+        # -- Initialize tabs
         self.tabs = QTabWidget()
         self.t_main = TabMain(self)
         self.t_mnconf = TabMNConf(self)
         self.t_rewards = TabRewards(self)
         self.t_governance = TabGovernance(self)
 
-        ###-- Add tabs
+        # -- Add tabs
         self.tabs.setTabPosition(QTabWidget.West)
         self.tabs.addTab(self.tabMain, "Masternode List")
-        #self.tabs.addTab(self.tabMNConf, "MN Configuration")
+        # self.tabs.addTab(self.tabMNConf, "MN Configuration")
         self.tabs.addTab(self.tabRewards, "Rewards")
         self.tabs.addTab(self.tabGovernance, "Governance")
 
-        ###-- Connect change action
+        # -- Connect change action
         self.tabs.currentChanged.connect(lambda: self.onTabChange())
 
-        ###-- Add tabs and console to Layout
+        # -- Add tabs and console to Layout
         self.splitter = QSplitter(Qt.Vertical)
         self.splitter.addWidget(self.tabs)
         self.splitter.addWidget(self.console)
-        self.splitter.setStretchFactor(0,0)
-        self.splitter.setStretchFactor(1,1)
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
         self.layout.addWidget(self.splitter)
 
-        ###-- Set Layout
+        # -- Set Layout
         self.setLayout(self.layout)
 
-        ###-- Init Settings
+        # -- Init Settings
         self.initSettings()
 
-        ###-- Connect buttons/signals
+        # -- Connect buttons/signals
         self.connButtons()
 
-        ##-- Check version
+        # -- Check version
         self.onCheckVersion()
 
-        ###-- Create RPC Whatchdog
+        # -- Create RPC Whatchdog
         self.rpc_watchdogThread = QThread()
         self.myRpcWd = RpcWatchdog(self)
         self.myRpcWd.moveToThread(self.rpc_watchdogThread)
         self.rpc_watchdogThread.started.connect(self.myRpcWd.run)
 
-        ###-- Let's go
+        # -- Let's go
         self.mnode_to_change = None
         printOK("Hello! Welcome to " + parent.title)
-
-
 
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
         self.consoleArea.insertHtml(text)
-
-
 
     def clearHWstatus(self, message=''):
         self.hwStatus = 0
@@ -166,8 +162,6 @@ class MainWindow(QWidget):
         if message != '':
             self.hwStatus = 1
             myPopUp_sb(self, "crit", "hw device Disconnected", message)
-
-
 
     def clearRPCstatus(self):
         with self.lock:
@@ -180,24 +174,21 @@ class MainWindow(QWidget):
             self.header.responseTimeLabel.setStyleSheet("color: red")
             self.header.lastPingIcon.setStyleSheet("color: red")
 
-
-
     def connButtons(self):
         self.header.button_checkRpc.clicked.connect(lambda: self.onCheckRpc())
         self.header.button_checkHw.clicked.connect(lambda: self.onCheckHw())
         self.header.rpcClientsBox.currentIndexChanged.connect(self.onChangeSelectedRPC)
         self.header.hwDevices.currentIndexChanged.connect(self.onChangeSelectedHW)
-        ##-- Connect signals
+
+        # -- Connect signals
         self.sig_clearRPCstatus.connect(self.clearRPCstatus)
         self.sig_RPCstatusUpdated.connect(self.showRPCstatus)
         self.parent.sig_changed_rpcServers.connect(self.updateRPClist)
         self.tabMain.myList.model().rowsMoved.connect(self.saveMNListOrder)
 
-
-
     def getRPCserver(self):
         itemData = self.header.rpcClientsBox.itemData(self.header.rpcClientsBox.currentIndex())
-        rpc_index  = self.header.rpcClientsBox.currentIndex()
+        rpc_index = self.header.rpcClientsBox.currentIndex()
         rpc_protocol = itemData["protocol"]
         rpc_host = itemData["host"]
         rpc_user = itemData["user"]
@@ -205,12 +196,8 @@ class MainWindow(QWidget):
 
         return rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password
 
-
-
     def getServerListIndex(self, server):
         return self.header.rpcClientsBox.findData(server)
-
-
 
     def initConsole(self):
         self.console = QGroupBox()
@@ -248,20 +235,14 @@ class MainWindow(QWidget):
         layout.addWidget(self.consoleArea)
         self.console.setLayout(layout)
 
-
-
     def initSettings(self):
         self.splitter.setSizes([self.parent.cache.get("splitter_x"), self.parent.cache.get("splitter_y")])
-        ###-- Hide console if it was previously hidden
+        # -- Hide console if it was previously hidden
         if self.parent.cache.get("console_hidden"):
             self.onToggleConsole()
 
-
-
     def isMasternodeInList(self, mn_alias):
         return (mn_alias in [x['name'] for x in self.masternode_list])
-
-
 
     def loadIcons(self):
         # Load Icons
@@ -276,11 +257,9 @@ class MainWindow(QWidget):
         self.connRed_icon = QPixmap(os.path.join(self.imgDir, 'icon_redConn.png')).scaledToHeight(15, Qt.SmoothTransformation)
         self.connOrange_icon = QPixmap(os.path.join(self.imgDir, 'icon_orangeConn.png')).scaledToHeight(15, Qt.SmoothTransformation)
 
-
-
     def loadMNConf(self, fileName):
         hot_masternodes = loadMNConfFile(fileName)
-        if hot_masternodes == None:
+        if hot_masternodes is None:
             messText = "Unable to load data from file '%s'" % fileName
             myPopUp_sb(self, "warn", "SPMT - Load MN Conf", messText)
         else:
@@ -307,33 +286,25 @@ class MainWindow(QWidget):
                 final_message = "%d External Masternodes " % new_nodes
             final_message += "added to the list."
             if new_nodes > 0:
-                final_message +=  "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
+                final_message += "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
             printOK(final_message)
             if len(skip_masternodes) > 0:
                 final_message = "Following entries skipped due to duplicate names:<br>"
                 final_message += str([x['name'] for x in skip_masternodes]) + ".  "
                 printOK(final_message)
 
-
-
     def onCheckHw(self):
         printDbg("Checking for HW device...")
         self.updateHWstatus(None)
         self.showHWstatus()
 
-
-
     def onCheckRpc(self):
-        self.runInThread(self.updateRPCstatus, (True,),)
-
-
+        self.runInThread(self.updateRPCstatus, (True,), )
 
     def onCheckVersion(self):
         printDbg("Checking SPMT version...")
         self.versionLabel.setText("--")
         self.runInThread(self.checkVersion, (), self.updateVersion)
-
-
 
     def checkVersion(self, ctrl):
         local_version = self.parent.version['number'].split('.')
@@ -341,54 +312,45 @@ class MainWindow(QWidget):
         remote_version = self.gitVersion.split('.')
 
         if (remote_version[0] > local_version[0]) or \
-        (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
-        (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] > local_version[2]):
+                (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
+                (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] >
+                 local_version[2]):
             self.versionMess = '<b style="color:red">New Version Available:</b> %s  ' % (self.gitVersion)
             self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
         else:
             self.versionMess = "You have the latest version of SPMT"
-
-
 
     def updateVersion(self):
         if self.versionMess is not None:
             self.versionLabel.setText(self.versionMess)
         printOK("Remote version: %s" % str(self.gitVersion))
 
-
-
     def onChangeSelectedHW(self, i):
         # Clear status
         self.clearHWstatus()
 
         # Persist setting
-        self.parent.cache['selectedHW_index'] = persistCacheSetting('cache_HWindex',i)
-
-
+        self.parent.cache['selectedHW_index'] = persistCacheSetting('cache_HWindex', i)
 
     def onChangeSelectedRPC(self, i):
         # Don't update when we are clearing the box
         if not self.updatingRPCbox:
             # persist setting
-            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex',i)
+            self.parent.cache['selectedRPC_index'] = persistCacheSetting('cache_RPCindex', i)
             self.runInThread(self.updateRPCstatus, (True,), )
-
-
 
     def onCleanConsole(self):
         self.consoleArea.clear()
-
-
 
     def onSaveConsole(self):
         timestamp = strftime('%Y-%m-%d_%H-%M-%S', gmtime(now()))
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Save Logs to file","SPMT_Logs_%s.txt" % timestamp,"All Files (*);; Text Files (*.txt)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Logs to file", "SPMT_Logs_%s.txt" % timestamp, "All Files (*);; Text Files (*.txt)", options=options)
         try:
             if fileName:
                 printOK("Saving logs to %s" % fileName)
-                log_file = open(fileName, 'w+')
+                log_file = open(fileName, 'w+', encoding="utf-8")
                 log_text = self.consoleArea.toPlainText()
                 log_file.write(log_text)
                 log_file.close()
@@ -396,8 +358,6 @@ class MainWindow(QWidget):
         except Exception as e:
             err_msg = "error writing Log file"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def onTabChange(self):
         # tabRewards
@@ -409,8 +369,6 @@ class MainWindow(QWidget):
         if self.tabs.currentWidget() == self.tabGovernance:
             # update selectedMNlabel (since we might have edited them)
             self.t_governance.updateSelectedMNlabel()
-
-
 
     def onToggleConsole(self):
         if self.btn_consoleToggle.text() == 'Hide':
@@ -424,8 +382,6 @@ class MainWindow(QWidget):
             self.btn_consoleToggle.setText('Hide')
             self.consoleArea.show()
 
-
-
     def saveMNListOrder(self):
         # Update mnList order to cache settings and sort
         mnOrder = {}
@@ -438,13 +394,9 @@ class MainWindow(QWidget):
         # reload MnSelect in tabRewards
         self.t_rewards.loadMnSelect()
 
-
-
     def showHWstatus(self):
         self.updateHWleds()
         myPopUp_sb(self, "info", 'SPMT - hw check', "%s" % self.hwStatusMess)
-
-
 
     def showRPCstatus(self, server_index, fDebug):
         # Update displayed status only if selected server is not changed
@@ -452,8 +404,6 @@ class MainWindow(QWidget):
             self.updateRPCled(fDebug)
             if fDebug:
                 myPopUp_sb(self, "info", 'SPMT - rpc check', "%s" % self.rpcStatusMess)
-
-
 
     def updateHWleds(self):
         if self.hwStatus == 1:
@@ -463,8 +413,6 @@ class MainWindow(QWidget):
         else:
             self.header.hwLed.setPixmap(self.ledGrayH_icon)
         self.header.hwLed.setToolTip(self.hwStatusMess)
-
-
 
     def updateHWstatus(self, ctrl):
         # re-initialize device
@@ -477,8 +425,6 @@ class MainWindow(QWidget):
 
         printDbg("status:%s - mess: %s" % (self.hwStatus, self.hwStatusMess))
 
-
-
     def updateLastBlockLabel(self):
         text = '--'
         if self.rpcLastBlock == 1:
@@ -489,8 +435,6 @@ class MainWindow(QWidget):
                 text += " (Synchronizing)"
 
         self.header.lastBlockLabel.setText(text)
-
-
 
     def updateLastBlockPing(self):
         if not self.rpcConnected:
@@ -511,8 +455,6 @@ class MainWindow(QWidget):
                 self.header.responseTimeLabel.setStyleSheet("color: %s" % color)
                 self.header.lastPingIcon.setStyleSheet("color: %s" % color)
 
-
-
     def updateRPCled(self, fDebug=False):
         if self.rpcConnected:
             self.header.rpcLed.setPixmap(self.ledPurpleH_icon)
@@ -531,8 +473,6 @@ class MainWindow(QWidget):
         self.header.rpcLed.setToolTip(self.rpcStatusMess)
         self.updateLastBlockLabel()
         self.updateLastBlockPing()
-
-
 
     def updateRPClist(self):
         # Clear old stuff
@@ -566,8 +506,6 @@ class MainWindow(QWidget):
         # reload servers in configure dialog
         self.sig_RPClistReloaded.emit()
 
-
-
     def updateRPCstatus(self, ctrl, fDebug=False):
         rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         if fDebug:
@@ -585,8 +523,8 @@ class MainWindow(QWidget):
             return
 
         rpcResponseTime = None
-        if r_time1 is not None and r_time2 !=0:
-            rpcResponseTime = round((r_time1+r_time2)/2, 3)
+        if r_time1 is not None and r_time2 != 0:
+            rpcResponseTime = round((r_time1 + r_time2) / 2, 3)
 
         # Do not update status if the user has selected a different server since the start of updateRPCStatus()
         if rpc_index != self.header.rpcClientsBox.currentIndex():

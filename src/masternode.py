@@ -21,15 +21,17 @@ from utils import ecdsa_sign, ecdsa_sign_bin, num_to_varint, ipmap, serialize_in
 
 
 class Masternode(QObject):
-    '''
+    """
     Base class for all masternodes
-    '''
+    """
     mnCount = 0
     # signal: sig (thread) is done - emitted by finalizeStartMessage
     sigdone = pyqtSignal(str)
 
-    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral = {}, isTestnet=False, *args, **kwargs):
+    def __init__(self, tab_main, name, ip, port, mnPrivKey, hwAcc, collateral=None, isTestnet=False, *args, **kwargs):
         QObject.__init__(self, *args, **kwargs)
+        if collateral is None:
+            collateral = {}
         self.tab_main = tab_main
         self.name = name
         self.ip = ip
@@ -46,7 +48,6 @@ class Masternode(QObject):
         Masternode.mnCount += 1
         printOK("Initializing MNode with collateral: %s" % self.nodePath)
 
-
     def getOldBroadcastMessage(self):
         self.sig_time = int(time.time())
         serializedData = ipport(self.ip, self.port)
@@ -55,7 +56,6 @@ class Masternode(QObject):
         serializedData += binascii.unhexlify(bitcoin.hash160(bytes.fromhex(self.mnPubKey)))[::-1].hex()
         serializedData += str(self.protocol_version)
         return serializedData
-
 
     def getNewBroadcastMessage(self):
         self.sig_time = int(time.time())
@@ -70,7 +70,6 @@ class Masternode(QObject):
         res = bitcoin.bin_dbl_sha256(ss)[::-1]
         return res.hex()
 
-
     def signature1(self, device):
         try:
             fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
@@ -81,7 +80,7 @@ class Masternode(QObject):
             printDbg("SerializedData: %s" % serializedData)
             # HW wallet signature
             device.signMess(self.tab_main.caller, self.nodePath, serializedData, self.isTestnet)
-            #wait for signal when device.sig1 is ready then --> finalizeStartMessage
+            # wait for signal when device.sig1 is ready then --> finalizeStartMessage
         except Exception as e:
             err_msg = "error in signature1"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
@@ -89,8 +88,6 @@ class Masternode(QObject):
             err_msg = "Keyboard Interrupt"
             printException(getCallerName(), getFunctionName(), err_msg, '')
         return None
-
-
 
     def getPingMessage(self, fNewSigs, block_hash):
         if fNewSigs:
@@ -106,14 +103,13 @@ class Masternode(QObject):
             return serialize_input_str(self.collateral['txid'], self.collateral['txidn'], sequence, scriptSig) + \
                    block_hash + str(self.sig_time)
 
-
     def signature2(self, block_hash):
         try:
             fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
             mnping = self.getPingMessage(fNewSigs, block_hash)
             if fNewSigs:
                 printDbg("mnping: %s" % mnping.hex())
-                sig2 = ecdsa_sign_bin(mnping, self.mnWIF) # local
+                sig2 = ecdsa_sign_bin(mnping, self.mnWIF)  # local
             else:
                 printDbg("mnping: %s" % mnping)
                 sig2 = ecdsa_sign(mnping, self.mnWIF)
@@ -123,8 +119,6 @@ class Masternode(QObject):
         except Exception as e:
             err_msg = "error in signature2"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def finalizeStartMessage(self, text):
         sig1 = text
@@ -151,8 +145,8 @@ class Masternode(QObject):
             vinsig = num_to_varint(len(scriptSig) / 2).hex() + bytes.fromhex(scriptSig)[::-1].hex()
             vinseq = sequence.to_bytes(4, byteorder='big')[::-1].hex()
             ipv6map = ipmap(self.ip, self.port)
-            collateral_in = num_to_varint(len(self.collateral['pubKey'])/2).hex() + self.collateral['pubKey']
-            delegate_in = num_to_varint(len(self.mnPubKey)/2).hex() + self.mnPubKey
+            collateral_in = num_to_varint(len(self.collateral['pubKey']) / 2).hex() + self.collateral['pubKey']
+            delegate_in = num_to_varint(len(self.mnPubKey) / 2).hex() + self.mnPubKey
 
         except Exception as e:
             err_msg = "error in startMessage"
@@ -184,10 +178,8 @@ class Masternode(QObject):
         printDbg("EMITTING: %s" % work)
         self.sigdone.emit(work)
 
-
-
     def startMessage(self, device, rpcClient):
-        # setuo rpc connection
+        # setup rpc connection
         self.rpcClient = rpcClient
         try:
             # update protocol version

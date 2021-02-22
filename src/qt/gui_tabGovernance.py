@@ -8,9 +8,10 @@ import os
 
 from PyQt5.Qt import QPixmap, QIcon
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView,\
-    QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar,\
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QHeaderView, \
+    QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QCheckBox, QLabel, QProgressBar, \
     QSpinBox, QScrollArea, QDialog
+
 
 class TabGovernance_gui(QWidget):
     def __init__(self, caller, *args, **kwargs):
@@ -24,11 +25,10 @@ class TabGovernance_gui(QWidget):
         self.questionLabel.setPixmap(self.question_icon.scaledToHeight(15, Qt.SmoothTransformation))
         self.loadCacheData()
 
-
     def initLayout(self):
         layout = QVBoxLayout(self)
 
-        ## -- ROW 1
+        #  -- ROW 1
         row = QHBoxLayout()
         self.budgetProjection_btn = QPushButton()
         self.budgetProjection_btn.setToolTip("Check Budget Projection...")
@@ -53,7 +53,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.toggleExpiring_btn)
         layout.addLayout(row)
 
-        ## -- ROW 2
+        #  -- ROW 2
         self.proposalBox = QTableWidget()
         self.proposalBox.setMinimumHeight(280)
         self.proposalBox.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -63,7 +63,7 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setRowCount(0)
         self.proposalBox.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.proposalBox.setSortingEnabled(True)
-        #self.proposalBox.verticalHeader().hide
+        # self.proposalBox.verticalHeader().hide
         self.setProposalBoxHeader()
         self.proposalBox.setColumnWidth(1, 50)
         self.proposalBox.setColumnWidth(2, 50)
@@ -74,7 +74,7 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setColumnWidth(7, 50)
         layout.addWidget(self.proposalBox)
 
-        ## -- ROW 3
+        #  -- ROW 3
         row = QHBoxLayout()
         self.timeIconLabel = QLabel()
         self.timeIconLabel.setToolTip("Check to add a randomized time offset (positive or negative) to enhance privacy")
@@ -121,7 +121,7 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.questionLabel)
         layout.addLayout(row)
 
-        ## -- ROW 4
+        #  -- ROW 4
         row = QHBoxLayout()
         self.voteYes_btn = QPushButton("Vote YES")
         self.voteYes_btn.setToolTip("Vote YES on selected proposals")
@@ -134,8 +134,6 @@ class TabGovernance_gui(QWidget):
         row.addWidget(self.voteNo_btn)
         layout.addLayout(row)
 
-
-
     def loadCacheData(self):
         if self.caller.parent.cache.get("votingDelayCheck"):
             negative_delay = self.caller.parent.cache.get("votingDelayNeg")
@@ -143,7 +141,6 @@ class TabGovernance_gui(QWidget):
             self.randomDelayCheck.setChecked(True)
             self.randomDelayNeg_edt.setValue(negative_delay)
             self.randomDelayPos_edt.setValue(positive_delay)
-
 
     def setProposalBoxHeader(self):
         item = QTableWidgetItem()
@@ -194,7 +191,6 @@ class TabGovernance_gui(QWidget):
         item.setToolTip("Check Proposal Details")
         self.proposalBox.setHorizontalHeaderItem(7, item)
 
-
     def loadIcons(self):
         self.refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
         self.time_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_clock.png'))
@@ -203,15 +199,12 @@ class TabGovernance_gui(QWidget):
         self.list_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_list.png'))
         self.question_icon = QPixmap(os.path.join(self.caller.imgDir, 'icon_question.png'))
 
-
-
     def resetStatusLabel(self, message=None):
         if message is None:
             self.statusLabel.setText('<em><b style="color:purple">Loading proposals...</b></em>')
         else:
             self.statusLabel.setText(message)
         self.statusLabel.setVisible(True)
-
 
 
 class ScrollMessageBox(QDialog):

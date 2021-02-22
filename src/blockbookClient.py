@@ -9,9 +9,7 @@ import requests
 from misc import getCallerName, getFunctionName, printException
 
 
-
 def process_blockbook_exceptions(func):
-
     def process_blockbook_exceptions_int(*args, **kwargs):
         client = args[0]
         try:
@@ -34,8 +32,6 @@ def process_blockbook_exceptions(func):
     return process_blockbook_exceptions_int
 
 
-
-
 class BlockBookClient:
 
     def __init__(self, isTestnet=False):
@@ -44,8 +40,6 @@ class BlockBookClient:
             self.url = "https://testnet.pivx.link"
         else:
             self.url = "https://explorer.pivx.link"
-
-
 
     def checkResponse(self, method, param=""):
         url = self.url + "/api/%s" % method
@@ -57,8 +51,6 @@ class BlockBookClient:
             return data
         raise Exception("Invalid response")
 
-
-
     @process_blockbook_exceptions
     def getAddressUtxos(self, address):
         utxos = self.checkResponse("utxo", address)
@@ -67,9 +59,6 @@ class BlockBookClient:
             u["script"] = ""
         return utxos
 
-
-
     @process_blockbook_exceptions
     def getBalance(self, address):
         return self.checkResponse("address", address)["balance"]
-

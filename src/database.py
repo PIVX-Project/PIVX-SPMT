@@ -12,6 +12,7 @@ from constants import database_File, trusted_RPC_Servers, DEFAULT_MN_CONF
 from proposals import Proposal, vote_type, vote_index
 from misc import printDbg, getCallerName, getFunctionName, printException, add_defaultKeys_to_dict
 
+
 class Database():
 
     '''
@@ -26,9 +27,7 @@ class Database():
         self.conn = None
         printDbg("DB: Initialized")
 
-
-
-    def open(self):
+    def openDB(self):
         printDbg("DB: Opening...")
         if self.isOpen:
             raise Exception("Database already open")
@@ -48,8 +47,6 @@ class Database():
             except Exception as e:
                 err_msg = 'SQLite initialization error'
                 printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     def close(self):
         printDbg("DB: closing...")
@@ -71,8 +68,6 @@ class Database():
                 err_msg = 'SQLite closing error'
                 printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
-
-
     def getCursor(self):
         if self.isOpen:
             self.lock.acquire()
@@ -88,8 +83,6 @@ class Database():
 
         else:
             raise Exception("Database closed")
-
-
 
     def releaseCursor(self, rollingBack=False, vacuum=False):
         if self.isOpen:
@@ -118,8 +111,6 @@ class Database():
 
         else:
             raise Exception("Database closed")
-
-
 
     def initTables(self):
         printDbg("DB: Initializing tables...")
@@ -161,7 +152,7 @@ class Database():
                            " yeas INTEGER, nays INTEGER, abstains INTEGER, "
                            " totalPayment REAL, monthlyPayment REAL)")
 
-            #cursor.execute("CREATE TABLE IF NOT EXISTS PROJECTED_PROPOSALS("
+            # cursor.execute("CREATE TABLE IF NOT EXISTS PROJECTED_PROPOSALS("
             #               " name TEXT, hash TEXT PRIMARY KEY, "
             #               " allotted REAL, votes INTEGER, totaAllotted REAL)")
 
@@ -171,12 +162,9 @@ class Database():
 
             printDbg("DB: Tables initialized")
 
-
         except Exception as e:
             err_msg = 'error initializing tables'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def initTable_RPC(self, cursor):
         s = trusted_RPC_Servers
@@ -194,12 +182,11 @@ class Database():
                        " (?, ?, ?, ?, ?);",
                        (0, "http", "127.0.0.1:51473", "rpcUser", "rpcPass"))
 
-
     '''
     General methods
     '''
 
-    def clearTable(self,  table_name):
+    def clearTable(self, table_name):
         printDbg("DB: Clearing table %s..." % table_name)
         cleared_RPC = False
         try:
@@ -220,8 +207,6 @@ class Database():
             if cleared_RPC:
                 self.app.sig_changed_rpcServers.emit()
 
-
-
     def removeTable(self, table_name):
         printDbg("DB: Dropping table %s..." % table_name)
         try:
@@ -235,8 +220,6 @@ class Database():
 
         finally:
             self.releaseCursor(vacuum=True)
-
-
 
     '''
     RPC servers methods
@@ -263,8 +246,6 @@ class Database():
             if added_RPC:
                 self.app.sig_changed_rpcServers.emit()
 
-
-
     def editRPCServer(self, protocol, host, user, passwd, id):
         printDbg("DB: Editing RPC server with id %d" % id)
         changed_RPC = False
@@ -285,8 +266,6 @@ class Database():
             self.releaseCursor()
             if changed_RPC:
                 self.app.sig_changed_rpcServers.emit()
-
-
 
     def getRPCServers(self, custom, id=None):
         tableName = "CUSTOM_RPC_SERVERS" if custom else "PUBLIC_RPC_SERVERS"
@@ -325,8 +304,6 @@ class Database():
 
         return server_list
 
-
-
     def removeRPCServer(self, id):
         printDbg("DB: Remove RPC server with id %d" % id)
         removed_RPC = False
@@ -344,9 +321,6 @@ class Database():
             self.releaseCursor(vacuum=True)
             if removed_RPC:
                 self.app.sig_changed_rpcServers.emit()
-
-
-
 
     '''
     Masternode methods
@@ -391,8 +365,6 @@ class Database():
 
         return mnlist
 
-
-
     def addNewMasternode(self, mn):
         printDbg("DB: Adding new masternode")
         try:
@@ -413,12 +385,10 @@ class Database():
         finally:
             self.releaseCursor()
 
-
-
     def addMasternode(self, mn, old_mn=None):
         add_defaultKeys_to_dict(mn, DEFAULT_MN_CONF)
 
-        if not old_mn is None:
+        if old_mn is not None:
             printDbg("DB: Editing masternode %s" % old_mn)
             try:
                 cursor = self.getCursor()
@@ -444,8 +414,6 @@ class Database():
             # Add new record to the table
             self.addNewMasternode(mn)
 
-
-
     def deleteMasternode(self, mn_name):
         printDbg("DB: Deleting masternode %s" % mn_name)
         try:
@@ -457,8 +425,6 @@ class Database():
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
             self.releaseCursor(vacuum=True)
-
-
 
     '''
     Rewards methods
@@ -483,8 +449,6 @@ class Database():
 
         return rewards
 
-
-
     def addReward(self, utxo):
         logging.debug("DB: Adding reward")
         try:
@@ -503,8 +467,6 @@ class Database():
         finally:
             self.releaseCursor()
 
-
-
     def deleteReward(self, tx_hash, tx_ouput_n):
         logging.debug("DB: Deleting reward")
         try:
@@ -516,8 +478,6 @@ class Database():
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
             self.releaseCursor(vacuum=True)
-
-
 
     def getReward(self, tx_hash, tx_ouput_n):
         logging.debug("DB: Getting reward")
@@ -538,8 +498,6 @@ class Database():
         if len(rows) > 0:
             return self.rewards_from_rows(rows)[0]
         return None
-
-
 
     def getRewardsList(self, mn_name=None):
         try:
@@ -579,7 +537,6 @@ class Database():
 
         return txes
 
-
     def addRawTx(self, tx_hash, rawtx, lastfetch=0):
         logging.debug("DB: Adding rawtx for %s" % tx_hash)
         try:
@@ -597,12 +554,11 @@ class Database():
         finally:
             self.releaseCursor()
 
-
     def deleteRawTx(self, tx_hash):
         logging.debug("DB: Deleting rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash, ))
+            cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash,))
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'
@@ -610,14 +566,13 @@ class Database():
         finally:
             self.releaseCursor(vacuum=True)
 
-
     def getRawTx(self, tx_hash):
         logging.debug("DB: Getting rawtx for %s" % tx_hash)
         try:
             cursor = self.getCursor()
 
             cursor.execute("SELECT * FROM RAWTXES"
-                           " WHERE tx_hash = ?", (tx_hash, ))
+                           " WHERE tx_hash = ?", (tx_hash,))
             rows = cursor.fetchall()
 
         except Exception as e:
@@ -631,23 +586,20 @@ class Database():
             return self.txes_from_rows(rows)[0]
         return None
 
-
     def clearRawTxes(self, minTime):
-        '''
+        """
         removes txes with lastfetch older than mintime
-        '''
+        """
         printDbg("Pruning table RAWTXES")
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM RAWTXES WHERE lastfetch < ?", (minTime, ))
+            cursor.execute("DELETE FROM RAWTXES WHERE lastfetch < ?", (minTime,))
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
         finally:
             self.releaseCursor(vacuum=True)
-
-
 
     '''
     Proposals methods
@@ -668,8 +620,6 @@ class Database():
 
         return myVotes
 
-
-
     def proposals_from_rows(self, rows):
         proposals = []
 
@@ -681,8 +631,6 @@ class Database():
             proposals.append(p)
 
         return proposals
-
-
 
     def addMyVote(self, mn_name, p_hash, vote):
         logging.debug("DB: Adding vote")
@@ -700,8 +648,6 @@ class Database():
 
         finally:
             self.releaseCursor()
-
-
 
     def addProposal(self, p):
         logging.debug("DB: Adding proposal")
@@ -721,8 +667,6 @@ class Database():
 
         finally:
             self.releaseCursor()
-
-
 
     def getMyVotes(self, p_hash=None):
         try:
@@ -744,8 +688,6 @@ class Database():
             self.releaseCursor()
 
         return self.myVotes_from_rows(rows)
-
-
 
     def getProposalsList(self):
         printDbg("DB: Getting proposal list")

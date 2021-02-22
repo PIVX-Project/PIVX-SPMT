@@ -20,7 +20,7 @@ from qt.dlg_sweepAll import SweepAll_dlg
 from threads import ThreadFuns
 
 
-class TabMain():
+class TabMain:
     def __init__(self, caller):
         self.caller = caller
         self.all_masternodes = {}
@@ -40,15 +40,11 @@ class TabMain():
             self.ui.btn_start[name].clicked.connect(lambda: self.onStartMN())
             self.ui.btn_rewards[name].clicked.connect(lambda: self.onRewardsMN())
 
-
-
     def displayMNlistUpdated(self):
         for masternode in self.caller.masternode_list:
             printDbg("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('txid')))
             self.displayMNStatus(masternode)
             time.sleep(0.1)
-
-
 
     def displayMNStatus(self, currMN):
         statusData = None
@@ -88,7 +84,7 @@ class TabMain():
                 display_text += '%d/%d' % (position, total_count)
 
                 self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
-                self.ui.mnStatusProgress[masternode_alias].setValue(total_count-position)
+                self.ui.mnStatusProgress[masternode_alias].setValue(total_count - position)
                 self.ui.mnStatusProgress[masternode_alias].show()
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
@@ -99,15 +95,15 @@ class TabMain():
             self.ui.btn_details[masternode_alias].setEnabled(True)
         QApplication.processEvents()
 
-
-
     def onCheckAllMN(self):
         if not self.caller.rpcConnected:
-            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "RPC server must be connected to perform this action.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - hw device check',
+                       "RPC server must be connected to perform this action.")
             printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
             return
         if self.caller.masternode_list is None or self.caller.masternode_list == []:
-            myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes', "No masternode in list. Add masternodes first.")
+            myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes',
+                       "No masternode in list. Add masternodes first.")
             return
         try:
             printDbg("Check-All pressed")
@@ -117,8 +113,6 @@ class TabMain():
             err_msg = "error in checkAllMN"
             printException(getCallerName(), getFunctionName(), err_msg, e)
 
-
-
     def onDisplayStatusDetails(self, masternode_alias, statusData):
         try:
             ui = MnStatus_dlg(self.ui, masternode_alias, statusData)
@@ -127,8 +121,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error in displayStatusDetails"
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
-
-
 
     def onEditMN(self, data=None):
         if not data:
@@ -143,14 +135,10 @@ class TabMain():
                     self.caller.tabMNConf.fillConfigForm(masternode)
                     break
 
-
-
     def onNewMasternode(self):
         self.caller.tabs.insertTab(1, self.caller.tabMNConf, "Configuration")
         self.caller.tabMNConf.clearConfigForm()
         self.caller.tabs.setCurrentIndex(1)
-
-
 
     def onRemoveMN(self, data=None):
         if not data:
@@ -158,7 +146,7 @@ class TabMain():
             masternode_alias = target.alias
 
             reply = myPopUp(self.caller, "warn", 'Confirm REMOVE',
-                                 "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
+                            "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
 
             if reply == QMessageBox.No:
                 return
@@ -169,8 +157,6 @@ class TabMain():
                     removeMNfromList(self.caller, masternode)
                     break
 
-
-
     def onRewardsMN(self, data=None):
         if not data:
             target = self.ui.sender()
@@ -178,8 +164,6 @@ class TabMain():
             tab_index = self.caller.tabs.indexOf(self.caller.tabRewards)
             self.caller.tabs.setCurrentIndex(tab_index)
             self.caller.tabRewards.mnSelect.setCurrentText(masternode_alias)
-
-
 
     def onStartAllMN(self):
         printOK("Start-All pressed")
@@ -191,12 +175,13 @@ class TabMain():
 
         try:
             reply = myPopUp(self.caller, "quest", 'Confirm START',
-                                                 "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
+                            "Are you sure you want to start ALL masternodes?", QMessageBox.Yes)
             if reply == QMessageBox.Yes:
                 mnList = [x for x in self.caller.masternode_list if x['isHardware']]
                 for mn_conf in mnList:
                     self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
-                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'], mn_conf['isTestnet'])
+                                                        mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'],
+                                                        mn_conf['isTestnet'])
                     # connect signal
                     self.masternodeToStart.sigdone.connect(self.sendBroadcast)
                     self.mnToStartList.append(self.masternodeToStart)
@@ -206,8 +191,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     def onStartMN(self, data=None):
         # Check RPC & HW device
@@ -223,10 +206,12 @@ class TabMain():
                 for mn_conf in self.caller.masternode_list:
                     if mn_conf['name'] == masternode_alias:
                         reply = myPopUp(self.caller, QMessageBox.Question, 'Confirm START',
-                                                 "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'], QMessageBox.Yes)
+                                        "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'],
+                                        QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
                             self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
-                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'], mn_conf['collateral'], mn_conf['isTestnet'])
+                                                                mn_conf['mnPrivKey'], mn_conf['hwAcc'],
+                                                                mn_conf['collateral'], mn_conf['isTestnet'])
                             # connect signal
                             self.masternodeToStart.sigdone.connect(self.sendBroadcast)
                             self.mnToStartList.append(self.masternodeToStart)
@@ -236,8 +221,6 @@ class TabMain():
         except Exception as e:
             err_msg = "error before starting node"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     def onSweepAllRewards(self):
         if not self.caller.rpcConnected:
@@ -249,8 +232,6 @@ class TabMain():
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"
             printException(getCallerName(), getFunctionName(), err_msg, e)
-
-
 
     # Activated by signal 'sigdone' from masternode
     def sendBroadcast(self, text):
@@ -288,14 +269,10 @@ class TabMain():
 
         self.sendBroadcastCheck()
 
-
-
     def sendBroadcastCheck(self):
         # If list is not empty, start other masternodes
         if self.mnToStartList:
             self.startMN()
-
-
 
     def startMN(self):
         if self.caller.hwStatus != 2:
@@ -307,8 +284,6 @@ class TabMain():
             printDbg("Starting...%s" % self.masternodeToStart.name)
             self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
             # wait for signal when masternode.work is ready then ---> sendBroadcast
-
-
 
     def updateAllMasternodes_thread(self, ctrl):
         self.all_masternodes = self.caller.rpcClient.getMasternodes()

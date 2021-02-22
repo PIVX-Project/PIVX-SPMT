@@ -21,6 +21,7 @@ from constants import user_dir, SECONDS_IN_2_MONTHS
 from qt.dlg_configureRPCservers import ConfigureRPCservers_dlg
 from qt.dlg_signmessage import SignMessage_dlg
 
+
 class ServiceExit(Exception):
     """
     Custom exception which is used to trigger the clean exit
@@ -29,11 +30,9 @@ class ServiceExit(Exception):
     pass
 
 
-
 def service_shutdown(signum, frame):
     print('Caught signal %d' % signum)
     raise ServiceExit
-
 
 
 class App(QMainWindow):
@@ -59,7 +58,7 @@ class App(QMainWindow):
 
         # Open database
         self.db = Database(self)
-        self.db.open()
+        self.db.openDB()
 
         # Clean v4 migration (read data from old files and delete them)
         clean_v4_migration(self)
@@ -91,8 +90,6 @@ class App(QMainWindow):
         # Initialize user interface
         self.initUI(masternode_list, imgDir)
 
-
-
     def initUI(self, masternode_list, imgDir):
         # Set title and geometry
         self.setWindowTitle(self.title)
@@ -105,7 +102,7 @@ class App(QMainWindow):
 
         # Sort masternode list (by alias if no previous order set)
         if self.cache.get('mnList_order') != {} and (
-            len(self.cache.get('mnList_order')) == len(masternode_list)):
+                len(self.cache.get('mnList_order')) == len(masternode_list)):
             try:
                 masternode_list.sort(key=self.extract_order)
             except Exception as e:
@@ -137,15 +134,11 @@ class App(QMainWindow):
         self.show()
         self.activateWindow()
 
-
-
     def extract_name(self, json):
         try:
             return json['name'].lower()
         except KeyError:
             return 0
-
-
 
     def extract_order(self, json):
         try:
@@ -156,8 +149,6 @@ class App(QMainWindow):
 
         except KeyError:
             return 0
-
-
 
     def closeEvent(self, *args, **kwargs):
         # Terminate the running threads.
@@ -189,7 +180,7 @@ class App(QMainWindow):
 
         # Clear Rewards and Governance DB
         try:
-            self.db.open()
+            self.db.openDB()
         except Exception:
             pass
         self.db.removeTable('REWARDS')
@@ -205,8 +196,6 @@ class App(QMainWindow):
         # Return
         return QMainWindow.closeEvent(self, *args, **kwargs)
 
-
-
     def loadMNConf(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, 'Open masternode.conf', 'masternode.conf', 'Text Files (*.conf)', options=options)
@@ -214,15 +203,11 @@ class App(QMainWindow):
         if fileName:
             self.mainWindow.loadMNConf(fileName)
 
-
-
     def onEditRPCServer(self):
         # Create Dialog
         ui = ConfigureRPCservers_dlg(self)
         if ui.exec():
             printDbg("Configuring RPC Servers...")
-
-
 
     def onSignVerifyMessage(self):
         # Create Dialog

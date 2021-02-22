@@ -4,14 +4,15 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
-import os, sys
+import logging
+import os
+import sys
+import time
 from contextlib import redirect_stdout
 from ipaddress import ip_address
-import logging
-import simplejson as json
-import time
 from urllib.parse import urlparse
 
+import simplejson as json
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 from PyQt5.QtWidgets import QMessageBox
 
@@ -22,7 +23,7 @@ QT_MESSAGE_TYPE = {
     "warn": QMessageBox.Warning,
     "crit": QMessageBox.Critical,
     "quest": QMessageBox.Question
-    }
+}
 
 
 def add_defaultKeys_to_dict(dictObj, defaultObj):
@@ -35,7 +36,7 @@ def appendMasternode(mainWnd, mn):
     printDbg("saving MN configuration for %s" % mn['name'])
 
     # If we are changing a MN, remove previous entry:
-    if not mainWnd.mnode_to_change is None:
+    if mainWnd.mnode_to_change is not None:
         # remove from cache and QListWidget only
         removeMNfromList(mainWnd, mainWnd.mnode_to_change, removeFromDB=False)
 
@@ -65,8 +66,6 @@ def appendMasternode(mainWnd, mn):
     printDbg("saved")
 
 
-
-
 def checkRPCstring(urlstring, action_msg="Malformed credentials"):
     try:
         o = urlparse(urlstring)
@@ -75,10 +74,10 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         if o.netloc is None or o.netloc == '':
             raise Exception("Malformed host network location part.")
         if o.port is None or o.port == '':
-            raise  Exception("Wrong IP port number")
+            raise Exception("Wrong IP port number")
         if o.username is None:
             raise Exception("Malformed username")
-        if  o.password is None:
+        if o.password is None:
             raise Exception("Malformed password")
         return True
 
@@ -86,7 +85,6 @@ def checkRPCstring(urlstring, action_msg="Malformed credentials"):
         error_msg = "Unable to parse URL"
         printException(getCallerName(), getFunctionName(), error_msg, e)
         return False
-
 
 
 def checkTxInputs(parentWindow, num_of_inputs):
@@ -119,7 +117,7 @@ def clean_v4_migration(wnd):
     if os.path.exists(rpc_file):
         # If RPC file exists
         try:
-            with open(rpc_file) as data_file:
+            with open(rpc_file, encoding="utf-8") as data_file:
                 rpc_config = json.load(data_file)
             # copy to database
             rpc_host = "%s:%d" % (rpc_config['rpc_ip'], rpc_config['rpc_port'])
@@ -144,7 +142,7 @@ def clean_v4_migration(wnd):
     if os.path.exists(mn_file):
         # If mn file exists
         try:
-            with open(mn_file) as data_file:
+            with open(mn_file, encoding="utf-8") as data_file:
                 mnList = json.load(data_file)
             # add to database
             for mn in mnList:
@@ -163,19 +161,14 @@ def clean_v4_migration(wnd):
         printDbg("old lastLogs.html file deleted")
 
 
-
-
-
 def clean_for_html(text):
     if text is None:
         return ""
-    return text.replace("<", "{").replace(">","}")
-
+    return text.replace("<", "{").replace(">", "}")
 
 
 def clear_screen():
     os.system('clear')
-
 
 
 def getCallerName(inDecorator=False):
@@ -185,7 +178,6 @@ def getCallerName(inDecorator=False):
         return sys._getframe(2).f_code.co_name
     except Exception:
         return None
-
 
 
 def getFunctionName(inDecorator=False):
@@ -212,15 +204,13 @@ def getRemoteSPMTversion():
         return "0.0.0"
 
 
-
 def getSPMTVersion():
     version_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'version.txt')
-    with open(version_file) as data_file:
+    with open(version_file, encoding="utf-8") as data_file:
         data = json.load(data_file)
 
     return data
-
 
 
 def getTxidTxidn(txid, txidn):
@@ -228,7 +218,6 @@ def getTxidTxidn(txid, txidn):
         return None
     else:
         return txid + '-' + str(txidn)
-
 
 
 def initLogs():
@@ -241,7 +230,6 @@ def initLogs():
                         format=format,
                         level=level
                         )
-
 
 
 def ipport(ip, port):
@@ -259,7 +247,6 @@ def ipport(ip, port):
             raise Exception("invalid IP version number")
 
 
-
 def is_hex(s):
     try:
         int(s, 16)
@@ -268,12 +255,10 @@ def is_hex(s):
         return False
 
 
-
 def loadMNConfFile(fileName):
-
     hot_masternodes = []
     try:
-        with open(fileName) as f:
+        with open(fileName, encoding="utf-8") as f:
             for line in f:
                 confline = line.strip()
 
@@ -321,7 +306,6 @@ def loadMNConfFile(fileName):
         printException(getCallerName(), getFunctionName(), errorMsg, e.args)
 
 
-
 def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageBox.No):
     if messType in QT_MESSAGE_TYPE:
         type = QT_MESSAGE_TYPE[messType]
@@ -331,7 +315,6 @@ def myPopUp(parentWindow, messType, messTitle, messText, defaultButton=QMessageB
     mess.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     mess.setDefaultButton(defaultButton)
     return mess.exec_()
-
 
 
 def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessageBox.Ok):
@@ -344,11 +327,8 @@ def myPopUp_sb(parentWindow, messType, messTitle, messText, singleButton=QMessag
     return mess.exec_()
 
 
-
 def now():
     return int(time.time())
-
-
 
 
 def persistCacheSetting(cache_key, cache_value):
@@ -365,12 +345,10 @@ def persistCacheSetting(cache_key, cache_value):
     return cache_value
 
 
-
 def printDbg(what):
     logging.info(what)
     log_line = printDbg_msg(what)
     redirect_print(log_line)
-
 
 
 def printDbg_msg(what):
@@ -378,7 +356,6 @@ def printDbg_msg(what):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
     log_line = '<b style="color: yellow">{}</b> : {}<br>'.format(timestamp, what)
     return log_line
-
 
 
 def printError(
@@ -389,7 +366,6 @@ def printError(
     logging.error("%s | %s | %s" % (caller_name, function_name, what))
     log_line = printException_msg(caller_name, function_name, what, None, True)
     redirect_print(log_line)
-
 
 
 def printException(
@@ -404,7 +380,6 @@ def printException(
     logging.warning("%s | %s | %s" % (caller_name, function_name, what))
     text = printException_msg(caller_name, function_name, err_msg, errargs)
     redirect_print(text)
-
 
 
 def printException_msg(
@@ -428,12 +403,10 @@ def printException_msg(
     return msg
 
 
-
 def printOK(what):
     logging.debug(what)
     msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
     redirect_print(msg)
-
 
 
 def readCacheSettings():
@@ -482,8 +455,6 @@ def removeMNfromList(mainWnd, mn, removeFromDB=True):
         mainWnd.t_governance.clear()
 
 
-
-
 def saveCacheSettings(cache):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     settings.setValue('cache_lastAddress', cache.get('lastAddress'))
@@ -503,25 +474,19 @@ def saveCacheSettings(cache):
     settings.setValue('cache_isTestnetRPC', cache.get('isTestnetRPC'))
 
 
-
-
 def sec_to_time(seconds):
-    days = seconds//86400
-    seconds -= days*86400
-    hrs = seconds//3600
-    seconds -= hrs*3600
-    mins = seconds//60
-    seconds -= mins*60
+    days = seconds // 86400
+    seconds -= days * 86400
+    hrs = seconds // 3600
+    seconds -= hrs * 3600
+    mins = seconds // 60
+    seconds -= mins * 60
     return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
 
 
-
-
 def splitString(text, n):
-    arr = [text[i:i+n] for i in range(0, len(text), n)]
+    arr = [text[i:i + n] for i in range(0, len(text), n)]
     return '\n'.join(arr)
-
-
 
 
 def timeThis(function, *args):
@@ -529,30 +494,28 @@ def timeThis(function, *args):
         start = time.clock()
         val = function(*args)
         end = time.clock()
-        return val, (end-start)
+        return val, (end - start)
     except Exception:
         return None, None
 
 
-
-
 def updateSplash(label, i):
-    if i==10:
+    if i == 10:
         progressText = "Loading configuration data..."
         label.setText(progressText)
-    elif i==40:
+    elif i == 40:
         progressText = "Opening database..."
         label.setText(progressText)
-    elif i==50:
+    elif i == 50:
         progressText = "Creating user interface..."
         label.setText(progressText)
-    elif i==70:
+    elif i == 70:
         progressText = "Releasing the watchdogs..."
         label.setText(progressText)
-    elif i==90:
+    elif i == 90:
         progressText = "SPMT ready"
         label.setText(progressText)
-    elif i==99:
+    elif i == 99:
         time.sleep(0.1)
 
 
@@ -562,8 +525,6 @@ class DisconnectedException(Exception):
         super().__init__(message)
         # clear device
         hwDevice.closeDevice(message)
-
-
 
 
 # Stream object to redirect sys.stdout and sys.stderr to a queue
@@ -576,7 +537,6 @@ class WriteStream(object):
 
     def flush(self):
         pass
-
 
 
 # QObject (to be run in QThread) that blocks until data is available

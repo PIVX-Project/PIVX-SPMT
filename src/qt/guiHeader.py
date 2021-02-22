@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QHBoxLayout, QComb
 from constants import HW_devices
 from PyQt5.Qt import QSizePolicy
 
+
 class GuiHeader(QWidget):
     def __init__(self, caller, *args, **kwargs):
         QWidget.__init__(self)

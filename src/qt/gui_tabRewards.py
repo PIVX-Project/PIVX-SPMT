@@ -7,9 +7,9 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout,\
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, \
     QProgressBar, QLineEdit, QComboBox, QLabel, QFormLayout, QDoubleSpinBox, QTableWidget, \
-    QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
+    QTableWidgetItem, QAbstractItemView, QHeaderView
 from PyQt5.Qt import QIcon
 
 
@@ -26,8 +26,6 @@ class TabRewards_gui(QWidget):
         mainVertical.addLayout(buttonbox)
         self.setLayout(mainVertical)
 
-
-
     def initRewardsForm(self):
         self.collateralHidden = True
         self.rewardsForm = QGroupBox()
@@ -36,7 +34,7 @@ class TabRewards_gui(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(13)
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        ##--- ROW 1
+        # --- ROW 1
         hBox = QHBoxLayout()
         self.mnSelect = QComboBox()
         self.mnSelect.setToolTip("Select Masternode")
@@ -57,7 +55,7 @@ class TabRewards_gui(QWidget):
         self.btn_toggleCollateral = QPushButton("Show Collateral")
         hBox.addWidget(self.btn_toggleCollateral)
         layout.addRow(QLabel("Masternode"), hBox)
-        ## --- ROW 2: REWARDS
+        #  --- ROW 2: REWARDS
         self.rewardsList = QVBoxLayout()
         self.rewardsList.statusLabel = QLabel()
         self.rewardsList.statusLabel.setMinimumWidth(116)
@@ -65,7 +63,7 @@ class TabRewards_gui(QWidget):
         self.rewardsList.addWidget(self.rewardsList.statusLabel)
         self.rewardsList.box = QTableWidget()
         self.rewardsList.box.setMinimumHeight(140)
-        #self.rewardsList.box.setMaximumHeight(140)
+        # self.rewardsList.box.setMaximumHeight(140)
         self.rewardsList.box.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.rewardsList.box.setSelectionMode(QAbstractItemView.MultiSelection)
         self.rewardsList.box.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -93,7 +91,7 @@ class TabRewards_gui(QWidget):
         item = QTableWidgetItem()
         self.rewardsList.addWidget(self.rewardsList.box)
         layout.addRow(self.rewardsList)
-        ##--- ROW 3
+        # --- ROW 3
         hBox2 = QHBoxLayout()
         self.btn_selectAllRewards = QPushButton("Select All")
         self.btn_selectAllRewards.setToolTip("Select all available UTXOs")
@@ -109,7 +107,7 @@ class TabRewards_gui(QWidget):
         hBox2.addWidget(self.selectedRewardsLine)
         hBox2.addStretch(1)
         layout.addRow(hBox2)
-        ##--- ROW 4
+        # --- ROW 4
         hBox3 = QHBoxLayout()
         self.destinationLine = QLineEdit()
         self.destinationLine.setToolTip("PIVX address to transfer rewards to")
@@ -125,7 +123,7 @@ class TabRewards_gui(QWidget):
         self.btn_sendRewards = QPushButton("Send")
         hBox3.addWidget(self.btn_sendRewards)
         layout.addRow(QLabel("Destination Address"), hBox3)
-        ##--- ROW 5
+        # --- ROW 5
         hBox4 = QHBoxLayout()
         hBox4.addStretch(1)
         self.loadingLine = QLabel("<b style='color:red'>Preparing TX.</b> Completed: ")
@@ -138,12 +136,10 @@ class TabRewards_gui(QWidget):
         self.loadingLine.hide()
         self.loadingLinePercent.hide()
         layout.addRow(hBox4)
-        #--- Set Layout
+        # --- Set Layout
         self.rewardsForm.setLayout(layout)
-        #--- ROW 5
+        # --- ROW 5
         self.btn_Cancel = QPushButton("Clear/Reload")
-
-
 
     def resetStatusLabel(self, message=None):
         if message is None:
@@ -151,4 +147,3 @@ class TabRewards_gui(QWidget):
         else:
             self.rewardsList.statusLabel.setText(message)
         self.rewardsList.statusLabel.setVisible(True)
-

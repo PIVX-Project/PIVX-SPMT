@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QPushButt
 
 from misc import sec_to_time
 
+
 class MnStatus_dlg(QDialog):
     def __init__(self, main_wnd, mnAlias, statusData):
         QDialog.__init__(self, parent=main_wnd)
@@ -19,12 +20,10 @@ class MnStatus_dlg(QDialog):
         self.statusData = statusData
         self.setWindowTitle('Masternode Details')
         self.setupUI()
-    
-        
+
     def setupUI(self):
         Ui_MnStatusDlg.setupUi(self, self)
-        
-   
+
 
 class Ui_MnStatusDlg(object):
     def setupUi(self, MnStatusDlg):
