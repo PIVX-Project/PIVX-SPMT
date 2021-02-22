@@ -198,9 +198,6 @@ class TrezorApi(QObject):
     def prepare_transfer_tx_bulk(self, caller, rewardsArray, dest_address, tx_fee, isTestnet=False):
         inputs = []
         outputs = []
-        c_name = "PIVX"
-        if isTestnet:
-            c_name += " Testnet"
         with self.lock:
             self.amount = 0
 
