@@ -5,7 +5,9 @@
 
 **SPMT: Secure Pivx Masternode Tool is a software to securely manage multiple PIVX masternodes while keeping the collateral safely stored on hardware wallets.<br>Currently supported wallets:**
  - [LEDGER](https://www.ledger.com) Nano S / Nano X
- - [TREZOR](https://trezor.io) One / Model T
+ - [TREZOR](https://trezor.io) One / Model T [*]
+
+[*] Only with firmware versions up to **2.3.4** for Model T and **1.9.3** for Trezor one
 
 <p>Running a PIVX masternode usually requires setting up two PIVX full nodes: </p>
 
