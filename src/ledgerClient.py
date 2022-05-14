@@ -50,6 +50,15 @@ def process_ledger_exceptions(func):
     return process_ledger_exceptions_int
 
 
+class BTchip(btchip):
+    def getJCExtendedFeatures(self):
+        # Workaround for the incompatibility with the btchip client library introduced in the Ledger PIVX app v2.0.4:
+        # mask the original call to 'getJCExtendedFeatures', which destabilizes communication with the device
+        # by sending the BTCHIP_INS_EXT_CACHE_GET_FEATURES command
+        result = {'proprietaryApi': True}
+        return result
+
+
 class LedgerApi(QObject):
     # signal: sig1 (thread) is done - emitted by signMessageFinish
     sig1done = pyqtSignal(str)
@@ -86,7 +95,7 @@ class LedgerApi(QObject):
             self.status = 0
             self.dongle = getDongle(False)
             printOK('Ledger Nano drivers found')
-            self.chip = btchip(self.dongle)
+            self.chip = BTchip(self.dongle)
             printDbg("Ledger Initialized")
             self.status = 1
             ver = self.chip.getFirmwareVersion()
