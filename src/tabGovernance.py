@@ -156,12 +156,12 @@ class TabGovernance():
             self.ui.proposalBox.setItem(row, 5, votes)
 
             # 6 - myVotes
-            myYeas, myAbstains, myNays = self.coutMyVotes(prop)
-            my_votes = "%d / %d / %d" % (myYeas, myAbstains, myNays)
-            self.ui.proposalBox.setItem(row, 6, item(my_votes))
+            #myYeas, myAbstains, myNays = self.coutMyVotes(prop)
+            #my_votes = "%d / %d / %d" % (myYeas, myAbstains, myNays)
+            #self.ui.proposalBox.setItem(row, 6, item(my_votes))
 
             # 7 - details Button
-            self.ui.proposalBox.setCellWidget(row, 7, itemButton(prop, 1))
+            self.ui.proposalBox.setCellWidget(row, 6, itemButton(prop, 1))
 
             # hide row if toggleExpiring_btn set
             if prop.RemainingPayCount == 0 and self.ui.toggleExpiring_btn.text() == "Show Expiring":
@@ -195,7 +195,7 @@ class TabGovernance():
         # persist masternode number
         self.caller.parent.cache['MN_count'] = persistCacheSetting('cache_MNcount', mnCount)
 
-        self.updateMyVotes()
+        #self.updateMyVotes()
         printDbg("--# PROPOSALS table updated")
         self.proposalsLoaded = True
         self.caller.sig_ProposalsLoaded.emit()
@@ -390,4 +390,4 @@ class TabGovernance():
         # refresh my votes on proposals
         self.ui.selectedPropLabel.setText("<em><b>0</b> proposals selected")
         self.ui.resetStatusLabel()
-        ThreadFuns.runInThread(self.updateMyVotes_thread, (), self.displayProposals)
+        #ThreadFuns.runInThread(self.updateMyVotes_thread, (), self.displayProposals)
