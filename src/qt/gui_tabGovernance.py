@@ -59,7 +59,7 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setSelectionMode(QAbstractItemView.MultiSelection)
         self.proposalBox.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.proposalBox.setShowGrid(True)
-        self.proposalBox.setColumnCount(8)
+        self.proposalBox.setColumnCount(7)
         self.proposalBox.setRowCount(0)
         self.proposalBox.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.proposalBox.setSortingEnabled(True)
@@ -70,8 +70,8 @@ class TabGovernance_gui(QWidget):
         self.proposalBox.setColumnWidth(3, 100)
         self.proposalBox.setColumnWidth(4, 100)
         self.proposalBox.setColumnWidth(5, 150)
-        self.proposalBox.setColumnWidth(6, 120)
-        self.proposalBox.setColumnWidth(7, 50)
+        #self.proposalBox.setColumnWidth(6, 120)
+        self.proposalBox.setColumnWidth(6, 50)
         layout.addWidget(self.proposalBox)
 
         #  -- ROW 3
@@ -179,17 +179,17 @@ class TabGovernance_gui(QWidget):
         item.setToolTip("Network Votes: YEAS/ABSTAINS/NAYS")
         self.proposalBox.setHorizontalHeaderItem(5, item)
 
-        item = QTableWidgetItem()
-        item.setTextAlignment(Qt.AlignCenter)
-        item.setText("My Votes")
-        item.setToolTip("My Votes: YEAS/ABSTAINS/NAYS")
-        self.proposalBox.setHorizontalHeaderItem(6, item)
+        #item = QTableWidgetItem()
+        #item.setTextAlignment(Qt.AlignCenter)
+        #item.setText("My Votes")
+        #item.setToolTip("My Votes: YEAS/ABSTAINS/NAYS")
+        #self.proposalBox.setHorizontalHeaderItem(6, item)
 
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignCenter)
         item.setText("Details")
         item.setToolTip("Check Proposal Details")
-        self.proposalBox.setHorizontalHeaderItem(7, item)
+        self.proposalBox.setHorizontalHeaderItem(6, item)
 
     def loadIcons(self):
         self.refresh_icon = QIcon(os.path.join(self.caller.imgDir, 'icon_refresh.png'))
