@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash
@@ -45,12 +45,12 @@ jobs:
       matrix:
         config:
           - name: Linux
-            os: ubuntu-18.04
+            os: ubuntu-20.04
             cachepath: ~/.cache/pip
             packages: libusb-1.0-0-dev libudev-dev
 
           - name: macOS
-            os: macos-10.15
+            os: macos-11
             cachepath: ~/Library/Caches/pip
 
           - name: Windows
