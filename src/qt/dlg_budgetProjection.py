@@ -41,7 +41,7 @@ class BudgetProjection_dlg(QDialog):
         total = self.projection[-1].get('Total_Allotted')
         total_label = "<em style='color: purple'>%s PIV</em>" % str(total)
         self.ui.allottedBudget_label.setText(total_label)
-        self.ui.remainingBudget_label.setText("%s PIV" % str(round(43200.0 - total, 8)))
+        self.ui.remainingBudget_label.setText("%s PIV" % str(round(432000.0 - total, 8)))
         self.ui.passingProposals_label.setText("<b style='color: purple'>%s</b>" % str(len(self.projection)))
 
         def item(value):
@@ -82,7 +82,7 @@ class Ui_BudgetProjectionDlg(object):
         header_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         # row 1
         row = QHBoxLayout()
-        self.availableBudget_label = QLabel("43200.0 PIV")
+        self.availableBudget_label = QLabel("432000.0 PIV")
         row.addWidget(self.availableBudget_label)
         row.addStretch(1)
         row.addWidget(QLabel("Next SuperBlock: "))
