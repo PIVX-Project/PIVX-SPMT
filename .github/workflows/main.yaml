@@ -10,12 +10,12 @@ jobs:
         shell: bash
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Initialize Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.7
 
@@ -60,13 +60,13 @@ jobs:
 
     steps:
       - name: Get Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python 3.7
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.7
       - name: Setup pip cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ matrix.config.cachepath }}
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
