@@ -1,11 +1,22 @@
+# IDE artifacts
 /.project
 /.pydevproject
-/.settings/
+/.pytest_cache/
 /.idea/
+/.settings/
+/__pycache__/
+
+# Virtual environments
+/venv*/
+
+# Build artifacts
 /build/
 /dist/
-/__pycache__/
-/lastLogs.html
-/masternode.conf
-/venv/
-/.pytest_cache/
+/SPMT*/
+
+# Deployment artifacts
+/*.exe
+/*.tar.gz
+/*.dmg
+/*.zip
+/*.app
