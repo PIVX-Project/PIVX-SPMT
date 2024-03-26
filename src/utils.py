@@ -176,12 +176,13 @@ def ipmap(ip, port):
     try:
         ipv6map = ''
 
-        if len(ip) > 6 and ip.endswith('.onion'):
-            pchOnionCat = bytearray([0xFD, 0x87, 0xD8, 0x7E, 0xEB, 0x43])
+        if len(ip) == 62 and ip.endswith('.onion'):
+            vchOnionPrefix = bytes([0x04, 32])
             vchAddr = base64.b32decode(ip[0:-6], True)
-            if len(vchAddr) != 16 - len(pchOnionCat):
-                raise Exception('Invalid onion %s' % str(ip))
-            return pchOnionCat.hex() + vchAddr.hex() + int(port).to_bytes(2, byteorder='big').hex()
+            vchAddrBytes = vchOnionPrefix + vchAddr[:32]
+            if len(vchAddr) != 35 and vchAddr[-1] != b'\x03':
+                raise Exception('Invalid TorV3 address %s' % str(ip))
+            return vchAddrBytes.hex() + int(port).to_bytes(2, byteorder='big').hex()
 
         ipAddr = ip_address(ip)
 
