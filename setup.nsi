@@ -1,4 +1,5 @@
 ; Helper defines. PRODUCT_VERSION is parsed by reading src/version.txt.
+Unicode True
 !searchparse /file src/version.txt `"number": "` VER_MAJOR `.` VER_MINOR `.` VER_REV `"`
 !searchparse /file src/version.txt `"tag": "` VER_TAG `"`
 !define PRODUCT_NAME "SPMT"
@@ -18,7 +19,12 @@ SetCompressor /SOLID lzma
 ; MUI Settings
 !define MUI_ABORTWARNING
 !define MUI_ICON "img\spmt.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "img\nsis-wizard.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_HEADERIMAGE_BITMAP "img\nsis-header.bmp"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "img\nsis-wizard.bmp"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
