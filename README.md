@@ -1,5 +1,11 @@
-<a href="https://travis-ci.org/PIVX-Project/PIVX-SPMT"><img src ="https://travis-ci.org/PIVX-Project/PIVX-SPMT.png?branch=master"></a><br><br>
-<img src="img/splashscreen.png"><br><br>
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/PIVX-Project/PIVX-SPMT/main.yaml?logo=githubactions&logoColor=%23FFFFFF&label=Build)
+ ![GitHub release (with filter)](https://img.shields.io/github/v/release/PIVX-Project/PIVX-SPMT?logo=github&label=Release)
+ ![Discord](https://img.shields.io/discord/312987515076345857?logo=discord&logoColor=%23FFFFFF&label=Discord)
+ ![Coincap (Price USD)](https://img.shields.io/coincap/price-usd/pivx?logo=coinmarketcap&label=PIVX%20Price) ![GitHub all releases](https://img.shields.io/github/downloads/pivx-project/pivx-spmt/total?logo=github&label=Downloads)
+
+
+
+![splash](img/splashscreen.png)
 
 # SPMT
 
