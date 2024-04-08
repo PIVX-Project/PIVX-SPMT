@@ -53,41 +53,41 @@ class Ui_proposalDetailsDlg(object):
         PropDetailsDlg.setModal(True)
         layout = QVBoxLayout(PropDetailsDlg)
         layout.setContentsMargins(10, 15, 10, 10)
-        name = QLabel("<b><i>%s</i></b>" % PropDetailsDlg.data.name)
+        name = QLabel(f"<b><i>{PropDetailsDlg.data.name}</i></b>")
         name.setAlignment(Qt.AlignCenter)
         layout.addWidget(name)
         body = QFormLayout()
         body.setLabelAlignment(Qt.AlignRight)
         body.setVerticalSpacing(20)
         body.setContentsMargins(25, 10, 25, 30)
-        link = "<a href='%s'>%s</a>" % (PropDetailsDlg.data.URL, PropDetailsDlg.data.URL)
+        link = f"<a href='{PropDetailsDlg.data.URL}'>{PropDetailsDlg.data.URL}</a>"
         link_label = QLabel(link)
         link_label.setOpenExternalLinks(True)
-        body.addRow(QLabel("<b>URL: </b>"), link_label)
-        body.addRow(QLabel("<b>TotalPayment: </b>"), QLabel(str(PropDetailsDlg.data.ToalPayment)))
-        body.addRow(QLabel("<b>MonthlyPayment: </b>"), QLabel(str(PropDetailsDlg.data.MonthlyPayment)))
+        body.addRow(QLabel(f"<b>URL: </b>"), QLabel(link_label))
+        body.addRow(QLabel(f"<b>TotalPayment: </b>"), QLabel(f"{PropDetailsDlg.data.TotalPayment}"))
+        body.addRow(QLabel(f"<b>MonthlyPayment: </b>"), QLabel(f"{PropDetailsDlg.data.MonthlyPayment}"))
         hashLabel = self.selectable_line(PropDetailsDlg.data.Hash)
-        body.addRow(QLabel("<b>Hash: </b>"), hashLabel)
+        body.addRow(QLabel(f"<b>Hash: </b>"), hashLabel)
         feeHashLabel = self.selectable_line(PropDetailsDlg.data.FeeHash)
-        body.addRow(QLabel("<b>FeeHash: </b>"), feeHashLabel)
-        body.addRow(QLabel("<b>BlockStart: </b>"), QLabel(str(PropDetailsDlg.data.BlockStart)))
-        body.addRow(QLabel("<b>BlockEnd: </b>"), QLabel(str(PropDetailsDlg.data.BlockEnd)))
-        body.addRow(QLabel("<b>TotalPayCount: </b>"), QLabel(str(PropDetailsDlg.data.TotalPayCount)))
-        body.addRow(QLabel("<b>RemainingPayCount: </b>"), QLabel(str(PropDetailsDlg.data.RemainingPayCount)))
+        body.addRow(QLabel(f"<b>FeeHash: </b>"), feeHashLabel)
+        body.addRow(QLabel(f"<b>BlockStart: </b>"), QLabel(f"{PropDetailsDlg.data.BlockStart}"))
+        body.addRow(QLabel(f"<b>BlockEnd: </b>"), QLabel(f"{PropDetailsDlg.data.BlockEnd}"))
+        body.addRow(QLabel(f"<b>TotalPayCount: </b>"), QLabel(f"{PropDetailsDlg.data.TotalPayCount}"))
+        body.addRow(QLabel(f"<b>RemainingPayCount: </b>"), QLabel(f"{PropDetailsDlg.data.RemainingPayCount}"))
         addyLabel = self.selectable_line(PropDetailsDlg.data.PaymentAddress)
-        body.addRow(QLabel("<b>PaymentAddress: </b>"), addyLabel)
-        votes = "<span style='color: green'>%d YEAS</span> / " % PropDetailsDlg.data.Yeas
-        votes += "<span style='color: orange'>%d ABSTAINS</span> / " % PropDetailsDlg.data.Abstains
-        votes += "<span style='color: red'>%d NAYS</span>" % PropDetailsDlg.data.Nays
-        body.addRow(QLabel("<b>Votes: </b>"), QLabel(votes))
-        my_yeas = ["%s <em style='color: green'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S',
-                                                        gmtime(x[1]))) for x in PropDetailsDlg.myYeas]
+        body.addRow(QLabel(f"<b>PaymentAddress: </b>"), addyLabel)
+        votes = (f"<span style='color: green'>{PropDetailsDlg.data.Yeas} YEAS</span> / " +
+                 f"<span style='color: orange'>{PropDetailsDlg.data.Abstains} ABSTAINS</span> / " +
+                 f"<span style='color: red'>{PropDetailsDlg.data.Nays} NAYS</span>")
+        body.addRow(QLabel(f"<b>Votes: </b>"), QLabel(votes))
+        my_yeas = [f"{x[0]} <em style='color: green'>({strftime('%Y-%m-%d %H:%M:%S', gmtime(x[1]))})</em>"
+           for x in PropDetailsDlg.myYeas]
         body.addRow(QLabel("<b>My Yeas: </b>"), self.scroll(my_yeas))
-        my_abstains = ["%s <em style='color: orange'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S',
-                                                        gmtime(x[1]))) for x in PropDetailsDlg.myAbstains]
+        my_abstains = [f"{x[0]} <em style='color: orange'>({strftime('%Y-%m-%d %H:%M:%S', gmtime(x[1]))})</em>"
+               for x in PropDetailsDlg.myAbstains]
         body.addRow(QLabel("<b>My Abstains: </b>"), self.scroll(my_abstains))
-        my_nays = ["%s <em style='color: red'>(%s)</em>" % (x[0], strftime('%Y-%m-%d %H:%M:%S',
-                                                        gmtime(x[1]))) for x in PropDetailsDlg.myNays]
+        my_nays = [f"{x[0]} <em style='color: red'>({strftime('%Y-%m-%d %H:%M:%S', gmtime(x[1]))})</em>"
+           for x in PropDetailsDlg.myNays]
         body.addRow(QLabel("<b>My Nays: </b>"), self.scroll(my_nays))
         layout.addLayout(body)
         self.okButton = QPushButton('OK')

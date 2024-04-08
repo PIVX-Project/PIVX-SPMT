@@ -19,7 +19,7 @@ def process_blockbook_exceptions(func):
                 new_url = "https://testnet.fuzzbawls.pw"
             else:
                 new_url = "https://zkbitcoin.com/"
-            message = "BlockBook Client exception on %s\nTrying backup server %s" % (client.url, new_url)
+            message = f"BlockBook Client exception on {client.url}\nTrying backup server {new_url}"
             printException(getCallerName(True), getFunctionName(True), message, str(e))
 
             try:
@@ -42,9 +42,9 @@ class BlockBookClient:
             self.url = "https://explorer.rockdev.org/"
 
     def checkResponse(self, method, param=""):
-        url = self.url + "/api/%s" % method
+        url = f"{self.url}/api/{method}"
         if param != "":
-            url += "/%s" % param
+            url += "/{param}"
         resp = requests.get(url, data={}, verify=True)
         if resp.status_code == 200:
             data = resp.json()

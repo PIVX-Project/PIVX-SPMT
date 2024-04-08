@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     label = QLabel(splash)
     label.setStyleSheet(labelstyle)
-    label.setGeometry((splash_pix.width()-500)/2, splash_pix.height()-40, 500, 20)
+    label.setGeometry(int((splash_pix.width() - 500) / 2), int(splash_pix.height() - 40), 500, 20)
     label.setAlignment(Qt.AlignCenter)
 
     progressText = "loading..."

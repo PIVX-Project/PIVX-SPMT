@@ -41,12 +41,12 @@ class Masternode(QObject):
         self.mnPubKey = bitcoin.privkey_to_pubkey(self.mnPrivKey)
         self.hwAcc = hwAcc
         self.spath = collateral['spath']
-        self.nodePath = "%d'/0/%d" % (self.hwAcc, self.spath)
+        self.nodePath = f"{self.hwAcc}'/0/{self.spath}"
         self.collateral = collateral
         self.isTestnet = isTestnet
         self.currHeight = 0
         Masternode.mnCount += 1
-        printOK("Initializing MNode with collateral: %s" % self.nodePath)
+        printOK(f"Initializing MNode with collateral: {self.nodePath}")
 
     def getOldBroadcastMessage(self):
         self.sig_time = int(time.time())
@@ -77,7 +77,7 @@ class Masternode(QObject):
                 serializedData = self.getNewBroadcastMessage()
             else:
                 serializedData = self.getOldBroadcastMessage()
-            printDbg("SerializedData: %s" % serializedData)
+            printDbg(f"SerializedData: {serializedData}")
             # HW wallet signature
             device.signMess(self.tab_main.caller, self.nodePath, serializedData, self.isTestnet)
             # wait for signal when device.sig1 is ready then --> finalizeStartMessage
@@ -108,10 +108,10 @@ class Masternode(QObject):
             fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
             mnping = self.getPingMessage(fNewSigs, block_hash)
             if fNewSigs:
-                printDbg("mnping: %s" % mnping.hex())
+                printDbg(f"mnping: {mnping.hex()}")
                 sig2 = ecdsa_sign_bin(mnping, self.mnWIF)  # local
             else:
-                printDbg("mnping: %s" % mnping)
+                printDbg(f"mnping: {mnping}")
                 sig2 = ecdsa_sign(mnping, self.mnWIF)
 
             return (b64decode(sig2).hex()), fNewSigs
@@ -127,7 +127,7 @@ class Masternode(QObject):
             self.sigdone.emit("None")
             return
 
-        printOK("first signature: %s" % sig1)
+        printOK(f"first signature: {sig1}")
         # ------ some default config
         scriptSig = ''
         sequence = 0xffffffff
@@ -135,10 +135,10 @@ class Masternode(QObject):
         try:
             block_hash = self.rpcClient.getBlockHash(self.currHeight - 12)
             if block_hash is None:
-                raise Exception('Unable to get blockhash for block %d' % self.currHeight - 12)
+                raise Exception(f'Unable to get blockhash for block {self.currHeight-12}')
 
-            printDbg("Current block from PIVX client: %s" % str(self.currHeight))
-            printDbg("Hash of 12 blocks ago: %s" % block_hash)
+            printDbg(f"Current block from PIVX client: {self.currHeight}")
+            printDbg(f"Hash of 12 blocks ago: {block_hash}")
 
             vintx = bytes.fromhex(self.collateral['txid'])[::-1].hex()
             vinno = self.collateral['txidn'].to_bytes(4, byteorder='big')[::-1].hex()
@@ -158,7 +158,7 @@ class Masternode(QObject):
         last_ping_block_hash = bytes.fromhex(block_hash)[::-1].hex()
 
         sig2, fNewSigs = self.signature2(block_hash)
-        printOK("second signature: %s" % sig2)
+        printOK(f"second signature: {sig2}")
 
         work = vintx + vinno + vinsig + vinseq
         work += ipv6map + collateral_in + delegate_in
@@ -175,7 +175,7 @@ class Masternode(QObject):
             work += "0" * 16
 
         # Emit signal
-        printDbg("EMITTING: %s" % work)
+        printDbg(f"EMITTING: {work}")
         self.sigdone.emit(work)
 
     def startMessage(self, device, rpcClient):

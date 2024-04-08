@@ -112,7 +112,7 @@ class TestHwDeviceMethods(unittest.TestCase):
 
         # verify with rpc client
         result = self.rpcClient.verifyMessage(pivx_address, signature, message)
-        print("sig = %s\naddress=%s" % (signature, pivx_address))
+        print(f"sig = {signature}\naddress={pivx_address}")
         self.assertTrue(result)
 
     # -----------------------------------------------------------------------------------
@@ -178,14 +178,14 @@ class TestHwDeviceMethods(unittest.TestCase):
             raw_tx = bytearray.fromhex(rawtransactions[utxo['tx_hash']])
 
             if not raw_tx:
-                raise Exception("Can't find raw transaction for txid: " + rawtransactions[utxo['tx_hash']])
+                raise Exception(f"Can't find raw transaction for txid: {rawtransactions[utxo['tx_hash']]}")
 
             # parse the raw transaction, so that we can extract the UTXO locking script we refer to
             prev_transaction = bitcoinTransaction(raw_tx)
 
             utxo_tx_index = utxo['tx_ouput_n']
             if utxo_tx_index < 0 or utxo_tx_index > len(prev_transaction.outputs):
-                raise Exception('Incorrect value of outputIndex for UTXO %s' % str(idx))
+                raise Exception(f'Incorrect value of outputIndex for UTXO {idx}')
 
             trusted_input = self.device.chip.getTrustedInput(prev_transaction, utxo_tx_index)
             self.trusted_inputs.append(trusted_input)
@@ -197,8 +197,8 @@ class TestHwDeviceMethods(unittest.TestCase):
             if pubkey_hash != pubkey_hash_from_script:
                 text = "Error: different public key hashes for the BIP32 path and the UTXO"
                 text += "locking script. Your signed transaction will not be validated by the network.\n"
-                text += "pubkey_hash: %s\n" % str(pubkey_hash)
-                text += "pubkey_hash_from_script: %s\n" % str(pubkey_hash_from_script)
+                text += f"pubkey_hash: {pubkey_hash}\n"
+                text += f"pubkey_hash_from_script: {pubkey_hash_from_script}\n"
                 print(text)
 
             self.arg_inputs.append({

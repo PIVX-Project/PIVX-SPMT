@@ -35,11 +35,11 @@ class BudgetProjection_dlg(QDialog):
         # blocks to next superBlock (== minutes)
         blocks_to_SB = self.next_superBlock - self.main_wnd.caller.rpcLastBlock
 
-        self.ui.nextSuperBlock_label.setText("<b>%s</b>" % str(self.next_superBlock))
-        timeToNextSB = "<em style='color: blue'>%s</em>" % sec_to_time(60 * blocks_to_SB)
+        self.ui.nextSuperBlock_label.setText(f"<b>{self.next_superBlock}</b>")
+        timeToNextSB = f"<em style='color: blue'>{sec_to_time(60 * blocks_to_SB)}</em>"
         self.ui.timeToNextSB_label.setText(timeToNextSB)
         total = self.projection[-1].get('Total_Allotted')
-        total_label = "<em style='color: purple'>%s PIV</em>" % str(total)
+        total_label = f"<em style='color: purple'>{total} PIV</em>"
         self.ui.allottedBudget_label.setText(total_label)
         self.ui.remainingBudget_label.setText("%s PIV" % str(round(432000.0 - total, 8)))
         self.ui.passingProposals_label.setText("<b style='color: purple'>%s</b>" % str(len(self.projection)))
@@ -59,7 +59,7 @@ class BudgetProjection_dlg(QDialog):
     def loadBudgetProjection_thread(self, ctrl):
         self.projection = []
         if not self.main_wnd.caller.rpcConnected:
-            printException(getCallerName(), getFunctionName(), "RPC server not connected", "")
+            printException(f"{getCallerName()}", f"{getFunctionName()}", "RPC server not connected", "")
             return
         # get next superBlock
         self.next_superBlock = self.main_wnd.caller.rpcClient.getNextSuperBlock()

@@ -39,12 +39,12 @@ class PinMatrix_dlg(QDialog):
         if self.pin:
             if len(self.pin) > 9:
                 text = "The PIN entered exceeds the 9-character limit."
-                myPopUp_sb(self, "warn", 'Wrong PIN!', text)
+                myPopUp_sb(self, "warn", 'Wrong PIN!', f"{text}")
             else:
                 self.accept()
         else:
             text = "No PIN entered"
-            myPopUp_sb(self, "warn", 'Wrong PIN!', text)
+            myPopUp_sb(self, "warn", 'Wrong PIN!', f"{text}")
 
     def setupUI(self):
         Ui_pinMatrixDlg.setupUi(self, self)
@@ -64,7 +64,7 @@ class Ui_pinMatrixDlg(object):
         layout.setContentsMargins(10, 8, 10, 10)
 
         # Header
-        title = QLabel("<b>%s</b>" % PinMatrixDlg.text)
+        title = QLabel(f"<b>{PinMatrixDlg.text}</b>")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 

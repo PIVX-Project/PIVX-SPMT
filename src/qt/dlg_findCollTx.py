@@ -71,8 +71,8 @@ class FindCollTx_dlg(QDialog):
                                   round(int(utxo.get('satoshis', 0)) / 1e8, 8) == 10000.00000000]
 
                 except Exception as e:
-                    errorMsg = 'Error occurred while calling getaddressutxos method: ' + str(e)
-                    printError(getCallerName(), getFunctionName(), errorMsg)
+                    errorMsg = f'Error occurred while calling getaddressutxos method: {e}'
+                    printError(f"{getCallerName()}", f"{getFunctionName()}", f"{errorMsg}")
 
         except Exception:
             pass

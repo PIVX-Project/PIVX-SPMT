@@ -59,7 +59,7 @@ class TabMNConf_gui(QWidget):
         if not masternode_alias:
             self.configForm.setTitle("New Masternode")
         else:
-            self.configForm.setTitle("Edit Masternode [%s]" % masternode_alias)
+            self.configForm.setTitle(f"Edit Masternode [{masternode_alias}]")
 
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)

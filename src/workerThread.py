@@ -44,5 +44,5 @@ class WorkerThread(QThread):
         try:
             self.worker_result = self.worker_fun(self.ctrl_obj, *self.worker_fun_args)
         except Exception as e:
-            printError("worker thread", "run", str(e))
+            printError("worker thread", "run", f"{e}")
             self.stop()
