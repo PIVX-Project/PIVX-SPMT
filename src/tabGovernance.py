@@ -116,7 +116,7 @@ class TabGovernance():
 
         # update MN count
         mnCount = self.caller.parent.cache['MN_count']
-        self.ui.mnCountLabel.setText("Total MN Count: <em>{mnCount}</em>")
+        self.ui.mnCountLabel.setText(f"Total MN Count: <em>{mnCount}</em>")
         # Make room for new list
         self.ui.proposalBox.setRowCount(len(proposals))
 

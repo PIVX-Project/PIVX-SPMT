@@ -402,7 +402,7 @@ class MainWindow(QWidget):
         if server_index == self.header.rpcClientsBox.currentIndex():
             self.updateRPCled(fDebug)
             if fDebug:
-                myPopUp_sb(self, "info", 'SPMT - rpc check', f"{self.rpcStausMess}")
+                myPopUp_sb(self, "info", 'SPMT - rpc check', f"{self.rpcStatusMess}")
 
     def updateHWleds(self):
         if self.hwStatus == 1:

@@ -491,9 +491,9 @@ def splitString(text, n):
 
 def timeThis(function, *args):
     try:
-        start = time.clock()
+        start = time.time()
         val = function(*args)
-        end = time.clock()
+        end = time.time()
         return val, (end - start)
     except Exception:
         return None, None
