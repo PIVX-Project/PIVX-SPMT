@@ -37,12 +37,12 @@ class ConfigureRPCservers_dlg(QDialog):
         index = self.main_wnd.mainWindow.getServerListIndex(server)
         server_line = QWidget()
         server_row = QHBoxLayout()
-        server_text = "%s://%s" % (server['protocol'], server['host'])
+        server_text = f"{server['protocol']}://{server['host']}"
         if server['id'] == 0 and server['isCustom']:
             # Local Wallet
             server_text = server_text + "&nbsp;&nbsp;<b>Local Wallet</b>"
         elif not server['isCustom']:
-            server_text = "<em style='color: purple'>%s</em>" % server_text
+            server_text = f"<em style='color: purple'>{server_text}</em>"
         server_row.addWidget(QLabel(server_text))
         server_row.addStretch(1)
         # -- Edit button
@@ -122,9 +122,8 @@ class ConfigureRPCservers_dlg(QDialog):
         self.close()
 
     def onRemoveServer(self, index):
-        mess = "Are you sure you want to remove server with index %d (%s) from list?" % (
-            index, self.main_wnd.mainWindow.rpcServersList[index].get('host'))
-        ans = myPopUp(self, QMessageBox.Question, 'SPMT - remove server', mess)
+        mess = f"Are you sure you want to remove server with index {index} ({self.main_wnd.mainWindow.rpcServersList[index].get('host')}) from list?"
+        ans = myPopUp(self, QMessageBox.Question, 'SPMT - remove server', f"{mess}")
         if ans == QMessageBox.Yes:
             # Remove entry from database
             id = self.main_wnd.mainWindow.rpcServersList[index].get('id')
@@ -137,7 +136,7 @@ class ConfigureRPCservers_dlg(QDialog):
         user = self.ui.user_edt.text()
         passwd = self.ui.passwd_edt.text()
         # Check malformed URL
-        url_string = "%s://%s:%s@%s" % (protocol, user, passwd, host)
+        url_string = f"{protocol}://{user}:{passwd}@{host}"
         if checkRPCstring(url_string):
             if self.changing_index is None:
                 # Save new entry in DB.

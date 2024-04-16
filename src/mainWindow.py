@@ -6,7 +6,6 @@
 
 import logging
 import os
-from time import strftime, gmtime
 import threading
 
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
@@ -149,7 +148,7 @@ class MainWindow(QWidget):
 
         # -- Let's go
         self.mnode_to_change = None
-        printOK("Hello! Welcome to " + parent.title)
+        printOK(f"Hello! Welcome to {parent.title}")
 
     def append_to_console(self, text):
         self.consoleArea.moveCursor(QTextCursor.End)
@@ -260,7 +259,7 @@ class MainWindow(QWidget):
     def loadMNConf(self, fileName):
         hot_masternodes = loadMNConfFile(fileName)
         if hot_masternodes is None:
-            messText = "Unable to load data from file '%s'" % fileName
+            messText = f"Unable to load data from file '{fileName}'"
             myPopUp_sb(self, "warn", "SPMT - Load MN Conf", messText)
         else:
             new_masternodes = []
@@ -283,14 +282,14 @@ class MainWindow(QWidget):
             elif new_nodes == 1:
                 final_message = "1 External Masternode "
             else:
-                final_message = "%d External Masternodes " % new_nodes
+                final_message = f"{new_nodes} External Masternodes "
             final_message += "added to the list."
             if new_nodes > 0:
-                final_message += "<br>" + str([x['name'] for x in new_masternodes]) + ".  "
+                final_message += f"<br>{[x['name'] for x in new_masternodes]}.  "
             printOK(final_message)
             if len(skip_masternodes) > 0:
-                final_message = "Following entries skipped due to duplicate names:<br>"
-                final_message += str([x['name'] for x in skip_masternodes]) + ".  "
+                final_message = "Following entries skipped due to duplicate names:<br>" \
+                f"{[x['name'] for x in skip_masternodes]}.  "
                 printOK(final_message)
 
     def onCheckHw(self):
@@ -315,15 +314,15 @@ class MainWindow(QWidget):
                 (remote_version[0] == local_version[0] and remote_version[1] > local_version[1]) or \
                 (remote_version[0] == local_version[0] and remote_version[1] == local_version[1] and remote_version[2] >
                  local_version[2]):
-            self.versionMess = '<b style="color:red">New Version Available:</b> %s  ' % (self.gitVersion)
-            self.versionMess += '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
+            self.versionMess = f'<b style="color:red">New Version Available:</b> {self.gitVersion}  ' \
+                        '(<a href="https://github.com/PIVX-Project/PIVX-SPMT/releases/">download</a>)'
         else:
             self.versionMess = "You have the latest version of SPMT"
 
     def updateVersion(self):
         if self.versionMess is not None:
             self.versionLabel.setText(self.versionMess)
-        printOK("Remote version: %s" % str(self.gitVersion))
+        printOK(f"Remote version: {self.gitVersion}")
 
     def onChangeSelectedHW(self, i):
         # Clear status
@@ -343,21 +342,21 @@ class MainWindow(QWidget):
         self.consoleArea.clear()
 
     def onSaveConsole(self):
-        timestamp = strftime('%Y-%m-%d_%H-%M-%S', gmtime(now()))
+        timestamp = now().strftime('%Y-%m-%d_%H-%M-%S')
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save Logs to file", "SPMT_Logs_%s.txt" % timestamp, "All Files (*);; Text Files (*.txt)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Logs to file", f"SPMT_Logs_{timestamp}.txt", "All Files (*);; Text Files (*.txt)", options=options)
         try:
             if fileName:
-                printOK("Saving logs to %s" % fileName)
+                printOK(f"Saving logs to {fileName}")
                 log_file = open(fileName, 'w+', encoding="utf-8")
                 log_text = self.consoleArea.toPlainText()
                 log_file.write(log_text)
                 log_file.close()
 
         except Exception as e:
-            err_msg = "error writing Log file"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            err_msg = f"error writing Log file"
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
 
     def onTabChange(self):
         # tabRewards
@@ -396,14 +395,14 @@ class MainWindow(QWidget):
 
     def showHWstatus(self):
         self.updateHWleds()
-        myPopUp_sb(self, "info", 'SPMT - hw check', "%s" % self.hwStatusMess)
+        myPopUp_sb(self, "info", 'SPMT - hw check', f"{self.hwStatusMess}")
 
     def showRPCstatus(self, server_index, fDebug):
         # Update displayed status only if selected server is not changed
         if server_index == self.header.rpcClientsBox.currentIndex():
             self.updateRPCled(fDebug)
             if fDebug:
-                myPopUp_sb(self, "info", 'SPMT - rpc check', "%s" % self.rpcStatusMess)
+                myPopUp_sb(self, "info", 'SPMT - rpc check', f"{self.rpcStatusMess}")
 
     def updateHWleds(self):
         if self.hwStatus == 1:
@@ -423,7 +422,7 @@ class MainWindow(QWidget):
             printDbg(str(e))
             pass
 
-        printDbg("status:%s - mess: %s" % (self.hwStatus, self.hwStatusMess))
+        printDbg("status:{self.hwStatus} - mess: {self.hwStatusMess}")
 
     def updateLastBlockLabel(self):
         text = '--'
@@ -451,9 +450,9 @@ class MainWindow(QWidget):
                 color = "green"
                 self.header.lastPingIcon.setPixmap(self.connGreen_icon)
             if self.rpcResponseTime is not None:
-                self.header.responseTimeLabel.setText("%.3f" % self.rpcResponseTime)
-                self.header.responseTimeLabel.setStyleSheet("color: %s" % color)
-                self.header.lastPingIcon.setStyleSheet("color: %s" % color)
+                self.header.responseTimeLabel.setText(f"{self.rpcResponseTime}")
+                self.header.responseTimeLabel.setStyleSheet(f"color: {color}")
+                self.header.lastPingIcon.setStyleSheet(f"color: {color}")
 
     def updateRPCled(self, fDebug=False):
         if self.rpcConnected:
@@ -509,14 +508,14 @@ class MainWindow(QWidget):
     def updateRPCstatus(self, ctrl, fDebug=False):
         rpc_index, rpc_protocol, rpc_host, rpc_user, rpc_password = self.getRPCserver()
         if fDebug:
-            printDbg("Trying to connect to RPC %s://%s..." % (rpc_protocol, rpc_host))
+            printDbg(f"Trying to connect to RPC {rpc_protocol}://{rpc_host}...")
 
         try:
             rpcClient = RpcClient(rpc_protocol, rpc_host, rpc_user, rpc_password)
             status, statusMess, lastBlock, r_time1, isTestnet = rpcClient.getStatus()
             isBlockchainSynced, r_time2 = rpcClient.isBlockchainSynced()
         except Exception as e:
-            printException(getCallerName(), getFunctionName(), "exception updating RPC status:", str(e))
+            printException(getCallerName(), getFunctionName(), f"exception updating RPC status: {e}")
             # clear status
             self.rpcClient = None
             self.sig_clearRPCstatus.emit()

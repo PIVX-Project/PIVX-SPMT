@@ -31,7 +31,7 @@ class ServiceExit(Exception):
 
 
 def service_shutdown(signum, frame):
-    print('Caught signal %d' % signum)
+    print(f'Caught signal {signum}')
     raise ServiceExit
 
 
@@ -54,7 +54,7 @@ class App(QMainWindow):
 
         # Get version and title
         self.version = getSPMTVersion()
-        self.title = 'SPMT - Secure PIVX Masternode Tool - v.%s-%s' % (self.version['number'], self.version['tag'])
+        self.title = f'SPMT - Secure PIVX Masternode Tool - v.{self.version["number"]}-{self.version["tag"]}'
 
         # Open database
         self.db = Database(self)

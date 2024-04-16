@@ -44,7 +44,7 @@ class ThreadFuns:
             # starting thread from another thread causes an issue of not passing arguments'
             # values to on_thread_finished_int function, so on_thread_finish is not called
             st = traceback.format_stack()
-            print('Running thread from inside another thread. Stack: \n' + ''.join(st))
+            print(r'Running thread from inside another thread. Stack: \n' + '\n'.join(st))
 
         thread = WorkerThread(worker_fun=worker_fun, worker_fun_args=worker_fun_args)
 

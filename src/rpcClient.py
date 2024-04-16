@@ -16,22 +16,28 @@ from proposals import Proposal
 
 
 def process_RPC_exceptions(func):
-    def process_RPC_exceptions_int(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         try:
             args[0].httpConnection.connect()
             return func(*args, **kwargs)
-
         except Exception as e:
             message = "Exception in RPC client"
             printException(getCallerName(True), getFunctionName(True), message, str(e))
+            # Return a default value based on the expected return structure of the wrapped function
+            if func.__name__ == 'getStatus':
+                return False, "Error: RPC call failed", 0, None, False
+            elif func.__name__ == 'isBlockchainSynced':
+                return False, None
+            # Handle other functions or provide a general default return
+            else:
+                return None
         finally:
             try:
                 args[0].httpConnection.close()
             except Exception as e:
                 printDbg(e)
                 pass
-
-    return process_RPC_exceptions_int
+    return wrapper
 
 
 class RpcClient:
@@ -40,11 +46,11 @@ class RpcClient:
         # Lock for threads
         self.lock = threading.RLock()
 
-        self.rpc_url = "%s://%s:%s@%s" % (rpc_protocol, rpc_user, rpc_password, rpc_host)
+        self.rpc_url = f"{rpc_protocol}://{rpc_user}:{rpc_password}@{rpc_host}"
 
         host, port = rpc_host.split(":")
         if rpc_protocol == "https":
-            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl._create_unverified_context())
+            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl.create_default_context())
         else:
             self.httpConnection = httplib.HTTPConnection(host, port, timeout=20)
 

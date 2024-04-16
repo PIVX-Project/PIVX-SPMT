@@ -11,7 +11,7 @@ def libModule(module, source, dest):
     m = __import__(module)
     module_path = os_path.dirname(m.__file__)
     del m
-    print("libModule %s" % str(( os_path.join(module_path, source), dest )))
+    print(f"libModule {(os.path.join(module_path, source), dest)}")
     return ( os_path.join(module_path, source), dest )
 
 
@@ -89,7 +89,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           console=False,
-          icon=os_path.join(base_dir, 'img', 'spmt.%s' % ('icns' if os_type=='darwin' else 'ico')) )
+          icon = os.path.join(base_dir, 'img', f'spmt.{"icns" if os_type == "darwin" else "ico"}'))
 
 #coll = COLLECT(exe,
 #               a.binaries,
@@ -125,7 +125,7 @@ if os_type == 'win32':
     os.rename(dist_path, dist_path_win)
     # Create NSIS compressed installer
     print('Creating Windows installer (requires NSIS)')
-    os.system('\"c:\\program files (x86)\\NSIS\\makensis.exe\" %s' % os.path.join(base_dir, 'setup.nsi'))
+    os.system(f'"{os.path.join("c:", "program files (x86)", "NSIS", "makensis.exe")}" {os.path.join(base_dir, "setup.nsi")}')
 
 
 if os_type == 'linux':
@@ -135,8 +135,7 @@ if os_type == 'linux':
     os.rename(dist_path, dist_path_linux)
     # Compress dist Dir
     print('Compressing Linux App Folder')
-    os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-x86_64-gnu_linux.tar.gz',
-                base_dir, 'SPMT-v' + version_str + '-gnu_linux'))
+    os.system(f'tar -zcvf SPMT-v{version_str}-x86_64-gnu_linux.tar.gz -C {base_dir} SPMT-v{version_str}-gnu_linux')
 
 
 if os_type == 'darwin':
@@ -151,5 +150,4 @@ if os_type == 'darwin':
     os.chdir(base_dir)
     # Compress dist Dir
     print('Compressing Mac App Folder')
-    os.system('tar -zcvf %s -C %s %s' % ('SPMT-v' + version_str + '-MacOSX.tar.gz',
-                base_dir, 'SPMT-v' + version_str + '-MacOSX'))
+    os.system(f'tar -zcvf SPMT-v{version_str}-MacOSX.tar.gz -C {base_dir} SPMT-v{version_str}-MacOSX')

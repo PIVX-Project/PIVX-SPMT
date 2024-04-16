@@ -113,7 +113,7 @@ class Database():
             raise Exception("Database closed")
 
     def initTables(self):
-        printDbg("DB: Initializing tables...")
+        printDbg(f"DB: Initializing tables...")
         try:
             cursor = self.conn.cursor()
 
@@ -187,19 +187,19 @@ class Database():
     '''
 
     def clearTable(self, table_name):
-        printDbg("DB: Clearing table %s..." % table_name)
+        printDbg(f"DB: Clearing table {table_name}...")
         cleared_RPC = False
         try:
             cursor = self.getCursor()
-            cursor.execute("DELETE FROM %s" % table_name)
+            cursor.execute(f"DELETE FROM {table_name}")
             # in case, reload default RPC and emit changed signal
             if table_name == 'CUSTOM_RPC_SERVERS':
                 self.initTable_RPC(cursor)
                 cleared_RPC = True
-            printDbg("DB: Table %s cleared" % table_name)
+            printDbg(f"DB: Table {table_name} cleared")
 
         except Exception as e:
-            err_msg = 'error clearing %s in database' % table_name
+            err_msg = f'error clearing {table_name} in database'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
         finally:
@@ -208,14 +208,14 @@ class Database():
                 self.app.sig_changed_rpcServers.emit()
 
     def removeTable(self, table_name):
-        printDbg("DB: Dropping table %s..." % table_name)
+        printDbg(f"DB: Dropping table {table_name}...")
         try:
             cursor = self.getCursor()
-            cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
-            printDbg("DB: Table %s removed" % table_name)
+            cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+            printDbg(f"DB: Table {table_name} removed")
 
         except Exception as e:
-            err_msg = 'error removing table %s from database' % table_name
+            err_msg = f'error removing table {table_name} from database'
             printException(getCallerName(), getFunctionName(), err_msg, e.args)
 
         finally:
@@ -247,7 +247,7 @@ class Database():
                 self.app.sig_changed_rpcServers.emit()
 
     def editRPCServer(self, protocol, host, user, passwd, id):
-        printDbg("DB: Editing RPC server with id %d" % id)
+        printDbg(f"DB: Editing RPC server with id {id}")
         changed_RPC = False
         try:
             cursor = self.getCursor()
@@ -270,15 +270,15 @@ class Database():
     def getRPCServers(self, custom, id=None):
         tableName = "CUSTOM_RPC_SERVERS" if custom else "PUBLIC_RPC_SERVERS"
         if id is not None:
-            printDbg("DB: Getting RPC server with id %d from table %s" % (id, tableName))
+            printDbg(f"DB: Getting RPC server with id {id} from table {tableName}")
         else:
-            printDbg("DB: Getting all RPC servers from table %s" % tableName)
+            printDbg(f"DB: Getting all RPC servers from table {tableName}")
         try:
             cursor = self.getCursor()
             if id is None:
-                cursor.execute("SELECT * FROM %s" % tableName)
+                cursor.execute(f"SELECT * FROM {tableName}")
             else:
-                cursor.execute("SELECT * FROM %s WHERE id = ?" % tableName, (id,))
+                cursor.execute(f"SELECT * FROM {tableName} WHERE id = ?", (id,))
             rows = cursor.fetchall()
 
         except Exception as e:
@@ -305,7 +305,7 @@ class Database():
         return server_list
 
     def removeRPCServer(self, id):
-        printDbg("DB: Remove RPC server with id %d" % id)
+        printDbg(f"DB: Remove RPC server with id {id}")
         removed_RPC = False
         try:
             cursor = self.getCursor()
@@ -389,7 +389,7 @@ class Database():
         add_defaultKeys_to_dict(mn, DEFAULT_MN_CONF)
 
         if old_mn is not None:
-            printDbg("DB: Editing masternode %s" % old_mn)
+            printDbg(f"DB: Editing masternode {old_mn}")
             try:
                 cursor = self.getCursor()
 
@@ -415,7 +415,7 @@ class Database():
             self.addNewMasternode(mn)
 
     def deleteMasternode(self, mn_name):
-        printDbg("DB: Deleting masternode %s" % mn_name)
+        printDbg(f"DB: Deleting masternode {mn_name}")
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM MASTERNODES WHERE name = ? ", (mn_name,))
@@ -475,22 +475,22 @@ class Database():
 
         except Exception as e:
             err_msg = 'error deleting UTXO from DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
         finally:
             self.releaseCursor(vacuum=True)
 
-    def getReward(self, tx_hash, tx_ouput_n):
+    def getReward(self, tx_hash, tx_output_n):
         logging.debug("DB: Getting reward")
         try:
             cursor = self.getCursor()
 
             cursor.execute("SELECT * FROM REWARDS"
-                           " WHERE tx_hash = ? AND tx_ouput_n = ?", (tx_hash, tx_ouput_n))
+                           " WHERE tx_hash = ? AND tx_ouput_n = ?", (tx_hash, tx_output_n))
             rows = cursor.fetchall()
 
         except Exception as e:
-            err_msg = 'error getting reward %s-%d' % (tx_hash, tx_ouput_n)
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            err_msg = f'error getting reward {tx_hash}-{tx_output_n}'
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
             rows = []
         finally:
             self.releaseCursor()
@@ -498,6 +498,7 @@ class Database():
         if len(rows) > 0:
             return self.rewards_from_rows(rows)[0]
         return None
+
 
     def getRewardsList(self, mn_name=None):
         try:
@@ -507,13 +508,13 @@ class Database():
                 printDbg("DB: Getting rewards of all masternodes")
                 cursor.execute("SELECT * FROM REWARDS")
             else:
-                printDbg("DB: Getting rewards of masternode %s" % mn_name)
+                printDbg(f"DB: Getting rewards of masternode {mn_name}")
                 cursor.execute("SELECT * FROM REWARDS WHERE mn_name = ?", (mn_name,))
             rows = cursor.fetchall()
 
         except Exception as e:
-            err_msg = 'error getting rewards list for masternode %s' % mn_name
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            err_msg = f'error getting rewards list for masternode {mn_name}'
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
             rows = []
         finally:
             self.releaseCursor()
@@ -538,7 +539,7 @@ class Database():
         return txes
 
     def addRawTx(self, tx_hash, rawtx, lastfetch=0):
-        logging.debug("DB: Adding rawtx for %s" % tx_hash)
+        logging.debug(f"DB: Adding rawtx for {tx_hash}")
         try:
             cursor = self.getCursor()
 
@@ -548,26 +549,26 @@ class Database():
                            )
 
         except Exception as e:
-            err_msg = 'error adding rawtx to DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            err_msg = f'error adding rawtx to DB'
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
         finally:
             self.releaseCursor()
 
     def deleteRawTx(self, tx_hash):
-        logging.debug("DB: Deleting rawtx for %s" % tx_hash)
+        logging.debug(f"DB: Deleting rawtx for {tx_hash}")
         try:
             cursor = self.getCursor()
             cursor.execute("DELETE FROM RAWTXES WHERE tx_hash = ?", (tx_hash,))
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
         finally:
             self.releaseCursor(vacuum=True)
 
     def getRawTx(self, tx_hash):
-        logging.debug("DB: Getting rawtx for %s" % tx_hash)
+        logging.debug(f"DB: Getting rawtx for {tx_hash}")
         try:
             cursor = self.getCursor()
 
@@ -576,8 +577,8 @@ class Database():
             rows = cursor.fetchall()
 
         except Exception as e:
-            err_msg = 'error getting raw tx for %s' % tx_hash
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            err_msg = f'error getting raw tx for {tx_hash}'
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
             rows = []
         finally:
             self.releaseCursor()
@@ -597,7 +598,7 @@ class Database():
 
         except Exception as e:
             err_msg = 'error deleting rawtx from DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
         finally:
             self.releaseCursor(vacuum=True)
 
@@ -663,7 +664,7 @@ class Database():
 
         except Exception as e:
             err_msg = 'error adding proposal to DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
         finally:
             self.releaseCursor()
@@ -676,13 +677,13 @@ class Database():
                 printDbg("DB: Getting votes for all proposals")
                 cursor.execute("SELECT * FROM MY_VOTES")
             else:
-                printDbg("DB: Getting votes for proposal %s" % p_hash)
+                printDbg(f"DB: Getting votes for proposal {p_hash}")
                 cursor.execute("SELECT * FROM MY_VOTES WHERE p_hash = ?", (p_hash,))
             rows = cursor.fetchall()
 
         except Exception as e:
             err_msg = 'error getting myVotes from DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
             rows = []
         finally:
             self.releaseCursor()
@@ -698,7 +699,7 @@ class Database():
 
         except Exception as e:
             err_msg = 'error getting proposals from DB'
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
             rows = []
         finally:
             self.releaseCursor()

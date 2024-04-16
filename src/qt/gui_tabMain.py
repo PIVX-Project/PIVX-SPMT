@@ -87,9 +87,9 @@ class TabMain_gui(QWidget):
         # --- Label & Balance
         self.mnLabel[name] = QLabel()
         if isHardware:
-            self.mnLabel[name].setText("%s [<i>%s</i>]" % (name, ip))
+            self.mnLabel[name].setText(f"{name} [<i>{ip}</i>]")
         else:
-            self.mnLabel[name].setText("<span style='color: orange'>%s</span> [<i>%s</i>]" % (name, ip))
+            self.mnLabel[name].setText(f"<span style='color: orange'>{name}</span> [<i>{ip}</i>]")
         mnRowLayout.addWidget(self.mnLabel[name])
         self.mnBalance[name] = QLabel()
         mnRowLayout.addWidget(self.mnBalance[name])
@@ -109,12 +109,12 @@ class TabMain_gui(QWidget):
         # --- Details button
         self.btn_details[name] = QToolButton()
         self.btn_details[name].setIcon(self.details_icon)
-        self.btn_details[name].setToolTip('Check status details of masternode "%s"' % name)
+        self.btn_details[name].setToolTip(f'Check status details of masternode "{name}"')
         mnRowLayout.addWidget(self.btn_details[name])
         self.btn_details[name].hide()
         # --- Rewards button
         self.btn_rewards[name] = QPushButton()
-        self.btn_rewards[name].setToolTip('Transfer rewards from "%s"' % name)
+        self.btn_rewards[name].setToolTip(f'Transfer rewards from "{name}"')
         self.btn_rewards[name].setIcon(self.rewards_icon)
         self.btn_rewards[name].alias = name
         if not isHardware:
@@ -123,7 +123,7 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.btn_rewards[name])
         # --- Start button
         self.btn_start[name] = QPushButton()
-        self.btn_start[name].setToolTip('Start masternode "%s"' % name)
+        self.btn_start[name].setToolTip(f'Start masternode "{name}"')
         self.btn_start[name].setIcon(self.startMN_icon)
         self.btn_start[name].alias = name
         if not isHardware:
@@ -132,7 +132,7 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.btn_start[name])
         # --- Edit button
         self.btn_edit[name] = QPushButton()
-        self.btn_edit[name].setToolTip('Edit masternode "%s"' % name)
+        self.btn_edit[name].setToolTip(f'Edit masternode "{name}"')
         self.btn_edit[name].setIcon(self.editMN_icon)
         self.btn_edit[name].alias = name
         if not isHardware:
@@ -141,7 +141,7 @@ class TabMain_gui(QWidget):
         mnRowLayout.addWidget(self.btn_edit[name])
         # --- Remove button
         self.btn_remove[name] = QPushButton()
-        self.btn_remove[name].setToolTip('Delete masternode "%s"' % name)
+        self.btn_remove[name].setToolTip(f'Delete masternode "{name}"')
         self.btn_remove[name].setIcon(self.removeMN_icon)
         self.btn_remove[name].alias = name
         mnRowLayout.addWidget(self.btn_remove[name])

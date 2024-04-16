@@ -40,7 +40,7 @@ def process_trezor_exceptions(func):
             return
         except Exception as e:
             err_mess = "Trezor Exception"
-            printException(getCallerName(True), getFunctionName(True), err_mess, str(e))
+            printException(f"{getCallerName(True)}", f"{getFunctionName(True)}", f"{err_mess}", f"{e}")
             raise DisconnectedException(str(e), hwDevice)
 
     return process_trezor_exceptions_int
@@ -81,7 +81,7 @@ class TrezorApi(QObject):
     @process_trezor_exceptions
     def append_inputs_to_TX(self, utxo, bip32_path, inputs):
         if utxo['staker'] != "":
-            printException(getCallerName(), getFunctionName(), "Unable to sing P2CS on Trezor", "")
+            printException(f"{getCallerName()}", f"{getFunctionName()}", "Unable to sing P2CS on Trezor", "")
             return
         # Update amount
         self.amount += int(utxo['satoshis'])
@@ -129,23 +129,17 @@ class TrezorApi(QObject):
                 self.client = TrezorClient(d, ui)
             except IOError:
                 raise Exception("TREZOR device is currently in use")
-            printOK("Trezor HW device connected [v. %s.%s.%s]" % (
-                self.client.features.major_version,
-                self.client.features.minor_version,
-                self.client.features.patch_version)
-            )
+            printOK(f"Trezor HW device connected [v.{self.client.features.major_version}.{self.client.features.minor_version}.{self.client.features.patch_version}]")
             self.status = 1
             model = self.client.features.model or "1"
             if not self.checkModel(model):
                 self.status = 3
-                self.messages[3] = "Wrong device model (%s) detected.\nLooking for model %s." % (
-                    HW_devices[self.model][0], model
-                )
+                self.messages[3] = f"Wrong device model ({HW_devices[self.model][0]}) detected.\nLooking for model {model}."
                 return
             required_version = MINIMUM_FIRMWARE_VERSION[model]
-            printDbg("Current version is %s (minimum required: %s)" % (str(self.client.version), str(required_version)))
+            printDbg(f"Current version is {self.client.version} (minimum required: {required_version})")
             # Check device is unlocked
-            bip32_path = parse_path(MPATH + "%d'/0/%d" % (0, 0))
+            bip32_path = parse_path(MPATH + f"{0}'/0/{0}")
             _ = btc.get_address(self.client, 'PIVX', bip32_path, False)
             self.status = 2
 
@@ -229,9 +223,9 @@ class TrezorApi(QObject):
             self.mBox2 = QMessageBox(caller)
             self.messageText = "<p>Signing transaction...</p>"
             # messageText += "From bip32_path: <b>%s</b><br><br>" % str(bip32_path)
-            self.messageText += "<p>Payment to:<br><b>%s</b></p>" % dest_address
-            self.messageText += "<p>Net amount:<br><b>%s</b> PIV</p>" % str(round(self.amount / 1e8, 8))
-            self.messageText += "<p>Fees:<br><b>%s</b> PIV<p>" % str(round(int(tx_fee) / 1e8, 8))
+            self.messageText += f"<p>Payment to:<br><b>{dest_address}</b></p>"
+            self.messageText += f"<p>Net amount:<br><b>{round(self.amount / 1e8, 8)}</b> PIV</p>"
+            self.messageText += f"<p>Fees:<br><b>{round(int(tx_fee) / 1e8, 8)}</b> PIV<p>"
             messageText = self.messageText + "Signature Progress: 0 %"
             self.mBox2.setText(messageText)
             self.setBoxIcon(self.mBox2, caller)
@@ -246,17 +240,17 @@ class TrezorApi(QObject):
     def scanForAddress(self, account, spath, isTestnet=False):
         with self.lock:
             if not isTestnet:
-                curr_path = parse_path(MPATH + "%d'/0/%d" % (account, spath))
+                curr_path = parse_path(MPATH + f"{account}'/0/{spath}")
                 curr_addr = btc.get_address(self.client, 'PIVX', curr_path, False)
             else:
-                curr_path = parse_path(MPATH_TESTNET + "%d'/0/%d" % (account, spath))
+                curr_path = parse_path(MPATH_TESTNET + f"{account}'/0/{spath}")
                 curr_addr = btc.get_address(self.client, 'PIVX Testnet', curr_path, False)
 
         return curr_addr
 
     @process_trezor_exceptions
     def scanForPubKey(self, account, spath, isTestnet=False):
-        hwpath = "%d'/0/%d" % (account, spath)
+        hwpath = f"{account}'/0/{spath}"
         if isTestnet:
             path = MPATH_TESTNET + hwpath
         else:
@@ -281,8 +275,7 @@ class TrezorApi(QObject):
             path = MPATH + hwpath
         # Connection pop-up
         self.mBox = QMessageBox(caller)
-        messageText = "Check display of your hardware device\n\n- message:\n\n%s\n\n-path:\t%s\n" % (
-            splitString(message, 32), path)
+        messageText = f"Check display of your hardware device\n\n- message:\n\n{splitString(message, 32)}\n\n-path:\t{path}\n"
         self.mBox.setText(messageText)
         self.setBoxIcon(self.mBox, caller)
         self.mBox.setWindowTitle("CHECK YOUR TREZOR")
@@ -342,7 +335,7 @@ class TrezorApi(QObject):
             t = self.mBox2.text()
             messageText = t + "<br>Please confirm action on your Trezor device..."
         else:
-            messageText = self.messageText + "Signature Progress: <b style='color:red'>" + str(percent) + " %</b>"
+            messageText = self.messageText + f"Signature Progress: <b style='color:red'> {percent}%</b>"
         self.mBox2.setText(messageText)
         QApplication.processEvents()
 
@@ -407,7 +400,7 @@ def sign_tx(sig_percent, client, coin_name, inputs, outputs, details=None, prev_
                 idx = res.serialized.signature_index
                 sig = res.serialized.signature
                 if signatures[idx] is not None:
-                    raise ValueError("Signature for index %d already filled" % idx)
+                    raise ValueError(f"Signature for index {idx} already filled")
                 signatures[idx] = sig
                 # emit completion percent
                 percent = 10 + int(90 * (idx+1) / len(signatures))
@@ -479,7 +472,7 @@ class TrezorUi(object):
         else:
             desc = "PIN"
 
-        pin = ask_for_pin_callback("Please enter {}".format(desc))
+        pin = ask_for_pin_callback(f"Please enter {desc}")
         if pin is None:
             raise exceptions.Cancelled
         return pin

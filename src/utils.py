@@ -62,7 +62,7 @@ def compose_tx_locking_script(dest_address, isTestnet):
     """
     pubkey_hash = bytearray.fromhex(b58check_to_hex(dest_address))  # convert address to a public key hash
     if len(pubkey_hash) != 20:
-        raise Exception('Invalid length of the public key hash: ' + str(len(pubkey_hash)))
+        raise Exception(f'Invalid length of the public key hash: {len(pubkey_hash)}')
 
     if (((not isTestnet) and (dest_address[0] in P2PKH_PREFIXES))
             or (isTestnet and (dest_address[0] in P2PKH_PREFIXES_TNET))):
@@ -81,7 +81,7 @@ def compose_tx_locking_script(dest_address, isTestnet):
               pubkey_hash + \
               OP_EQUAL
     else:
-        mess = 'Invalid dest address prefix: ' + dest_address[0]
+        mess = f'Invalid dest address prefix: {dest_address[0]}'
         if isTestnet:
             mess += ' for testnet'
         raise Exception(mess)
@@ -151,7 +151,7 @@ def extract_pkh_from_locking_script(script):
 
     elif IsPayToColdStaking(script):
         return script[28:48]
-    raise Exception('Non-standard locking script type (should be P2PKH or P2PK). len is %d' % len(script))
+    raise Exception(f'Non-standard locking script type (should be P2PKH or P2PK). len is {len(script)}')
 
 
 def IsPayToColdStaking(script):
@@ -181,7 +181,7 @@ def ipmap(ip, port):
             vchAddr = base64.b32decode(ip[0:-6], True)
             vchAddrBytes = vchOnionPrefix + vchAddr[:32]
             if len(vchAddr) != 35 and vchAddr[-1] != b'\x03':
-                raise Exception('Invalid TorV3 address %s' % str(ip))
+                raise Exception(f'Invalid TorV3 address {ip}')
             return vchAddrBytes.hex() + int(port).to_bytes(2, byteorder='big').hex()
 
         ipAddr = ip_address(ip)
@@ -198,16 +198,16 @@ def ipmap(ip, port):
                 ipv6map += a
 
         else:
-            raise Exception("invalid version number (%d)" % ipAddr.version)
+            raise Exception(f"invalid version number ({ipAddr.version})")
 
         ipv6map += int(port).to_bytes(2, byteorder='big').hex()
         if len(ipv6map) != 36:
-            raise Exception("Problems! len is %d" % len(ipv6map))
+            raise Exception(f"Problems! len is {len(ipv6map)}")
         return ipv6map
 
     except Exception as e:
-        err_msg = "error in ipmap"
-        printException(getCallerName(), getFunctionName(), err_msg, e.args)
+        err_msg = f"error in ipmap"
+        printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
 
 
 def num_to_varint(a):
@@ -248,19 +248,19 @@ def serialize_input_str(tx, prevout_n, sequence, script_sig):
     Based on project: https://github.com/chaeplin/dashmnb.
     """
     s = ['CTxIn(']
-    s.append('COutPoint(%s, %s)' % (tx, prevout_n))
+    s.append(f'COutPoint({tx}, {prevout_n})')
     s.append(', ')
     if tx == '00' * 32 and prevout_n == 0xffffffff:
-        s.append('coinbase %s' % script_sig)
+        s.append(f'coinbase {script_sig}')
 
     else:
         script_sig2 = script_sig
         if len(script_sig2) > 24:
             script_sig2 = script_sig2[0:24]
-        s.append('scriptSig=%s' % script_sig2)
+        s.append(f'scriptSig={script_sig2}')
 
     if sequence != 0xffffffff:
-        s.append(', nSequence=%d' % sequence)
+        s.append(f', nSequence={sequence}')
 
     s.append(')')
     return ''.join(s)

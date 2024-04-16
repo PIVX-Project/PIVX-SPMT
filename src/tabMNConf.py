@@ -42,7 +42,7 @@ class TabMNConf:
         # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
+            printDbg(f"Unable to connect to hardware device. The device status is: {self.caller.hwStatus}")
             return None
         self.runInThread(self.findSpath, (0, 10), self.findSpath_done)
 
@@ -51,7 +51,7 @@ class TabMNConf:
         currHwAcc = self.ui.edt_hwAccount.value()
         # first scan. Subsequent called by findSpath_done
         self.spath_found, self.spath = self.caller.hwdevice.scanForBip32(currHwAcc, currAddr, starting_spath, spath_count, self.isTestnet())
-        printOK("Bip32 scan complete. result=%s   spath=%s" % (self.spath_found, self.spath))
+        printOK(f"Bip32 scan complete. result={self.spath_found}   spath={self.spath}")
         self.curr_starting_spath = starting_spath
         self.curr_spath_count = spath_count
 
@@ -63,17 +63,17 @@ class TabMNConf:
         spath_count = self.curr_spath_count
 
         if self.spath_found:
-            printOK("spath is %d" % spath)
-            mess = "Found address %s in HW account %s with spath_id %s" % (currAddr, currHwAcc, spath)
-            myPopUp_sb(self.caller, "info", 'SPMT - spath search', mess)
+            printOK(f"spath is {spath}")
+            mess = f"Found address {currAddr} in HW account {currHwAcc} with spath_id {spath}"
+            myPopUp_sb(self.caller, "info", 'SPMT - spath search', f"{mess}")
             self.ui.edt_spath.setValue(spath)
             self.findPubKey()
 
         else:
-            mess = "Scanned addresses <b>%d</b> to <b>%d</b> of HW account <b>%d</b>.<br>" % (starting_spath, starting_spath + spath_count - 1, currHwAcc)
-            mess += "Unable to find the address <i>%s</i>.<br>Maybe it's on a different account.<br><br>" % currAddr
-            mess += "Do you want to scan %d more addresses of account n.<b>%d</b> ?" % (spath_count, currHwAcc)
-            ans = myPopUp(self.caller, "crit", 'SPMT - spath search', mess)
+            mess = f"Scanned addresses <b>{starting_spath}</b> to <b>{starting_spath + spath_count - 1}</b> of HW account <b>{currHwAcc}</b>.<br>"
+            mess += f"Unable to find the address <i>{currAddr}</i>.<br>Maybe it's on a different account.<br><br>"
+            mess += f"Do you want to scan {spath_count} more addresses of account n.<b>{currHwAcc}</b> ?"
+            ans = myPopUp(self.caller, "crit", 'SPMT - spath search', f"{mess}")
             if ans == QMessageBox.Yes:
                 starting_spath += spath_count
                 self.runInThread(self.findSpath, (starting_spath, spath_count), self.findSpath_done)
@@ -85,7 +85,7 @@ class TabMNConf:
         # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
+            printDbg(f"Unable to connect to hardware device. The device status is: {self.caller.hwStatus}")
             return None
 
         result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath, self.isTestnet())
@@ -94,7 +94,7 @@ class TabMNConf:
         warningText = "Unable to find public key. The action was refused on the device or another application "
         warningText += "might have taken over the USB communication with the device.<br><br>"
         warningText += "To continue click the <b>Retry</b> button.\nTo cancel, click the <b>Abort</b> button."
-        mBox = QMessageBox(QMessageBox.Critical, "WARNING", warningText, QMessageBox.Retry)
+        mBox = QMessageBox(QMessageBox.Critical, "WARNING", f"{warningText}", QMessageBox.Retry)
         mBox.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
 
         while result is None:
@@ -107,9 +107,9 @@ class TabMNConf:
 
             result = self.caller.hwdevice.scanForPubKey(currHwAcc, currSpath, self.isTestnet())
 
-        mess = "Found public key:\n%s" % result
-        myPopUp_sb(self.caller, "info", "SPMT - findPubKey", mess)
-        printOK("Public Key: %s" % result)
+        mess = f"Found public key:\n{result}"
+        myPopUp_sb(self.caller, "info", "SPMT - findPubKey", f"{mess}")
+        printOK(f"Public Key: {result}")
         self.ui.edt_pubKey.setText(result)
 
     def findRow_mn_list(self, name):
@@ -159,7 +159,7 @@ class TabMNConf:
         printDbg("Checking RPC connection")
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to RPC server first")
-            printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+            printDbg(f"Unable to connect: {self.caller.rpcStatusMess}")
             return None
         try:
             # Update Lookup dialog
@@ -170,7 +170,7 @@ class TabMNConf:
                 self.ui.edt_txidn.setValue(txidn)
 
         except Exception as e:
-            printDbg(e)
+            printDbg(f"{e}")
 
     def onGenerateMNkey(self):
         printDbg("Generate MNkey pressed")
@@ -190,17 +190,17 @@ class TabMNConf:
         try:
             if self.ui.edt_pubKey.text() == "" or self.ui.edt_txid.text() == "" or self.ui.edt_mnPrivKey.text() == "":
                 mess_text = 'Attention! Complete the form before saving.<br>'
-                mess_text += "<b>pubKey = </b>%s<br>" % self.ui.edt_pubKey.text()
-                mess_text += "<b>txId = </b>%s<br>" % self.ui.edt_txid.text()
-                mess_text += "<b>mnPrivKey = </b>%s<br>" % self.ui.edt_mnPrivKey.text()
-                myPopUp_sb(self.caller, "crit", 'Complete Form', mess_text)
+                mess_text += f"<b>pubKey = </b>{self.ui.edt_pubKey.text()}<br>"
+                mess_text += f"<b>txId = </b>{self.ui.edt_txid.text()}<br>"
+                mess_text += f"<b>mnPrivKey = </b>{self.ui.edt_mnPrivKey.text()}<br>"
+                myPopUp_sb(self.caller, "crit", 'Complete Form', f"{mess_text}")
                 return
 
             if not is_hex(self.ui.edt_txid.text()):
                 mess_text = 'Attention! txid format is not valid.<br>'
-                mess_text += "<b>txId = </b>%s<br>" % self.ui.edt_txid.text()
+                mess_text += f"<b>txId = </b>{self.ui.edt_txid.text()}<br>"
                 mess_text += 'transaction id must be in hex format.<br>'
-                myPopUp_sb(self.caller, "crit", 'Complete Form', mess_text)
+                myPopUp_sb(self.caller, "crit", 'Complete Form', f"{mess_text}")
                 return
 
             # check for duplicate names
@@ -210,9 +210,9 @@ class TabMNConf:
             if self.caller.mnode_to_change is not None:
                 old_alias = self.caller.mnode_to_change['name']
             if self.caller.isMasternodeInList(mn_alias) and old_alias != mn_alias:
-                mess_text = 'Attention! The name <b>%s</b> is already in use for another masternode.<br>' % mn_alias
+                mess_text = f'Attention! The name <b>{mn_alias}</b> is already in use for another masternode.<br>'
                 mess_text += 'Choose a different name (alias) for the masternode'
-                myPopUp_sb(self.caller, "crit", 'Complete Form', mess_text)
+                myPopUp_sb(self.caller, "crit", 'Complete Form', f"{mess_text}")
                 return
 
             # create new item
@@ -244,9 +244,9 @@ class TabMNConf:
             self.onCancelMNConfig()
 
         except Exception as e:
-            error_msg = "ERROR: %s" % e
+            error_msg = f"ERROR: {e}"
             printDbg(error_msg)
-            myPopUp_sb(self.caller, "crit", 'ERROR', error_msg)
+            myPopUp_sb(self.caller, "crit", 'ERROR', f"{error_msg}")
 
     def spathToAddress(self):
         printOK("spathToAddress pressed")
@@ -255,7 +255,7 @@ class TabMNConf:
         # Check HW device
         if self.caller.hwStatus != 2:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check', "Connect to HW device first")
-            printDbg("Unable to connect to hardware device. The device status is: %d" % self.caller.hwStatus)
+            printDbg(f"Unable to connect to hardware device. The device status is: {self.caller.hwStatus}")
             return None
         addr = self.caller.hwdevice.scanForAddress(currHwAcc, currSpath, self.isTestnet())
         if addr:

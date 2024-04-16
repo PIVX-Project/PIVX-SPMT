@@ -14,20 +14,20 @@ class TestPivx_b58Methods(unittest.TestCase):
     def test_encodeDecode(self):
         # get 32 random bytes
         text = self.randomBytesString(32)
-        print("\nRandom Bytes: %s" % text.hex())
+        print(f"\nRandom Bytes: {text.hex()}")
         # encode base58
         encoded_text = b58encode(text)
-        print("\nEncoded Text: %s\n" % encoded_text)
+        print(f"\nEncoded Text: {encoded_text}\n")
         # verify
         self.assertEqual(b58decode(encoded_text), text)
 
     def test_decodeEncode(self):
         # get 10 random base58 chars
         text = self.randomB58String(10)
-        print("\nRandom Text: %s" % text)
+        print(f"\nRandom Text: {text}")
         # decode base58
         decoded_text = b58decode(text)
-        print("\nDecoded Text: %s\n" % decoded_text)
+        print(f"\nDecoded Text: {decoded_text}\n")
         # verify
         self.assertEqual(b58encode(decoded_text), text)
 

@@ -42,7 +42,7 @@ class TabMain:
 
     def displayMNlistUpdated(self):
         for masternode in self.caller.masternode_list:
-            printDbg("Checking %s (%s)..." % (masternode['name'], masternode['collateral'].get('txid')))
+            printDbg(f"Checking {masternode['name']} ({masternode['collateral'].get('txid')})...")
             self.displayMNStatus(masternode)
             time.sleep(0.1)
 
@@ -55,8 +55,8 @@ class TabMain:
                 try:
                     statusData['balance'] = self.caller.apiClient.getBalance(mn.get('addr'))
                 except Exception as e:
-                    err_msg = "error getting balance of %s" % mn.get('addr')
-                    printException(getCallerName(), getFunctionName(), err_msg, e)
+                    err_msg = f"error getting balance of {mn.get('addr')}"
+                    printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
         masternode_alias = currMN['name']
         self.ui.btn_details[masternode_alias].disconnect()
@@ -64,7 +64,7 @@ class TabMain:
         self.ui.btn_details[masternode_alias].show()
 
         if statusData is None:
-            printOK("%s Not Found" % (masternode_alias))
+            printOK(f"{masternode_alias} Not Found")
             self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGrayV_icon)
             msg = "<b>Masternode not found.</b>"
             self.ui.mnStatusLabel[masternode_alias].setText(msg)
@@ -73,22 +73,22 @@ class TabMain:
         else:
             display_text = ""
             if statusData['balance'] is not None:
-                self.ui.mnBalance[masternode_alias].setText('&nbsp;<span style="color:purple">%s PIV</span>' % str(statusData['balance']))
+                self.ui.mnBalance[masternode_alias].setText(f'&nbsp;<span style="color:purple">{statusData["balance"]} PIV</span>')
                 self.ui.mnBalance[masternode_alias].show()
-            printOK("Got status %s for %s" % (statusData['status'], masternode_alias))
+            printOK(f"Got status {statusData['status']} for {masternode_alias}")
             if statusData['status'] == 'ENABLED':
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledGreenV_icon)
-                display_text += '<span style="color:green">%s</span>&nbsp;&nbsp;' % statusData['status']
+                display_text += f'<span style="color:green">{statusData["status"]}</span>&nbsp;&nbsp;'
                 position = statusData.get('queue_pos')
                 total_count = len(self.all_masternodes.get('masternodes'))
-                display_text += '%d/%d' % (position, total_count)
+                display_text += f'{position}/{total_count}'
 
                 self.ui.mnStatusProgress[masternode_alias].setRange(0, total_count)
                 self.ui.mnStatusProgress[masternode_alias].setValue(total_count - position)
                 self.ui.mnStatusProgress[masternode_alias].show()
             else:
                 self.ui.mnLed[masternode_alias].setPixmap(self.caller.ledRedV_icon)
-                display_text += '<span style="color:red">%s</span>&nbsp;&nbsp;' % statusData['status']
+                display_text += f'<span style="color:red">{statusData["status"]}</span>&nbsp;&nbsp;'
 
             self.ui.mnStatusLabel[masternode_alias].setText(display_text)
             self.ui.mnStatusLabel[masternode_alias].show()
@@ -99,7 +99,7 @@ class TabMain:
         if not self.caller.rpcConnected:
             myPopUp_sb(self.caller, "crit", 'SPMT - hw device check',
                        "RPC server must be connected to perform this action.")
-            printDbg("Unable to connect: %s" % self.caller.rpcStatusMess)
+            printDbg(f"Unable to connect: {self.caller.rpcStatusMess}")
             return
         if self.caller.masternode_list is None or self.caller.masternode_list == []:
             myPopUp_sb(self.caller, "crit", 'SPMT - Check-All masternodes',
@@ -120,7 +120,7 @@ class TabMain:
 
         except Exception as e:
             err_msg = "error in displayStatusDetails"
-            printException(getCallerName(), getFunctionName(), err_msg, e.args)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e.args}")
 
     def onEditMN(self, data=None):
         if not data:
@@ -146,7 +146,7 @@ class TabMain:
             masternode_alias = target.alias
 
             reply = myPopUp(self.caller, "warn", 'Confirm REMOVE',
-                            "Are you sure you want to remove\nmasternoode:'%s'" % masternode_alias, QMessageBox.No)
+                            f"Are you sure you want to remove\nmasternoode:'{masternode_alias}'", QMessageBox.No)
 
             if reply == QMessageBox.No:
                 return
@@ -190,7 +190,7 @@ class TabMain:
 
         except Exception as e:
             err_msg = "error before starting node"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
     def onStartMN(self, data=None):
         # Check RPC & HW device
@@ -202,11 +202,11 @@ class TabMain:
             if not data:
                 target = self.ui.sender()
                 masternode_alias = target.alias
-                printOK("Start-masternode %s pressed" % masternode_alias)
+                printOK(f"Start-masternode {masternode_alias} pressed")
                 for mn_conf in self.caller.masternode_list:
                     if mn_conf['name'] == masternode_alias:
                         reply = myPopUp(self.caller, QMessageBox.Question, 'Confirm START',
-                                        "Are you sure you want to start masternoode:\n'%s'?" % mn_conf['name'],
+                                        f"Are you sure you want to start masternoode:\n'{mn_conf['name']}'?",
                                         QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
                             self.masternodeToStart = Masternode(self, mn_conf['name'], mn_conf['ip'], mn_conf['port'],
@@ -220,7 +220,7 @@ class TabMain:
 
         except Exception as e:
             err_msg = "error before starting node"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
     def onSweepAllRewards(self):
         if not self.caller.rpcConnected:
@@ -231,7 +231,7 @@ class TabMain:
 
         except Exception as e:
             err_msg = "exception in SweepAll_dlg"
-            printException(getCallerName(), getFunctionName(), err_msg, e)
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{err_msg}", f"{e}")
 
     # Activated by signal 'sigdone' from masternode
     def sendBroadcast(self, text):
@@ -240,7 +240,7 @@ class TabMain:
             return
 
         printOK("Start Message ready for being relayed...")
-        logging.debug("Start Message: %s" % text)
+        logging.debug(f"Start Message: {text}")
         ret = self.caller.rpcClient.decodemasternodebroadcast(text)
         if ret is None:
             myPopUp_sb(self.caller, "crit", 'message decoding failed', 'message decoding failed')
@@ -249,7 +249,7 @@ class TabMain:
             return
 
         msg = "Broadcast START message?\n" + json.dumps(ret, indent=4, sort_keys=True)
-        reply = myPopUp(self.caller, "quest", 'message decoded', msg, QMessageBox.Yes)
+        reply = myPopUp(self.caller, "quest", 'message decoded', f"{msg}", QMessageBox.Yes)
         if reply == QMessageBox.No:
             self.sendBroadcastCheck()
             return
@@ -262,10 +262,10 @@ class TabMain:
             message += "If your remote server is correctly configured and connected to the network, "
             message += "the output of the <b>./pivx-cli getmasternodestatus</b> command on the VPS should show:<br>"
             message += "<br><em>\"message\": \"Masternode successfully started\"</em>"
-            myPopUp_sb(self.caller, "info", 'message relayed', message)
+            myPopUp_sb(self.caller, "info", 'message relayed', f"{message}")
         else:
             printDbg("Masternode broadcast NOT sent")
-            printException(getCallerName(), getFunctionName(), json.dumps(ret2), "Error sending masternode broadcast")
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{json.dumps(ret2)}", "Error sending masternode broadcast")
 
         self.sendBroadcastCheck()
 
@@ -276,12 +276,12 @@ class TabMain:
 
     def startMN(self):
         if self.caller.hwStatus != 2:
-            myPopUp_sb(self.caller, "warn", 'SPMT - hw device check', self.caller.hwStatusMess)
+            myPopUp_sb(self.caller, "warn", 'SPMT - hw device check', f"{self.caller.hwStatusMess}")
         elif not self.caller.rpcConnected:
-            myPopUp_sb(self.caller, "warn", 'SPMT - rpc device check', self.caller.rpcStatusMess)
+            myPopUp_sb(self.caller, "warn", 'SPMT - rpc device check', f"{self.caller.rpcStatusMess}")
         else:
             self.masternodeToStart = self.mnToStartList.pop()
-            printDbg("Starting...%s" % self.masternodeToStart.name)
+            printDbg(f"Starting...{self.masternodeToStart.name}")
             self.masternodeToStart.startMessage(self.caller.hwdevice, self.caller.rpcClient)
             # wait for signal when masternode.work is ready then ---> sendBroadcast
 

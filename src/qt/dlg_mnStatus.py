@@ -30,7 +30,7 @@ class Ui_MnStatusDlg(object):
         MnStatusDlg.setModal(True)
         layout = QVBoxLayout(MnStatusDlg)
         layout.setContentsMargins(10, 15, 10, 10)
-        name = QLabel("<b><i>%s</i></b>" % self.mnAlias)
+        name = QLabel(f"<b><i>{self.mnAlias}</i></b>")
         name.setAlignment(Qt.AlignCenter)
         layout.addWidget(name)
         body = QFormLayout()

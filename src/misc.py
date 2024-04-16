@@ -33,7 +33,7 @@ def add_defaultKeys_to_dict(dictObj, defaultObj):
 
 
 def appendMasternode(mainWnd, mn):
-    printDbg("saving MN configuration for %s" % mn['name'])
+    printDbg(f"saving MN configuration for {mn['name']}")
 
     # If we are changing a MN, remove previous entry:
     if mainWnd.mnode_to_change is not None:
@@ -93,11 +93,11 @@ def checkTxInputs(parentWindow, num_of_inputs):
         return None
 
     if num_of_inputs > MAX_INPUTS_NO_WARNING:
-        warning = "Warning: Trying to spend %d inputs.\nA few minutes could be required " \
+        warning = f"Warning: Trying to spend {num_of_inputs} inputs.\nA few minutes could be required " \
                   "for the transaction to be prepared and signed.\n\nThe hardware device must remain unlocked " \
                   "during the whole time (it's advised to disable the auto-lock feature)\n\n" \
-                  "Do you wish to proceed?" % num_of_inputs
-        title = "SPMT - spending more than %d inputs" % MAX_INPUTS_NO_WARNING
+                  "Do you wish to proceed?"
+        title = f"SPMT - spending more than {MAX_INPUTS_NO_WARNING} inputs"
         return myPopUp(parentWindow, "warn", title, warning)
 
     return QMessageBox.Yes
@@ -120,15 +120,15 @@ def clean_v4_migration(wnd):
             with open(rpc_file, encoding="utf-8") as data_file:
                 rpc_config = json.load(data_file)
             # copy to database
-            rpc_host = "%s:%d" % (rpc_config['rpc_ip'], rpc_config['rpc_port'])
+            rpc_host = f"{rpc_config['rpc_ip']}:{rpc_config['rpc_port']}"
             wnd.db.editRPCServer("http", rpc_host, rpc_config['rpc_user'], rpc_config['rpc_password'], 0)
             printDbg("...saved to Database")
             # and delete old file
             os.remove(rpc_file)
             printDbg("old rpcServer.json file deleted")
         except Exception as e:
-            mess = "Error importing old rpc_config file"
-            printException(getCallerName(), getFunctionName(), mess, e)
+            mess = f"Error importing old rpc_config file"
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{mess}", f"{e}")
 
     if os.path.exists(cache_file):
         # If cache file exists, delete it
@@ -136,8 +136,8 @@ def clean_v4_migration(wnd):
             os.remove(cache_file)
             printDbg("old cache.json file deleted")
         except Exception as e:
-            mess = "Error deleting old cache file"
-            printException(getCallerName(), getFunctionName(), mess, e)
+            mess = f"Error deleting old cache file"
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{mess}", f"{e}")
 
     if os.path.exists(mn_file):
         # If mn file exists
@@ -152,8 +152,8 @@ def clean_v4_migration(wnd):
             os.remove(mn_file)
             printDbg("old masternodes.json file deleted")
         except Exception as e:
-            mess = "Error importing old masternodes_config file"
-            printException(getCallerName(), getFunctionName(), mess, e)
+            mess = f"Error importing old masternodes_config file"
+            printException(f"{getCallerName()}", f"{getFunctionName()}", f"{mess}", f"{e}")
 
     # Remove old logs
     if os.path.exists(log_file):
@@ -236,15 +236,15 @@ def ipport(ip, port):
     if ip is None or port is None:
         return None
     elif ip.endswith('.onion'):
-        return ip + ':' + port
+        return f"{ip}:{port}"
     else:
         ipAddr = ip_address(ip)
         if ipAddr.version == 4:
-            return ip + ':' + port
+            return f"{ip}:{port}"
         elif ipAddr.version == 6:
-            return "[" + ip + "]:" + port
+            return f"[{ip}]:{port}"
         else:
-            raise Exception("invalid IP version number")
+            raise Exception("Invalid IP version number")
 
 
 def is_hex(s):
@@ -334,7 +334,7 @@ def now():
 def persistCacheSetting(cache_key, cache_value):
     settings = QSettings('PIVX', 'SecurePivxMasternodeTool')
     if not settings.contains(cache_key):
-        printDbg("Cache key %s not found" % str(cache_key))
+        printDbg(f"Cache key {cache_key} not found")
         printOK("Adding new cache key to settings...")
 
     if type(cache_value) in [list, dict]:
@@ -354,7 +354,7 @@ def printDbg(what):
 def printDbg_msg(what):
     what = clean_for_html(what)
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now()))
-    log_line = '<b style="color: yellow">{}</b> : {}<br>'.format(timestamp, what)
+    log_line = f'<b style="color: yellow">{timestamp}</b> : {what}<br>'
     return log_line
 
 
@@ -363,7 +363,7 @@ def printError(
         function_name,
         what
 ):
-    logging.error("%s | %s | %s" % (caller_name, function_name, what))
+    logging.error(f"{caller_name} | {function_name} | {what}")
     log_line = printException_msg(caller_name, function_name, what, None, True)
     redirect_print(log_line)
 
@@ -376,9 +376,9 @@ def printException(
 ):
     what = err_msg
     if errargs is not None:
-        what += " ==> %s" % str(errargs)
-    logging.warning("%s | %s | %s" % (caller_name, function_name, what))
-    text = printException_msg(caller_name, function_name, err_msg, errargs)
+        what += f" ==> {errargs}"
+    logging.warning(f"{caller_name} | {function_name} | {what}")
+    text = printException_msg(f"{caller_name}", f"{function_name}", f"{err_msg}", f"{errargs}")
     redirect_print(text)
 
 
@@ -393,19 +393,19 @@ def printException_msg(
         msg = '<b style="color: red">ERROR</b><br>'
     else:
         msg = '<b style="color: red">EXCEPTION</b><br>'
-    msg += '<span style="color:white">caller</span>   : %s<br>' % caller_name
-    msg += '<span style="color:white">function</span> : %s<br>' % function_name
+    msg += f'<span style="color:white">caller</span>   : {caller_name}<br>'
+    msg += f'<span style="color:white">function</span> : {function_name}<br>'
     msg += '<span style="color:red">'
     if errargs:
-        msg += 'err: %s<br>' % str(errargs)
+        msg += f'err: {errargs}<br>'
 
-    msg += '===> %s</span><br>' % err_msg
+    msg += f'===> {err_msg}</span><br>'
     return msg
 
 
 def printOK(what):
     logging.debug(what)
-    msg = '<b style="color: #cc33ff">===> ' + what + '</b><br>'
+    msg = f'<b style="color: #cc33ff">===> {what} </b><br>'
     redirect_print(msg)
 
 
@@ -476,12 +476,12 @@ def saveCacheSettings(cache):
 
 def sec_to_time(seconds):
     days = seconds // 86400
-    seconds -= days * 86400
+    seconds %= days * 86400
     hrs = seconds // 3600
-    seconds -= hrs * 3600
+    seconds %= hrs * 3600
     mins = seconds // 60
-    seconds -= mins * 60
-    return "{} days, {} hrs, {} mins, {} secs".format(days, hrs, mins, seconds)
+    seconds %= mins * 60
+    return f"{days} days, {hrs} hrs, {mins} mins, {seconds} secs"
 
 
 def splitString(text, n):
@@ -491,9 +491,9 @@ def splitString(text, n):
 
 def timeThis(function, *args):
     try:
-        start = time.clock()
+        start = time.time()
         val = function(*args)
-        end = time.clock()
+        end = time.time()
         return val, (end - start)
     except Exception:
         return None, None

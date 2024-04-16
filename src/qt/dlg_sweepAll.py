@@ -63,7 +63,7 @@ class SweepAll_dlg(QDialog):
             x = {}
             x['name'] = mn['name']
             x['addr'] = mn['collateral'].get('address')
-            x['path'] = "%d'/0/%d" % (mn['hwAcc'], mn['collateral'].get('spath'))
+            x['path'] = f"{mn['hwAcc']}'/0/{mn['collateral'].get('spath')}"
             x['utxos'] = [r for r in rewards
                           if r['mn_name'] == x['name']                                       # this mn's UTXOs
                           and r['txid'] != mn['collateral'].get('txid')                      # except the collateral
@@ -96,7 +96,7 @@ class SweepAll_dlg(QDialog):
                 self.ui.tableW.setItem(row, 1, item(mnode['addr']))
                 newInputs = len(mnode['utxos'])
                 numOfInputs += newInputs
-                rewards_line = "%s PIV" % mnode['total_rewards']
+                rewards_line = f"{mnode['total_rewards']} PIV"
                 self.ui.tableW.setItem(row, 2, item(rewards_line))
                 self.ui.tableW.setItem(row, 3, item(str(newInputs)))
 
@@ -105,8 +105,8 @@ class SweepAll_dlg(QDialog):
             self.ui.tableW.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
             total = sum([float(mnode['total_rewards']) for mnode in self.rewardsArray])
-            self.ui.totalLine.setText("<b>%s PIV</b>" % str(round(total, 8)))
-            self.ui.noOfUtxosLine.setText("<b>%s</b>" % str(numOfInputs))
+            self.ui.totalLine.setText(f"<b>{round(total, 8)} PIV</b>")
+            self.ui.noOfUtxosLine.setText(f"<b>{numOfInputs}</b>")
 
             # update fee
             estimatedTxSize = (44 + numOfInputs * 148) * 1.0 / 1000  # kB
@@ -124,7 +124,7 @@ class SweepAll_dlg(QDialog):
         # Check HW device
         while self.main_tab.caller.hwStatus != 2:
             mess = "HW device not connected. Try to connect?"
-            ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'SPMT - hw check', mess)
+            ans = myPopUp(self.main_tab.caller, QMessageBox.Question, 'SPMT - hw check', f"{mess}")
             if ans == QMessageBox.No:
                 return
             # re connect
@@ -161,7 +161,7 @@ class SweepAll_dlg(QDialog):
         if percent < 100:
             self.ui.buttonSend.setEnabled(False)
             self.ui.lblMessage.show()
-            self.ui.lblMessage.setText("Loading rewards...%d%%" % percent)
+            self.ui.lblMessage.setText(f"Loading rewards...{percent}%")
         else:
             self.ui.buttonSend.setEnabled(True)
             self.ui.lblMessage.hide()

@@ -101,7 +101,7 @@ class TabGovernance():
             btn = QPushButton()
             if icon_num == 0:
                 btn.setIcon(self.ui.link_icon)
-                btn.setToolTip("Open WebPage: %s" % str(value))
+                btn.setToolTip(f"Open WebPage: {value}")
                 btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(str(value))))
             else:
                 btn.setIcon(self.ui.search_icon)
@@ -116,7 +116,7 @@ class TabGovernance():
 
         # update MN count
         mnCount = self.caller.parent.cache['MN_count']
-        self.ui.mnCountLabel.setText("Total MN Count: <em>%d</em>" % mnCount)
+        self.ui.mnCountLabel.setText(f"Total MN Count: <em>{mnCount}</em>")
         # Make room for new list
         self.ui.proposalBox.setRowCount(len(proposals))
 
@@ -141,11 +141,11 @@ class TabGovernance():
             self.ui.proposalBox.setItem(row, 3, monthlyPay)
 
             # 4 - payments
-            payments = "%d / %d" % (prop.RemainingPayCount, prop.TotalPayCount)
+            payments = f"{prop.RemainingPayCount} / {prop.TotalPayCount}"
             self.ui.proposalBox.setItem(row, 4, item(payments))
 
             # 5 - network votes
-            net_votes = "%d / %d / %d" % (prop.Yeas, prop.Abstains, prop.Nays)
+            net_votes = f"{prop.Yeas} / {prop.Abstains} / {prop.Nays}"
             votes = item(net_votes)
             if (prop.Yeas - prop.Nays) > 0.1 * mnCount:
                 votes.setBackground(Qt.green)
@@ -173,7 +173,7 @@ class TabGovernance():
 
     def loadProposals_thread(self, ctrl):
         if not self.caller.rpcConnected:
-            printException(getCallerName(), getFunctionName(), "RPC server not connected", "")
+            printException(f"{getCallerName()} {getFunctionName()} RPC server not connected")
             return
 
         # clear proposals DB
@@ -238,11 +238,11 @@ class TabGovernance():
     def onVote(self, vote_code):
         if len(self.selectedProposals) == 0:
             message = "NO PROPOSAL SELECTED. Select proposals from the list."
-            myPopUp_sb(self.caller, "crit", 'Vote on proposals', message)
+            myPopUp_sb(self.caller, "crit", 'Vote on proposals', f"{message}")
             return
         if len(self.votingMasternodes) == 0:
             message = "NO MASTERNODE SELECTED FOR VOTING. Click on 'Select Masternodes...'"
-            myPopUp_sb(self.caller, "crit", 'Vote on proposals', message)
+            myPopUp_sb(self.caller, "crit", 'Vote on proposals', f"{message}")
             return
 
         reply = self.summaryDlg(vote_code)
@@ -251,13 +251,13 @@ class TabGovernance():
             ThreadFuns.runInThread(self.vote_thread, ([vote_code]), self.vote_thread_end)
 
     def summaryDlg(self, vote_code):
-        message = "Voting <b>%s</b> on the following proposal(s):<br><br>" % str(self.vote_codes[vote_code]).upper()
+        message = f"Voting <b>{self.vote_codes[vote_code].upper()}</b> on the following proposal(s):<br><br>"
         for prop in self.selectedProposals:
-            message += "&nbsp; - <b>%s</b><br>&nbsp; &nbsp; (<em>%s</em>)<br><br>" % (prop.name, prop.Hash)
+            message += f"&nbsp; - <b>{prop.name}</b><br>&nbsp; &nbsp; (<em>{prop.Hash}</em>)<br><br>"
         message += "<br>with following masternode(s):<br><br>"
-
         for mn in self.votingMasternodes:
-            message += "&nbsp; - <b>%s</b><br>" % mn[1]
+            message += f"&nbsp; - <b>{mn[1]}</b><br>"
+
 
         dlg = ScrollMessageBox(self.caller, message)
 
@@ -282,7 +282,7 @@ class TabGovernance():
         if selected_MN == 1:
             label = "<em><b>1</b> masternode selected for voting</em>"
         else:
-            label = "<em><b>%d</b> masternodes selected for voting</em>" % selected_MN
+            label = f"<em><b>{selected_MN}</b> masternodes selected for voting</em>"
         self.ui.selectedMNlabel.setText(label)
 
     def updateSelection(self):
@@ -290,7 +290,7 @@ class TabGovernance():
         if len(self.selectedProposals) == 1:
             self.ui.selectedPropLabel.setText("<em><b>1</b> proposal selected")
         else:
-            self.ui.selectedPropLabel.setText("<em><b>%d</b> proposals selected" % len(self.selectedProposals))
+            self.ui.selectedPropLabel.setText(f"<em><b>{len(self.selectedProposals)}</b> {'proposal' if len(self.selectedProposals) == 1 else 'proposals'} selected")
 
     def getBudgetVoteMess(self, fNewSigs, txid, txidn, hash, vote_code, sig_time):
         if fNewSigs:
@@ -302,14 +302,14 @@ class TabGovernance():
             ss += (sig_time).to_bytes(8, byteorder='little')
             return bitcoin.bin_dbl_sha256(ss)
         else:
-            serialize_for_sig = '%s-%d' % (txid, txidn)
-            serialize_for_sig += hash + str(vote_code) + str(sig_time)
+            serialize_for_sig = f'{txid}-{txidn}'
+            serialize_for_sig += f'{hash} {vote_code} {sig_time}'
             return serialize_for_sig
 
     def vote_thread(self, ctrl, vote_code):
         # vote_code index for ["yes", "abstain", "no"]
         if not isinstance(vote_code, int) or vote_code not in range(3):
-            raise Exception("Wrong vote_code %s" % str(vote_code))
+            raise Exception(f"Wrong vote_code {vote_code}")
         self.successVotes = 0
         self.failedVotes = 0
         self.currHeight = self.caller.rpcClient.getBlockCount()
@@ -329,7 +329,7 @@ class TabGovernance():
                     # Get mnPrivKey
                     currNode = next(x for x in self.caller.masternode_list if x['name'] == mn[1])
                     if currNode is None:
-                        printDbg("currNode not found for current voting masternode %s" % mn[1])
+                        printDbg(f"currNode not found for current voting masternode {mn[1]}")
                         self.clear()
                         raise Exception()
                     mnPrivKey = currNode['mnPrivKey']
@@ -343,11 +343,12 @@ class TabGovernance():
                         sig_time += delay_secs
 
                     # Print Debug line to console
-                    mess = "Processing '%s' vote on behalf of masternode [%s]" % (self.vote_codes[vote_code], mn[1])
-                    mess += " for the proposal {%s}" % prop.name
+                    mess = f"Processing '{self.vote_codes[vote_code]}' vote on behalf of masternode [{mn[1]}] "
+                    mess += f"for the proposal {{{prop.name}}}"
                     if self.ui.randomDelayCheck.isChecked():
-                        mess += " with offset of %d seconds" % delay_secs
+                        mess += f" with offset of {delay_secs} seconds"
                     printDbg(mess)
+
 
                     # Serialize and sign vote
                     fNewSigs = NewSigsActive(self.currHeight, self.isTestnet)
@@ -383,9 +384,9 @@ class TabGovernance():
     def vote_thread_end(self):
         message = '<p>Votes sent</p>'
         if self.successVotes > 0:
-            message += '<p>Successful Votes: <b>%d</b></p>' % self.successVotes
+            message += f'<p>Successful Votes: <b>{self.successVotes}</b></p>'
         if self.failedVotes > 0:
-            message += '<p>Failed Votes: <b>%d</b>' % self.failedVotes
+            message += f'<p>Failed Votes: <b>{self.failedVotes}</b>'
         myPopUp_sb(self.caller, "info", 'Vote Finished', message)
         # refresh my votes on proposals
         self.ui.selectedPropLabel.setText("<em><b>0</b> proposals selected")
