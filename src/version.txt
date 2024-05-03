@@ -1,5 +1,5 @@
 {
- "number": "0.6.3",
+ "number": "0.7.0",
  "tag": "a",
- "comments": ["bugfixes"]
+ "comments": ["TORv3 Support"]
  }
