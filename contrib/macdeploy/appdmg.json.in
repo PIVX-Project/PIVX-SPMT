@@ -1,0 +1,13 @@
+{
+  "title": "SPMT %version%",
+  "icon": "../img/spmt.icns",
+  "icon-size": 96,
+  "background": "background.tiff",
+  "contents": [
+    { "x": 370, "y": 156, "type": "link", "path": "/Applications" },
+    { "x": 128, "y": 156, "type": "file", "path": "SecurePivxMasternodeTool.app" }
+  ],
+  "code-sign": {
+    "signing-identity": "%signer%"
+  }
+}
