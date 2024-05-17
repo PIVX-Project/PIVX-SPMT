@@ -1,7 +1,9 @@
 # -*- mode: python -*-
 import sys
+import platform
 import os.path as os_path
 import simplejson as json
+import subprocess
 
 os_type = sys.platform
 block_cipher = None
@@ -11,9 +13,30 @@ def libModule(module, source, dest):
     m = __import__(module)
     module_path = os_path.dirname(m.__file__)
     del m
-    print(f"libModule {(os.path.join(module_path, source), dest)}")
+    print(f"libModule {(os_path.join(module_path, source), dest)}")
     return ( os_path.join(module_path, source), dest )
 
+def is_tool(prog):
+    for dir in os.environ['PATH'].split(os.pathsep):
+        if os.path.exists(os.path.join(dir, prog)):
+            try:
+                subprocess.call([os.path.join(dir, prog)],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+            except(OSError, e):
+                return False
+            return True
+    return False
+
+# Set this to True if codesigning macOS bundles. Requires an Apple issued developer ID certificate.
+code_sign = False
+codesigner = 'fuzzbawls@pivx.org'
+
+# detect CPU architecture
+cpu_arch = platform.processor()
+if os_type == 'darwin':
+    if cpu_arch == 'arm': cpu_arch = 'arm64'
+    if cpu_arch == 'i386': cpu_arch = 'x86_64'
 
 # look for version string
 version_str = ''
@@ -89,22 +112,23 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           console=False,
-          icon = os.path.join(base_dir, 'img', f'spmt.{"icns" if os_type == "darwin" else "ico"}'))
-
-#coll = COLLECT(exe,
-#               a.binaries,
-#               a.zipfiles,
-#               a.datas,
-#               strip=False,
-#               upx=True,
-#               name='app')
+          target_arch=f'{cpu_arch}',
+          entitlements_file='contrib/macdeploy/entitlements.plist',
+          codesign_identity=f'{codesigner if code_sign == True else ""}',
+          icon = os_path.join(base_dir, 'img', f'spmt.{"icns" if os_type == "darwin" else "ico"}'))
 
 if os_type == 'darwin':
     app = BUNDLE(exe,
              name='SecurePivxMasternodeTool.app',
              icon=os_path.join(base_dir, 'img', 'spmt.icns'),
-             bundle_identifier=None,
-             info_plist={'NSHighResolutionCapable': 'True'})
+             bundle_identifier='io.pivx.spmt',
+             info_plist={
+                'NSHighResolutionCapable': 'True',
+                'CFBundleVersion': version_str,
+                'CFBundleShortVersionString': version_str,
+                'NSPrincipalClass': 'NSApplication',
+                'LSApplicationCategoryType': 'public.app-category.finance'
+             })
 
 
 # Prepare bundles
@@ -121,33 +145,60 @@ os.chdir(dist_path)
 if os_type == 'win32':
     os.chdir(base_dir)
     # Rename dist Dir
-    dist_path_win = os_path.join(base_dir, 'SPMT-v' + version_str + '-Win64')
+    dist_path_win = os_path.join(base_dir, f'SPMT-v{version_str}-Win64')
     os.rename(dist_path, dist_path_win)
-    # Create NSIS compressed installer
-    print('Creating Windows installer (requires NSIS)')
-    os.system(f'"{os.path.join("c:", "program files (x86)", "NSIS", "makensis.exe")}" {os.path.join(base_dir, "setup.nsi")}')
+    # Check for NSIS
+    prog_path = os.environ["ProgramFiles(x86)"]
+    nsis_bin = os_path.join(prog_path, "NSIS", "makensis.exe")
+    if os_path.exists(nsis_bin):
+      # Create NSIS compressed installer
+      print('Creating Windows installer')
+      os.system(f'"{nsis_bin}" {os_path.join(base_dir, "setup.nsi")}')
+    else:
+      print('NSIS not found, cannot build windows installer.')
 
 
 if os_type == 'linux':
     os.chdir(base_dir)
     # Rename dist Dir
-    dist_path_linux = os_path.join(base_dir, 'SPMT-v' + version_str + '-gnu_linux')
+    dist_path_linux = os_path.join(base_dir, f'SPMT-v{version_str}-{cpu_arch}-gnu_linux')
     os.rename(dist_path, dist_path_linux)
     # Compress dist Dir
     print('Compressing Linux App Folder')
-    os.system(f'tar -zcvf SPMT-v{version_str}-x86_64-gnu_linux.tar.gz -C {base_dir} SPMT-v{version_str}-gnu_linux')
+    os.system(f'tar -zcvf SPMT-v{version_str}-{cpu_arch}-gnu_linux.tar.gz -C {base_dir} SPMT-v{version_str}-{cpu_arch}-gnu_linux')
 
 
 if os_type == 'darwin':
     os.chdir(base_dir)
     # Rename dist Dir
-    dist_path_mac = os_path.join(base_dir, 'SPMT-v' + version_str + '-MacOSX')
+    dist_path_mac = os_path.join(base_dir, f'SPMT-v{version_str}-{cpu_arch}-MacOS')
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
-    print("Removin 'app' folder")
+    print("Removing 'app' folder")
     os.chdir(dist_path_mac)
     os.system('rm -rf app')
     os.chdir(base_dir)
     # Compress dist Dir
     print('Compressing Mac App Folder')
-    os.system(f'tar -zcvf SPMT-v{version_str}-MacOSX.tar.gz -C {base_dir} SPMT-v{version_str}-MacOSX')
+    os.system(f'tar -zcvf SPMT-v{version_str}-{cpu_arch}-MacOS.tar.gz -C {base_dir} SPMT-v{version_str}-{cpu_arch}-MacOS')
+
+    # dmg image creation uses the node.js appdmg package
+    if is_tool("appdmg"):
+        # Prepare dmg
+        print("Preparing distribution dmg installer")
+        os.chdir(dist_path_mac)
+        with open(os_path.join(base_dir, 'contrib/macdeploy', 'appdmg.json.in')) as conf:
+            confdata = conf.read()
+        confdata = confdata.replace('%version%', version_str)
+        confdata = confdata.replace('%signer%', f'{codesigner if code_sign == True else ""}')
+        with open('appdmg.json', 'w') as newconf:
+            newconf.write(confdata)
+
+        os.system(f'sed \"s/PACKAGE_NAME/SPMT {version_str}/\" < \"../contrib/macdeploy/background.svg\" | rsvg-convert -f png -d 72 -p 72 | convert - background.tiff@2x.png')
+        os.system('convert background.tiff@2x.png -resize 500x320 background.tiff.png')
+        os.system('tiffutil -cathidpicheck background.tiff.png background.tiff@2x.png -out background.tiff')
+        os.remove('background.tiff.png')
+        os.system(f'appdmg appdmg.json ../SPMT-v{version_str}-{cpu_arch}-MacOS.dmg')
+        os.remove('background.tiff@2x.png')
+    else:
+        print("appdmg not found, skipping DMG creation")
