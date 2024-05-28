@@ -422,7 +422,7 @@ class MainWindow(QWidget):
             printDbg(str(e))
             pass
 
-        printDbg("status:{self.hwStatus} - mess: {self.hwStatusMess}")
+        printDbg(f"status:{self.hwStatus} - mess: {self.hwStatusMess}")
 
     def updateLastBlockLabel(self):
         text = '--'
