@@ -2,6 +2,7 @@
 import sys
 import platform
 import os.path as os_path
+import shutil
 import simplejson as json
 import subprocess
 
@@ -146,6 +147,8 @@ if os_type == 'win32':
     os.chdir(base_dir)
     # Rename dist Dir
     dist_path_win = os_path.join(base_dir, f'SPMT-v{version_str}-Win64')
+    if os_path.exists(dist_path_win):
+        shutil.rmtree(dist_path_win)
     os.rename(dist_path, dist_path_win)
     # Check for NSIS
     prog_path = os.environ["ProgramFiles(x86)"]
@@ -162,6 +165,8 @@ if os_type == 'linux':
     os.chdir(base_dir)
     # Rename dist Dir
     dist_path_linux = os_path.join(base_dir, f'SPMT-v{version_str}-{cpu_arch}-gnu_linux')
+    if os_path.exists(dist_path_linux):
+        shutil.rmtree(dist_path_linux)
     os.rename(dist_path, dist_path_linux)
     # Compress dist Dir
     print('Compressing Linux App Folder')
@@ -172,6 +177,8 @@ if os_type == 'darwin':
     os.chdir(base_dir)
     # Rename dist Dir
     dist_path_mac = os_path.join(base_dir, f'SPMT-v{version_str}-{cpu_arch}-MacOS')
+    if os_path.exists(dist_path_mac):
+        shutil.rmtree(dist_path_mac)
     os.rename(dist_path, dist_path_mac)
     # Remove 'app' folder
     print("Removing 'app' folder")
