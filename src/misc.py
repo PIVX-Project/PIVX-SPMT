@@ -474,14 +474,14 @@ def saveCacheSettings(cache):
     settings.setValue('cache_isTestnetRPC', cache.get('isTestnetRPC'))
 
 
-def sec_to_time(seconds):
-    days = seconds // 86400
-    seconds %= days * 86400
-    hrs = seconds // 3600
-    seconds %= hrs * 3600
-    mins = seconds // 60
-    seconds %= mins * 60
-    return f"{days} days, {hrs} hrs, {mins} mins, {seconds} secs"
+def sec_to_time(secs):
+    days = secs // 86400
+    hours = (secs - days * 86400) // 3600
+    minutes = (secs - days * 86400 - hours * 3600) // 60
+    result = ("{0} day{1}, ".format(days, "s" if days != 1 else "")) + \
+             ("{0} hour{1}, ".format(hours, "s" if hours != 1 else "")) + \
+             ("{0} minute{1} ".format(minutes, "s" if minutes != 1 else ""))
+    return result
 
 
 def splitString(text, n):
