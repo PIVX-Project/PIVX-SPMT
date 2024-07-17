@@ -21,7 +21,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install wheel==0.38.4
+          pip install pip==24.0
+          pip install wheel==0.35.0
+          pip install setuptools==53.0.0
           pip install -r requirements.txt
           pip install importlib-metadata==4.13.0
           pip install flake8==3.8.4
@@ -51,7 +53,7 @@ jobs:
             packages: libusb-1.0-0-dev libudev-dev
 
           - name: macOS
-            os: macos-11
+            os: macos-12
             cachepath: ~/Library/Caches/pip
 
           - name: Windows
@@ -78,7 +80,13 @@ jobs:
             sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
           fi
-          pip install wheel==0.38.4
+          if [[ ${{ matrix.config.os }} = windows* ]]; then
+            python.exe -m pip install pip==24.0
+          else
+            pip install pip==24.0
+          fi
+          pip install wheel==0.35.0
+          pip install setuptools==53.0.0
           pip install -r requirements.txt
           pip install pyinstaller
       - name: Build
