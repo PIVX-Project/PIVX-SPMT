@@ -1,10 +1,10 @@
+wheel==0.35.0
+setuptools==53.0.0
 python-bitcoinrpc==1.0
 bitcoin==1.1.42
 btchip-python==0.1.27
-trezor==0.11.1
+trezor==0.11.5
 PyQt5>=5.15.10
 requests==2.32.2
 simplejson==3.19.2
 ecdsa==0.19.0
-wheel==0.38.1
-setuptools==69.5.1
