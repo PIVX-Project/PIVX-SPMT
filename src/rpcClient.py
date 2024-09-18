@@ -5,11 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from bitcoinrpc.authproxy import AuthServiceProxy
-
-import http.client as httplib
-import ssl
 import threading
-import certifi
 
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 from misc import getCallerName, getFunctionName, printException, printDbg, now, timeThis
