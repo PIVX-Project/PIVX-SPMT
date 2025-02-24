@@ -21,14 +21,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install pip==24.0
-          pip install wheel==0.35.0
-          pip install setuptools==53.0.0
           pip install -r requirements.txt
-          pip install importlib-metadata==4.13.0
-          pip install flake8==3.8.4
           pip install mypy==0.781
-          pip install vulture==2.3
 
       - name: Lint
         run: |
@@ -53,7 +47,7 @@ jobs:
             packages: libusb-1.0-0-dev libudev-dev
 
           - name: macOS
-            os: macos-12
+            os: macos-13
             cachepath: ~/Library/Caches/pip
 
           - name: Windows
@@ -80,15 +74,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
           fi
-          if [[ ${{ matrix.config.os }} = windows* ]]; then
-            python.exe -m pip install pip==24.0
-          else
-            pip install pip==24.0
-          fi
-          pip install wheel==0.35.0
-          pip install setuptools==53.0.0
           pip install -r requirements.txt
-          pip install pyinstaller
       - name: Build
         run: |
           pyinstaller SecurePivxMasternodeTool.spec
