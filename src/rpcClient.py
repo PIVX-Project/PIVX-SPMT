@@ -5,9 +5,6 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 from bitcoinrpc.authproxy import AuthServiceProxy
-
-import http.client as httplib
-import ssl
 import threading
 
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
@@ -18,7 +15,9 @@ from proposals import Proposal
 def process_RPC_exceptions(func):
     def wrapper(*args, **kwargs):
         try:
-            args[0].httpConnection.connect()
+            # If httpConnection exists, connect manually
+            if hasattr(args[0], 'httpConnection') and args[0].httpConnection:
+                args[0].httpConnection.connect()
             return func(*args, **kwargs)
         except Exception as e:
             message = "Exception in RPC client"
@@ -32,11 +31,13 @@ def process_RPC_exceptions(func):
             else:
                 return None
         finally:
-            try:
-                args[0].httpConnection.close()
-            except Exception as e:
-                printDbg(e)
-                pass
+            # If httpConnection exists, close it
+            if hasattr(args[0], 'httpConnection') and args[0].httpConnection:
+                try:
+                    args[0].httpConnection.close()
+                except Exception as e:
+                    printDbg(e)
+                    pass
     return wrapper
 
 
@@ -48,13 +49,8 @@ class RpcClient:
 
         self.rpc_url = f"{rpc_protocol}://{rpc_user}:{rpc_password}@{rpc_host}"
 
-        host, port = rpc_host.split(":")
-        if rpc_protocol == "https":
-            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl.create_default_context())
-        else:
-            self.httpConnection = httplib.HTTPConnection(host, port, timeout=20)
 
-        self.conn = AuthServiceProxy(self.rpc_url, timeout=1000, connection=self.httpConnection)
+        self.conn = AuthServiceProxy(self.rpc_url, timeout=1000)
 
     @process_RPC_exceptions
     def getBlockCount(self):

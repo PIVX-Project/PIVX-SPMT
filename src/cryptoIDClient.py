@@ -6,6 +6,7 @@
 
 from random import choice
 import requests
+import certifi
 
 from misc import getCallerName, getFunctionName, printException
 
@@ -51,7 +52,7 @@ class CryptoIDClient:
     def checkResponse(self, parameters):
         key = choice(api_keys)
         parameters['key'] = key
-        resp = requests.get(self.url, params=parameters)
+        resp = requests.get(self.url, params=parameters, verify=certifi.where())
         if resp.status_code == 200:
             data = resp.json()
             return data

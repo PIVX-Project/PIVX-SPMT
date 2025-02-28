@@ -5,6 +5,7 @@
 # file LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 
 import requests
+import certifi
 
 from misc import getCallerName, getFunctionName, printException
 
@@ -45,7 +46,7 @@ class BlockBookClient:
         url = f"{self.url}/api/{method}"
         if param != "":
             url += "/{param}"
-        resp = requests.get(url, data={}, verify=True)
+        resp = requests.get(url, data={}, verify=certifi.where())
         if resp.status_code == 200:
             data = resp.json()
             return data

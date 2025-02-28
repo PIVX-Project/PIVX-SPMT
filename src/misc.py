@@ -191,8 +191,9 @@ def getFunctionName(inDecorator=False):
 
 def getRemoteSPMTversion():
     import requests
+    import certifi
     try:
-        resp = requests.get("https://raw.githubusercontent.com/PIVX-Project/PIVX-SPMT/master/src/version.txt")
+        resp = requests.get("https://raw.githubusercontent.com/PIVX-Project/PIVX-SPMT/master/src/version.txt", verify=certifi.where())
         if resp.status_code == 200:
             data = resp.json()
             return data['number']

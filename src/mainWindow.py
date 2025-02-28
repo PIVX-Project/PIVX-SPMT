@@ -522,7 +522,10 @@ class MainWindow(QWidget):
             return
 
         rpcResponseTime = None
-        if r_time1 is not None and r_time2 != 0:
+        if r_time1 is None:
+            r_time1 = 0.0
+        if r_time2 is None:
+            r_time2 = 0.0
             rpcResponseTime = round((r_time1 + r_time2) / 2, 3)
 
         # Do not update status if the user has selected a different server since the start of updateRPCStatus()
