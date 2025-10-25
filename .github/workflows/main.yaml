@@ -50,6 +50,10 @@ jobs:
             os: macos-13
             cachepath: ~/Library/Caches/pip
 
+          - name: macOS-arm
+            os: macos-14
+            cachepath: ~/Library/Caches/pip
+
           - name: Windows
             os: windows-2022
             cachepath: ~\AppData\Local\pip\Cache
