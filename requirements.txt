@@ -1,16 +1,17 @@
 wheel==0.45.1
-setuptools==75.8.0
+setuptools==78.1.1
+certifi
 python-bitcoinrpc==1.0
 bitcoin==1.1.42
 trezor==0.11.5
 PyQt5>=5.15.10
-requests==2.32.2
+requests==2.32.5
 simplejson==3.19.2
 ecdsa==0.19.0
 importlib-metadata==4.13.0
 flake8==3.8.4
 vulture==2.3
-pyinstaller==6.12.0
+pyinstaller==6.16.0
 # btchip-python 0.1.32 with a patch to fix a malformed dependency
 # See https://github.com/LedgerHQ/btchip-python/pull/54
 https://github.com/PIVX-Project/btchip-python/archive/e13eab8b0e665bdc23ac4b3890d2a5742303c421.tar.gz
