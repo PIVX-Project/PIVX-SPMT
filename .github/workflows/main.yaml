@@ -51,7 +51,7 @@ jobs:
             cachepath: ~/Library/Caches/pip
 
           - name: Windows
-            os: windows-2019
+            os: windows-2022
             cachepath: ~\AppData\Local\pip\Cache
 
     steps:
