@@ -49,9 +49,15 @@ jobs:
           - name: macOS
             os: macos-13
             cachepath: ~/Library/Caches/pip
+            packages: imagemagick librsvg
+
+          - name: macOS-arm
+            os: macos-14
+            cachepath: ~/Library/Caches/pip
+            packages: imagemagick librsvg
 
           - name: Windows
-            os: windows-2019
+            os: windows-2022
             cachepath: ~\AppData\Local\pip\Cache
 
     steps:
@@ -61,6 +67,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      - name: Setup node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
       - name: Setup pip cache
         uses: actions/cache@v4
         with:
@@ -73,6 +83,10 @@ jobs:
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
             sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
+          fi
+          if [[ ${{ matrix.config.os }} = macos* ]]; then
+            npm install -g --no-fund appdmg
+            brew install ${{ matrix.config.packages }}
           fi
           pip install -r requirements.txt
       - name: Build
