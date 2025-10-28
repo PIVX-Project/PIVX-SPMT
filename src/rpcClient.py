@@ -9,6 +9,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy
 import http.client as httplib
 import ssl
 import threading
+import certifi
 
 from constants import DEFAULT_PROTOCOL_VERSION, MINIMUM_FEE
 from misc import getCallerName, getFunctionName, printException, printDbg, now, timeThis
@@ -50,7 +51,9 @@ class RpcClient:
 
         host, port = rpc_host.split(":")
         if rpc_protocol == "https":
-            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl.create_default_context())
+            ssl_context = ssl.create_default_context()
+            ssl_context.load_verify_locations(cafile=certifi.where())
+            self.httpConnection = httplib.HTTPSConnection(host, port, timeout=20, context=ssl_context)
         else:
             self.httpConnection = httplib.HTTPConnection(host, port, timeout=20)
 
