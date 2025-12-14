@@ -440,10 +440,10 @@ class MainWindow(QWidget):
             self.header.lastPingBox.setHidden(True)
         else:
             self.header.lastPingBox.setHidden(False)
-            if self.rpcResponseTime > 2:
+            if self.rpcResponseTime is not None and self.rpcResponseTime > 2:
                 color = "red"
                 self.header.lastPingIcon.setPixmap(self.connRed_icon)
-            elif self.rpcResponseTime > 1:
+            elif self.rpcResponseTime is not None and self.rpcResponseTime > 1:
                 color = "orange"
                 self.header.lastPingIcon.setPixmap(self.connOrange_icon)
             else:
