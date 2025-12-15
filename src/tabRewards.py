@@ -32,6 +32,7 @@ class TabRewards:
 
         # --- Initialize Selection
         self.selectedRewards = None
+        self.lastClickedRow = None
         self.feePerKb = MINIMUM_FEE
         self.suggestedFee = MINIMUM_FEE
 
@@ -49,7 +50,7 @@ class TabRewards:
         # Connect GUI buttons
         self.ui.mnSelect.currentIndexChanged.connect(lambda: self.onChangeSelectedMN())
         self.ui.btn_toggleCollateral.clicked.connect(lambda: self.onToggleCollateral())
-        self.ui.rewardsList.box.itemClicked.connect(lambda: self.updateSelection())
+        self.ui.rewardsList.box.itemClicked.connect(self.onRewardClicked)
         self.ui.btn_selectAllRewards.clicked.connect(lambda: self.onSelectAllRewards())
         self.ui.btn_deselectAllRewards.clicked.connect(lambda: self.onDeselectAllRewards())
         self.ui.btn_sendRewards.clicked.connect(lambda: self.onSendRewards())
@@ -229,6 +230,7 @@ class TabRewards:
     def onCancel(self):
         self.ui.rewardsList.box.clearSelection()
         self.selectedRewards = None
+        self.lastClickedRow = None
         self.ui.selectedRewardsLine.setText("0.0")
         self.suggestedFee = MINIMUM_FEE
         self.updateFee()
@@ -256,6 +258,34 @@ class TabRewards:
             if not isInitializing:
                 self.ui.resetStatusLabel()
                 self.display_mn_utxos()
+
+    def onRewardClicked(self, item):
+        """Handle click on reward item with shift-click support for range selection."""
+        row = item.row()
+        modifiers = QApplication.keyboardModifiers()
+
+        if modifiers == Qt.ShiftModifier and self.lastClickedRow is not None:
+            # Select range from lastClickedRow to current row
+            start = min(self.lastClickedRow, row)
+            end = max(self.lastClickedRow, row)
+
+            for r in range(start, end + 1):
+                # Skip hidden collateral row
+                if self.ui.rewardsList.box.isRowHidden(r):
+                    continue
+                # Skip immature/unselectable rows
+                rowItem = self.ui.rewardsList.box.item(r, 0)
+                if rowItem and rowItem.flags() & Qt.ItemIsSelectable:
+                    # Select all cells in this row individually (preserves existing selection)
+                    for col in range(self.ui.rewardsList.box.columnCount()):
+                        cellItem = self.ui.rewardsList.box.item(r, col)
+                        if cellItem:
+                            cellItem.setSelected(True)
+        else:
+            # Normal click - update anchor point
+            self.lastClickedRow = row
+
+        self.updateSelection()
 
     def onSelectAllRewards(self):
         self.ui.rewardsList.box.selectAll()
@@ -524,3 +554,4 @@ class TabRewards:
 
         totalBalance = str(round(nAmount / 1e8, 8))
         self.ui.addrAvailLine.setText(f"<i>{totalBalance} PIVs</i>")
+
